@@ -5,6 +5,7 @@ import pandas as pd
 from bmc.datasource.gbif import sql
 import re
 from shapely.geometry import box
+import zipfile
 
 class gbif_cube(vector_cube):
 

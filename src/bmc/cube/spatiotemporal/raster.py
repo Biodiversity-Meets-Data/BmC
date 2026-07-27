@@ -417,8 +417,15 @@ class raster_cube(raster_engine, ABC):
             
             # --- Network Fetch ---
             target_paths = group_df['vsi_path'].unique().tolist()
+            
+            # Dynamic Worker Safeguard: Cap threads to the exact number of requested files
+            num_files = len(target_paths)
+            dynamic_workers = min(num_files, max_workers)
+            
+            log_execution(logger, f"Initiating network fetch for {num_files} asset(s) using {dynamic_workers} worker(s)...", logging.INFO)
+            
             with tracker.track_strain(f"Network Fetch ({var_name})"):
-                raw_fetched_data = parallel_fetch_rasters(target_paths, source_bbox, max_workers)
+                raw_fetched_data = parallel_fetch_rasters(target_paths, source_bbox, dynamic_workers)
             
             # --- Metadata Injection ---
             da_list = []

@@ -1,0 +1,96 @@
+{
+    "type": "Feature",
+    "stac_version": "1.1.0",
+    "stac_extensions": [],
+    "id": "combined_test_cube_eea1km_netcdf_gbif_20260727233659",
+    "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [
+                    4.885654533872891,
+                    50.51159734042724
+                ],
+                [
+                    4.885654533872891,
+                    51.401346333937056
+                ],
+                [
+                    3.312117881414977,
+                    51.401346333937056
+                ],
+                [
+                    3.312117881414977,
+                    50.51159734042724
+                ],
+                [
+                    4.885654533872891,
+                    50.51159734042724
+                ]
+            ]
+        ]
+    },
+    "bbox": [
+        3.312117881414977,
+        50.51159734042724,
+        4.885654533872891,
+        51.401346333937056
+    ],
+    "properties": {
+        "cube:dataset": "gbif",
+        "cube:grid_registry_key": "EEA_1km",
+        "processing:topology": "point_cloud",
+        "processing:mapping_mode": "fractional",
+        "start_datetime": "2018-04-01T00:00:00+00:00",
+        "end_datetime": "2018-11-01T00:00:00+00:00",
+        "processing:distribution": "gaussian",
+        "processing:n_passes": 25,
+        "processing:random_seed": 42,
+        "processing:aggregation_groups": [
+            "specieskey",
+            "year",
+            "month"
+        ],
+        "processing:aggregation_metrics": [
+            {
+                "column": "fraction",
+                "method": "sum",
+                "weighted": false,
+                "rename": "expected_occurrences"
+            }
+        ],
+        "datetime": "2018-04-01T00:00:00Z"
+    },
+    "links": [],
+    "assets": {
+        "source_geometries": {
+            "href": "C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/test_cubes/combined_test_cube_eea1km_netcdf/gbif/gbif_source_geometries.parquet",
+            "type": "application/x-parquet",
+            "title": "Source Geometries (Point Cloud)",
+            "description": "Original vector records containing src_uid and generated spatial topologies.",
+            "roles": [
+                "metadata",
+                "spatial-index"
+            ]
+        },
+        "aggregated_cube": {
+            "href": "C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/test_cubes/combined_test_cube_eea1km_netcdf/gbif/gbif_aggregated.parquet",
+            "type": "application/x-parquet",
+            "title": "Aggregated Vector Cube",
+            "description": "Final multidimensional grouped cube summarizing observations and spatial weights.",
+            "roles": [
+                "data"
+            ]
+        },
+        "grid_geometries": {
+            "href": "C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/test_cubes/combined_test_cube_eea1km_netcdf/gbif/gbif_EEA_1km_dimension_table.parquet",
+            "type": "application/x-parquet",
+            "title": "EEA_1km Spatial Dimension Table",
+            "description": "Explicit GeoParquet linking discrete grid identifiers to physical grid cell polygons.",
+            "roles": [
+                "metadata",
+                "spatial-index"
+            ]
+        }
+    }
+}

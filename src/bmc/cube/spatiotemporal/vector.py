@@ -274,13 +274,9 @@ class vector_cube(vector_engine, ABC):
         # 4. DYNAMIC SPATIAL ROUTING
         # =====================================================================
         if processing_mode == "api_cube":
-            api_cfg = source_cfg.get("api_cube_config", {})
-            transformed_data = self.transform_cellCollection_to_template(
+            transformed_data = self.map_cellCollection_to_template(
                 source_gdf=sanitized_gdf,
                 target_grid_name=target_grid_key,
-                value_column="occurrenceCount",
-                data_type=api_cfg.get("data_type", "discrete"),
-                method=api_cfg.get("spatial_method", "intersect"),
                 target_bbox=target_bbox,
                 logger=logger
             )
@@ -421,6 +417,18 @@ class vector_cube(vector_engine, ABC):
             item_id=stac_id,
             logger=logger
         )
+
+        # ---------------------------------------------------------------------
+        # Export STAC to the meta directory
+        # ---------------------------------------------------------------------
+        meta_dir = os.path.join(cube_dir, "meta")
+        os.makedirs(meta_dir, exist_ok=True)
+        stac_filepath = os.path.join(meta_dir, f"{dataset_name}_stac.json")
+        
+        with open(stac_filepath, "w") as f:
+            json.dump(stac_item.to_dict(), f, indent=4)
+            
+        log_execution(logger, f"Exported STAC item to {stac_filepath}", logging.INFO)
 
         return stac_item
     
@@ -677,16 +685,17 @@ class vector_cube(vector_engine, ABC):
         # =====================================================================
         
         # Asset 1: Original Source Geometries (Always Present)
-        item.add_asset(
-            "source_geometries",
-            pystac.Asset(
-                href=source_geom_path,
-                media_type="application/x-parquet",
-                roles=["metadata", "spatial-index"],
-                title=f"Source Geometries ({topology.replace('_', ' ').title()})",
-                description="Original vector records containing src_uid and generated spatial topologies."
+        if source_geom_path and os.path.exists(source_geom_path):
+            item.add_asset(
+                "source_geometries",
+                pystac.Asset(
+                    href=source_geom_path,
+                    media_type="application/x-parquet",
+                    roles=["metadata", "spatial-index"],
+                    title=f"Source Geometries ({topology.replace('_', ' ').title()})",
+                    description="Original vector records containing src_uid and generated spatial topologies."
+                )
             )
-        )
 
         # Asset 2: Unaggregated Relational Data (If Exported)
         if unaggregated_path and os.path.exists(unaggregated_path):

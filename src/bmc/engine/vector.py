@@ -1413,140 +1413,46 @@ class vector_engine(base_spatial_grid):
     
         return result[result_columns]
     
-    def transform_cellCollection_to_template(
+    def map_cellCollection_to_template(
         self, 
         source_gdf: gpd.GeoDataFrame, 
         target_grid_name: str, 
-        value_column: str, 
-        data_type: str = 'discrete', 
-        method: str = 'kdtree',
         target_bbox: Optional[Tuple[float, float, float, float]] = None,
-        logger: Optional[logging.Logger] = None) -> gpd.GeoDataFrame:
+        logger: Optional[logging.Logger] = None
+    ) -> gpd.GeoDataFrame:
         """
-        Transforms data from a source GeoDataFrame to match a strictly aligned master grid.
+        Maps pre-aggregated, perfectly aligned grid cell polygons directly to the 
+        master template grid.
 
-        Parameters:
-        -----------
-        source_gdf : geopandas.GeoDataFrame
-            The input data to transform. Must have a defined CRS.
-        target_grid_name : str
-            The key of the template grid defined in `self.GRID_REGISTRY`.
-        value_column : str
-            The name of the numeric column to aggregate.
-        data_type : str
-            'discrete' (sum whole integers/majority rule) or 'continuous' (areal weighting).
-        method : str
-            'kdtree' (representative point snapping) or 'intersect' (geometric clipping).
-        target_bbox : tuple of float, optional
-            A specific bounding box (minx, miny, maxx, maxy) in the target CRS to force 
-            the grid generation. If None, it dynamically calculates from the source data.
+        Because the GBIF API Cube natively aggregates data to standardized grids 
+        (e.g., EEA, EPSG:4326 EQDG), complex geometric intersections or KDTree 
+        snapping are mathematically unnecessary. This method calculates the 
+        deterministic global index instantly using the pre-gridded cell's centroid.
         """
         if source_gdf.crs is None:
             raise ValueError("Source GeoDataFrame is missing a CRS. Cannot project.")
 
         target_crs = self.GRID_REGISTRY[target_grid_name]["crs"]
+        source_gdf = self._ensure_crs(source_gdf, target_crs, logger)
 
-        # 1. Determine the Bounding Box
-        if target_bbox is not None:
-            if logger: logger.info(f"Using explicitly provided target bounding box: {target_bbox}")
-            dst_bbox = target_bbox
-        else:
-            if logger: logger.info("No target_bbox provided. Dynamically calculating from source data extent...")
-            src_bounds = source_gdf.total_bounds 
-            dst_bbox = transform_bounds(source_gdf.crs, target_crs, *src_bounds)
+        log_execution(logger, "Mapping pre-gridded API cells directly to master grid indices...", logging.INFO)
 
-        # 2. Fetch the pristine blueprint
-        template_da, _ = self.create_aligned_raster_template(dst_bbox, target_grid_name)
-        res = template_da.attrs["res"]
-        
-        x_centers = template_da.x.values
-        y_centers = template_da.y.values
+        # 1. Extract the centroids of the perfectly aligned pre-gridded cells
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            cell_centroids = source_gdf.geometry.centroid
 
-        # 3. Build the target grid mesh (Pristine Squares)
-        if logger: logger.info(f"Building {res}m target mesh in {target_crs}...")
-        
-        xx, yy = np.meshgrid(x_centers, y_centers)
-        x_flat, y_flat = xx.flatten(), yy.flatten()
-        half_res = res / 2.0
-        
-        polygons = [box(x - half_res, y - half_res, x + half_res, y + half_res) for x, y in zip(x_flat, y_flat)]
-        
-        target_grid_gdf = gpd.GeoDataFrame(
-            {'grid_id': np.arange(len(polygons))}, 
-            geometry=polygons, 
-            crs=target_crs
+        # 2. Calculate the exact deterministic global index for each cell
+        source_gdf["grid_idx"] = self.calculate_deterministic_global_indices(
+            x_coords=cell_centroids.x.values,
+            y_coords=cell_centroids.y.values,
+            grid_name=target_grid_name,
+            logger=logger
         )
 
-        # 4. Prepare Source Data Attributes
-        source_df = source_gdf.copy()
-        source_df['src_uid'] = source_df.index 
-        
-        ignore_cols = ['geometry', value_column, 'src_uid', 'source_area']
-        preserve_cols = [col for col in source_df.columns if col not in ignore_cols]
-        group_cols = ['grid_id'] + preserve_cols
-
-        # ==========================================
-        # STRATEGY A: KDTREE (Representative Point Snapping)
-        # ==========================================
-        if method == 'kdtree':
-            if data_type != 'discrete':
-                raise ValueError("KDTree routing mathematically requires 'discrete' data_type.")
-            if logger: logger.info("Executing KDTree snapping via representative points...")
-                
-            source_points = source_df.copy()
-            source_points["geometry"] = source_points.geometry.representative_point()
-            source_points = source_points.to_crs(target_crs)
-            
-            src_coords = np.column_stack([source_points.geometry.x, source_points.geometry.y])
-            tgt_coords = np.column_stack([x_flat, y_flat]) 
-            
-            tree = KDTree(tgt_coords)
-            _, matched_grid_ids = tree.query(src_coords)
-            source_df['grid_id'] = matched_grid_ids
-            
-            aggregated = source_df.groupby(group_cols)[value_column].sum().reset_index()
-
-        # ==========================================
-        # STRATEGY B: INTERSECT (Geometric Overlay & Areal Weighting)
-        # ==========================================
-        elif method == 'intersect':
-            import warnings
-            if logger: logger.info("Executing precise geometric overlay (Warning: RAM intensive)...")
-            
-            source_reprojected = source_df.to_crs(target_crs)
-            source_reprojected['source_area'] = source_reprojected.geometry.area
-            
-            # Temporarily mute the benign keep_geom_type overlay warning
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                intersections = gpd.overlay(source_reprojected, target_grid_gdf, how='intersection')
-            
-            if intersections.empty:
-                return target_grid_gdf.iloc[0:0].copy()
-                
-            intersections['intersect_area'] = intersections.geometry.area
-
-            if data_type == 'continuous':
-                intersections['weight'] = intersections['intersect_area'] / intersections['source_area']
-                intersections['weighted_val'] = intersections[value_column] * intersections['weight']
-                aggregated = intersections.groupby(group_cols)['weighted_val'].sum().reset_index()
-                aggregated.rename(columns={'weighted_val': value_column}, inplace=True)
-
-            elif data_type == 'discrete':
-                idx_max = intersections.sort_values('intersect_area', ascending=False).groupby('src_uid').head(1)
-                aggregated = idx_max.groupby(group_cols)[value_column].sum().reset_index()
-            else:
-                raise ValueError("Invalid data_type for intersect. Choose 'continuous' or 'discrete'.")
-                
-        else:
-            raise ValueError("Invalid method. Choose 'kdtree' or 'intersect'.")
-
-        # 5. Re-attach the pristine target grid geometries
-        if logger: logger.info("Merging aggregated attributes back to pristine template grid...")
-        target_geometries = target_grid_gdf[['grid_id', 'geometry']]
-        result_grid = target_geometries.merge(aggregated, on='grid_id', how='inner')
-        
-        return result_grid
+        # Return the DataFrame so the standard aggregate_vector_cube engine can process it
+        return source_gdf
     
     def validate_vector_transformation(
         self,
