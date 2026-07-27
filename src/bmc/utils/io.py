@@ -15,38 +15,35 @@ logger = logging.getLogger(__name__)
 
 # Highly optimized default environment for streaming Cloud Optimized GeoTIFFs (COGs) via HTTP/S3
 DEFAULT_GDAL_ENV = {
-# 1. Prevents GDAL from scanning the entire remote bucket directory for matching file layouts.
-#    Treating the folder as an 'EMPTY_DIR' avoids massive directory parsing latency penalties.
-"GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR",
+    # 1. Prevents GDAL from scanning the entire remote bucket directory for matching file layouts.
+    #    Treating the folder as an 'EMPTY_DIR' avoids massive directory parsing latency penalties.
+    "GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR",
 
-# 2. Restricts network probes strictly to .tif assets. Prevents GDAL from hunting for 
-#    non-existent sidecar files (like .tfw, .aux.xml, or .ovr) which wastes valuable network roundtrips.
-"CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".tif",
+    # 2. Restricts network probes strictly to .tif assets. Prevents GDAL from hunting for 
+    #    non-existent sidecar files (like .tfw, .aux.xml, or .ovr) which wastes valuable network roundtrips.
+    "CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".tif",
 
-# 3. Disables curl's multiplexed multi-connection connection reuse pool. This is critical for 
-#    thread-safety inside a Python ThreadPoolExecutor to prevent cross-thread socket pollution.
-"GDAL_HTTP_MULTIPLE_CONNECTIONS": "NO", 
+    # 3. Disables GDAL's internal global RAM caching mechanism for virtual files. Since our thread pool 
+    #    immediately processes, clips, and frees arrays, turning this off prevents creeping RAM bloat.
+    "VSI_CACHE": "FALSE",                    
 
-# 4. Disables GDAL's internal global RAM caching mechanism for virtual files. Since our thread pool 
-#    immediately processes, clips, and frees arrays, turning this off prevents creeping RAM bloat.
-"VSI_CACHE": "FALSE",                    
+    # 4. Sets the maximum connection retry threshold. If the host server experiences a transient spike 
+    #    or issues a 429/503 rate limit throttle, the thread will attempt to re-connect up to 10 times.
+    "GDAL_HTTP_MAX_RETRY": "10", 
 
-# 5. Sets the maximum connection retry threshold. If the host server experiences a transient spike 
-#    or issues a 429/503 rate limit throttle, the thread will attempt to re-connect up to 10 times.
-"GDAL_HTTP_MAX_RETRY": "10", 
+    # 5. The backoff rest interval (in seconds) between retry attempts, giving remote servers space 
+    #    to recover before the thread aggressively polls the resource endpoint again.
+    "GDAL_HTTP_RETRY_DELAY": "3",
 
-# 6. The backoff rest interval (in seconds) between retry attempts, giving remote servers space 
-#    to recover before the thread aggressively polls the resource endpoint again.
-"GDAL_HTTP_RETRY_DELAY": "3",
+    # 6. Slashes the maximum connection timeout window to 30 seconds. Prevents an un-responsive 
+    #    network socket or dead server from permanently hanging an execution thread indefinitely.
+    "GDAL_HTTP_TIMEOUT": "30",
 
-# 7. Slashes the maximum connection timeout window to 30 seconds. Prevents an un-responsive 
-#    network socket or dead server from permanently hanging an execution thread indefinitely.
-"GDAL_HTTP_TIMEOUT": "30",
-
-# 8. Instructs GDAL to look ahead at byte-range requests. If the script requests blocks that 
-#    are close together, it merges them into one larger sequential stream request, bypassing 
-#    individual HTTP header handshake latencies.
-"GDAL_HTTP_MERGE_CONSECUTIVE_RANGES": "YES"}
+    # 7. Instructs GDAL to look ahead at byte-range requests. If the script requests blocks that 
+    #    are close together, it merges them into one larger sequential stream request, bypassing 
+    #    individual HTTP header handshake latencies.
+    "GDAL_HTTP_MERGE_CONSECUTIVE_RANGES": "YES"
+}
 
 
 def _fetch_single_raster(

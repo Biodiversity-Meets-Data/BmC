@@ -1,0 +1,43 @@
+base_dir: ../test_cubes/
+cube_name: chelsa_test_cube_eea1km_zarr
+export_as:
+  format: zarr
+spatial:
+  target_grid: EEA
+  target_resolution: 1km
+  use_bbox: true
+  bbox:
+    long_min: 3.376891
+    long_max: 4.804775
+    lat_min: 50.583876
+    lat_max: 51.386124
+temporal:
+  start_year: 2018
+  start_month: 1
+  end_year: 2018
+  end_month: 12
+sources:
+  chelsa:
+    enabled: true
+    catalog_path: C:\Users\niels\Documents\Repositories\BmC\meta\chelsa_gp_stac\chelsa_master.parquet
+    levels:
+      monthly:
+        include: true
+        variables:
+          tas: true
+          pr: true
+      annual:
+        include: true
+        variables:
+          tas: true
+      bioclim:
+        include: true
+        time_ranges:
+          1981-2010: true
+        ensembles:
+          historical: true
+        scenarios:
+          historical: true
+        variables:
+          bio01: true
+          bio02: true

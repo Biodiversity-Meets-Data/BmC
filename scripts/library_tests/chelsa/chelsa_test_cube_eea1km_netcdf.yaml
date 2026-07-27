@@ -1,0 +1,75 @@
+base_dir: ../test_cubes/
+cube_name: chelsa_test_cube_eea1km_netcdf
+export_as:
+  format: netcdf
+spatial:
+  target_grid: EEA
+  target_resolution: 1km
+  use_bbox: true
+  bbox:
+    long_min: 3.376891
+    long_max: 4.804775
+    lat_min: 50.583876
+    lat_max: 51.386124
+temporal:
+  start_year: 2018
+  start_month: 1
+  end_year: 2018
+  end_month: 12
+sources:
+  chelsa:
+    enabled: true
+    catalog_path: C:\Users\niels\Documents\Repositories\BmC\meta\chelsa_gp_stac\chelsa_master.parquet
+    levels:
+      monthly:
+        include: true
+        variables:
+          tas: true
+          tasmax: false
+          tasmin: false
+          pr: true
+      annual:
+        include: true
+        variables:
+          tas: true
+          tasmax: false
+          tasmin: false
+        pr: false
+      climatologies:
+        include: true
+        time_ranges:
+          1981-2010: true
+          2011-2040: false
+          2041-2070: false
+        ensembles:
+          historical: true
+          GFDL-ESM4: true
+          IPSL-CM6A-LR: true
+        scenarios:
+          historical: true
+          ssp126: true
+          ssp370: true
+          ssp585: true
+        variables:
+          tas: true
+          tasmax: false
+          tasmin: false
+          pr: true
+      bioclim:
+        include: true
+        time_ranges:
+          1981-2010: true
+          2011-2040: true
+          2041-2070: true
+        ensembles:
+          historical: true
+          GFDL-ESM4: true
+          IPSL-CM6A-LR: true
+        scenarios:
+          historical: true
+          ssp126: true
+          ssp370: true
+          ssp585: true
+        variables:
+          bio01: true
+          bio02: true
