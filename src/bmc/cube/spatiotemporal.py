@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Union, Dict, Any, List, Tuple
+from typing import Optional, Union, Dict, Any, List, Tuple,  Callable
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
@@ -9,11 +9,12 @@ import time
 import yaml
 import sys
 import os
+import json
 import shutil
 import zipfile
 import glob
 from pathlib import Path
-
+from datetime import datetime, timezone
 
 import numpy as np
 import xarray as xr
@@ -22,17 +23,42 @@ import rioxarray
 from rioxarray import set_options
 from rioxarray.enum import Convention
 from osgeo import gdal
+import pyproj
 from pyproj import CRS, Transformer
 import rasterio
 from rasterio.warp import transform_bounds
 from rasterio.transform import from_origin
 from rasterio.enums import Resampling
+import shapely
+
+import geopandas as gpd
+from typing import Union, Tuple, Optional
+import logging
+from bmc.utils.logger import log_execution
+
+try:
+    import duckdb
+    HAS_DUCKDB = True
+except ImportError:
+    HAS_DUCKDB = False
+try:
+    import dask_geopandas as dask_gpd
+    HAS_DASK = True
+except ImportError:
+    HAS_DASK = False
+try:
+    import pystac
+    HAS_PYSTAC = True
+except ImportError:
+    HAS_PYSTAC = False
+
 
 from bmc.utils.spatial import build_envelope_from_file
 from bmc.utils.io import parallel_fetch_rasters
 from bmc.utils.logger import log_execution, ResourceProfiler
 
 from bmc.engine.spatial import spatial_engine
+from bmc.engine.spatial import spatial_vector_engine
 
 class spatiotemporal_cube(spatial_engine, ABC):
     """

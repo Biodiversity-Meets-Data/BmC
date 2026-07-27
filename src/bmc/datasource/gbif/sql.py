@@ -376,7 +376,8 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
                    year_range: int | list[int] | None = None,
                    month_range: int | list[int] | None = None,
                    aggregate: bool = False, 
-                   include_distinct_observers: bool = True,
+                   sql_group_cols: list[str] | None = None,       
+                   sql_metric_selects: list[str] | None = None, 
                    grid: str | bool = False, 
                    grid_resolution: int | None = None, 
                    coordinateUncertainty: int = 1000,
@@ -391,48 +392,6 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
     Assembles SELECT, WHERE, and spatial or grid-based GROUP BY clauses into a 
     pretty-printed, readable SQL string. Includes dynamic bounding box optimization, 
     fallback coordinate uncertainty handling, and spatial precision filtering.
-
-    Parameters
-    ----------
-    taxonKeys : list of int or str, or dict of (str, list of int or str)
-        Taxonomic criteria. Can be a flat list of IDs or an optimized column dictionary.
-        Accepts standard numeric GBIF keys or alphanumeric CoL string keys.
-    columns : list of str
-        The exact projection data columns to pull from the occurrence catalog.
-    record_type : {'occurrence', 'absence', 'mixed'}
-        Controls selection bounds filtering based on physical presence/absence attributes.
-    wkt_polygon : str
-        An OGC Well-Known Text geometry string defining the spatial bounding mask boundary.
-    year_range : tuple of (int, int), optional
-        An inclusive temporal slicing filter containing (start_year, end_year).
-    aggregate : bool, default False
-        When True, transforms the request into an aggregation query computing total records.
-    include_distinct_observers : bool, default True
-        Appends observer concentration counts to metrics when aggregate is active.
-    grid : str or bool, default False
-        The identifier name of the target spatial indexing grid system (e.g., 'EEA', 'DMSG').
-    grid_resolution : int, optional
-        The cell dimensions or precision settings requested for the selected indexing grid.
-    coordinateUncertainty : int, default 1000
-        Default spatial buffer (in meters) substituted to fill missing values via COALESCE.
-    max_uncertainty : int, float, str, optional
-        Maximum allowed spatial uncertainty in meters. If set to 'auto', it dynamically 
-        calculates the threshold based on the selected grid and resolution.
-    includeUnknownStatus : bool, default True
-        Flags whether rows with a status marked 'UNKNOWN' are captured inside presence filters.
-    include_uncertainty : bool, default True
-        Appends spatial resolution precision columns when working with raw granular records.
-    issue_flags : list of str, optional
-        A custom array of internal SQL screening filters applied to prune out flawed records.
-    col_backbone : bool, default False
-        If True, maps taxonomic columns to the specified CoL backbone dataset UUID via JSON.
-    col_uuid : str, default '7ddf754f-d193-4cc9-b351-99906754a03b'
-        The target dataset key used when `col_backbone` is active.
-
-    Returns
-    -------
-    str
-        A multi-line, properly indented SQL statement ready for submission to GBIF.
     """
     
     # ---- INJECT GBIF ID ----
@@ -450,7 +409,6 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
         ]
 
     # ---- VALIDITY CHECK ----
-    # Note: Assumes GBIF_COLUMNS is available in the global scope of your module
     if not set(columns).issubset(GBIF_COLUMNS):
         invalid_cols = set(columns) - set(GBIF_COLUMNS)
         raise ValueError(f"The following column(s) ({invalid_cols}) are not present in the GBIF data table") 
@@ -464,7 +422,7 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
     # ---- WHERE CONDITIONS ARRAY INITIALIZATION ----
     where_conditions = []
 
-    # 1. Bounding Box Pre-Filter (Crucial GBIF Optimization)
+    # 1. Bounding Box Pre-Filter
     try:
         geom = shapely.wkt.loads(wkt_polygon)
         min_lon, min_lat, max_lon, max_lat = geom.bounds
@@ -481,41 +439,32 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
         if str(max_uncertainty).lower() == "auto":
             if not grid or grid_resolution is None:
                 raise ValueError("Cannot set max_uncertainty='auto' without specifying a grid and grid_resolution.")
-            # Note: Assumes estimate_grid_size_meters is defined in your module
             calculated_threshold = int(estimate_grid_size_meters(grid, grid_resolution))
             where_conditions.append(f"COALESCE(coordinateUncertaintyInMeters, {coordinateUncertainty}) <= {calculated_threshold}")
         else:
             where_conditions.append(f"COALESCE(coordinateUncertaintyInMeters, {coordinateUncertainty}) <= {max_uncertainty}")
 
-    # 4. Time Filter
+    # 4. Temporal Filters
     time_columns_filter = " AND ".join([f'"{col}" IS NOT NULL' for col in columns if col in ["year", "month", "day"]])
     if time_columns_filter:
         where_conditions.append(time_columns_filter)
     
-    # 4. Temporal Filters (Year & Month Validation and Generation)
-    # Allows lists (e.g. [start, end]) or tuples interchangeably for robustness
     if year_range is not None:
         if isinstance(year_range, (list, tuple)):
-            if len(year_range) != 2:
-                raise ValueError("Year range list must contain exactly two integers: [start_year, end_year].")
-            if year_range[0] > year_range[1]:
-                raise ValueError("Year range interval is invalid (start_year > end_year).")
+            if len(year_range) != 2: raise ValueError("Year range list must contain exactly two integers: [start_year, end_year].")
+            if year_range[0] > year_range[1]: raise ValueError("Year range interval is invalid (start_year > end_year).")
             where_conditions.append(f'"year" >= {year_range[0]} AND "year" <= {year_range[1]}')
         else:
             where_conditions.append(f'"year" = {year_range}')
 
     if month_range is not None:
         if isinstance(month_range, (list, tuple)):
-            if len(month_range) != 2:
-                raise ValueError("Month range list must contain exactly two integers: [start_month, end_month].")
-            if month_range[0] > month_range[1]:
-                raise ValueError("Month range interval is invalid (start_month > end_month).")
-            if not (1 <= month_range[0] <= 12) or not (1 <= month_range[1] <= 12):
-                raise ValueError("Months must be integers between 1 and 12.")
+            if len(month_range) != 2: raise ValueError("Month range list must contain exactly two integers: [start_month, end_month].")
+            if month_range[0] > month_range[1]: raise ValueError("Month range interval is invalid (start_month > end_month).")
+            if not (1 <= month_range[0] <= 12) or not (1 <= month_range[1] <= 12): raise ValueError("Months must be integers between 1 and 12.")
             where_conditions.append(f'"month" >= {month_range[0]} AND "month" <= {month_range[1]}')
         else:
-            if not (1 <= month_range <= 12):
-                raise ValueError("Month must be an integer between 1 and 12.")
+            if not (1 <= month_range <= 12): raise ValueError("Month must be an integer between 1 and 12.")
             where_conditions.append(f'"month" = {month_range}')
         
     # 5. Issue Flags
@@ -528,7 +477,6 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
     if includeUnknownStatus:
         status_values.append("'UNKNOWN'")
     where_conditions.append(f"occurrenceStatus IN ({', '.join(status_values)})")
-    
     status_str_map = {"occurrence": "occurrences", "absence": "absences", "mixed": "frequency"}
 
     # ---- OPTIMIZED TAXONOMIC FILTER GENERATION ----
@@ -540,7 +488,6 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
     # ---- GRID SECTION ----
     gridding_str = ""
     if grid:
-        # Note: Assumes GBIF_GRIDS, GBIF_GRID_RESOLUTIONS, and GBIF_GRID_FUNCTIONS are available
         if grid.upper() not in GBIF_GRIDS:
             raise ValueError(f"The specified grid '{grid}' is not a supported grid. Options: {GBIF_GRIDS}")
             
@@ -552,7 +499,11 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
         gridding_str = f"{selected_function}({grid_resolution}, decimalLatitude, decimalLongitude, COALESCE(coordinateUncertaintyInMeters, {coordinateUncertainty})) AS {grid.lower()}cellcode"
 
     # ---- SQL QUERY BUILD (NESTED FORMATTING) ----
-    select_lines = [f"    {col}" for col in quoted_columns]
+    
+    # Base columns (only those required for grouping if aggregate is True)
+    cols_to_select = sql_group_cols if (aggregate and sql_group_cols) else columns
+    quoted_selects = format_column_selects(cols_to_select, col_backbone=col_backbone, col_uuid=col_uuid)
+    select_lines = [f"    {col}" for col in quoted_selects]
     
     if not aggregate:
         select_lines.extend(["    decimalLatitude", "    decimalLongitude"])
@@ -561,9 +512,12 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
         select_lines.append(f"    COALESCE(coordinateUncertaintyInMeters, {coordinateUncertainty}) AS coordinateUncertaintyInMeters")
         
     if aggregate:
-        select_lines.append(f"    COUNT(*) AS {status_str_map[record_type]}")
-        if include_distinct_observers:
-            select_lines.append("    COUNT(DISTINCT recordedBy) AS distinctObservers")
+        # Dynamically inject the SQL metrics derived from the YAML recipe
+        if sql_metric_selects:
+            select_lines.extend([f"    {metric}" for metric in sql_metric_selects])
+        else:
+            # Fallback if no custom metrics were provided
+            select_lines.append(f"    COUNT(*) AS {status_str_map[record_type]}")
             
     if grid:
         select_lines.append(f"    {gridding_str}")
@@ -572,9 +526,11 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
     filter_block = "FROM occurrence\nWHERE\n    " + "\n    AND ".join(where_conditions)
     
     if aggregate:
-        # Extract the correct alias names for grouping (ignoring the classificationdetails map syntax)
         reserved_columns = {"group", "order", "type", "references", "class", "language", "year", "month", "day"}
-        group_cols = [f'"{col.lower()}"' if col.lower() in reserved_columns else col.lower() for col in columns]
+        
+        # Group by the dynamically provided columns, or default to all extracted base columns
+        cols_to_group = sql_group_cols if sql_group_cols else columns
+        group_cols = [f'"{col.lower()}"' if col.lower() in reserved_columns else col.lower() for col in cols_to_group]
         
         if grid:
             group_cols.append(f"{grid.lower()}cellcode")

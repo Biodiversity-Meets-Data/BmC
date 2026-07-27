@@ -2,25 +2,24 @@ base_dir: "./test_outputs/"
 cube_name: "dev_cube"
 
 export_as:
-  format: netcdf
+  format: "zarr"
 # ======================================================================
 # 1. SPATIAL & TEMPORAL SELECTION
 # ======================================================================
 spatial:
   target_grid: "EEA"
-  target_resolution: "10km"
+  target_resolution: "1km"
   use_bbox: true  
-  bbox:
-      long_min: 2.457939
-      long_max: 6.521787
-      lat_min: 48.381926
+  bbox: #Flanders bbox
+      long_min: 2.591733
+      long_max: 5.883999
+      lat_min: 50.680797
       lat_max: 51.963900
-
 temporal:
-  start_year: 2018
+  start_year: 2004  #start year of the european invasion of the asian hornet
   start_month: 1
-  end_year: 2019
-  end_month: 2
+  end_year: 2025
+  end_month: 12
   time_aggregation: "monthly"
 
 # ======================================================================
@@ -28,34 +27,136 @@ temporal:
 # ======================================================================
 sources:
   gbif:
-    # return the non cubed point data with a threshold uncertainty value
-    # if set to false, the sql query automatically resorts to matching with the grid specs of the recipe
-    # EEA will be matched with EEA grid, WSG84 & Global_EqualArea are matched to the DSMG grid
-    return_raw: 
-      enabled: false 
-      coordinateUncertainty: 1000
+    # =======================================================================
+    # 1. QUERY & FILTER CONFIGURATION
+    # Defines exactly what data is pulled from the GBIF network.
+    # =======================================================================
     query_filters:
-      # General taxonKey parser, accepts keys from all taxonomic levels
-      taxon_keys: []
-      # Fetcha all occurrence data in AOI     
+      # General taxonKey parser; accepts keys from all taxonomic levels (e.g., family, genus, species).
+      taxon_keys: ['G59D','4F6YZ','3Y9W2','5B9T3','4HPXM','3Y9VW','75SVV','3ZW55','3ZDRX','6CJDB','GGZL','6JYHZ','7G3C6']
+      
+      # If true, ignores taxon_keys and fetches ALL occurrence data within the Area of Interest (AOI).
       fetch_all_taxa: false
-      # Options: "presence", "absence", or "mixed" (both)
+      
+      # Determines the type of records to fetch. Options: "presence", "absence", or "mixed" (both).
       record_type: "presence"
-      # If left blank, this defaults to matching the spatial.target_resolution (in meters)
-      default_Uncertainty:  
+      
+      # Fallback coordinate uncertainty (in meters) assigned to records missing this value.
+      # If left blank, defaults to matching the spatial target_resolution.
+      default_Uncertainty: 1000
+      
+      # Hard cutoff for coordinate uncertainty. Records exceeding this radius (in meters) are dropped.
+      max_uncertainty: 1000
+      
+      # GBIF data quality flags to exclude. Drops records flagged with these specific issues.
       exclude_issues:
         - "ZERO_COORDINATE"
         - "COORDINATE_OUT_OF_RANGE"
         - "COUNTRY_COORDINATE_MISMATCH" 
+
+    # =======================================================================
+    # 2. TAXONOMIC HARMONIZATION
+    # Controls how taxonomic lineages are resolved and appended.
+    # =======================================================================
     taxonomy:
-      # Include multiple taxonomic identifiers up to lowest level. Species is always included
-      # Smallest can be kingdom (kingdom, phylum, class, order, family, genus)
-      # If the field is left empty the species key will be the only identifier in the end table
+      # If true, cross-references and aligns taxa against the Catalogue of Life (CoL) backbone.
+      col_backbone: true
+      
+      # Defines the deepest taxonomic rank to include (kingdom, phylum, class, order, family, genus).
+      # If left empty, only the species key will be retained as an identifier in the final table.
       lowest_level: 
-    columns : []
+
+    # =======================================================================
+    # 3. ATTRIBUTE RETENTION
+    # =======================================================================
+    # Additional Darwin Core columns to extract and retain alongside the geometries.
+    columns: ["year", "month"]
+    time_cols: ["year", "month"] #Information for the CF temporal conversion
+    # =======================================================================
+    # 4. SPATIAL INGESTION & PROCESSING ROUTING
+    # =======================================================================
+    # Defines exactly how the pipeline handles spatial geometries.
+    # Options: 
+    #  - "raw": Bypasses all grid math. Returns raw, unmapped occurrence records.
+    #  - "vector": Downloads raw points, applies geometric topologies (buffers/clouds), and maps to target grid.
+    #  - "api_cube": Uses GBIF's server-side pre-aggregated SQL grid API (fast, contracted data).
+    processing_mode: "vector"
+
+    # -----------------------------------------------------------------------
+    # ROUTE A: PURE VECTOR PROCESSING (Used when processing_mode: "vector")
+    # Handles raw coordinate mathematics and spatial transformations.
+    # -----------------------------------------------------------------------
+    vector_processing:
+      # Desired geometric topology: "point", "polygon", or "point_cloud".
+      topology: "point_cloud"
+      
+      # Mapping output: "classification" (1-to-1 cell assignment) or 
+      # "fractional" (1-to-N probability/areal weights).
+      mapping_mode: "fractional"  
+      
+      # Spatial lookup strategy: "intersect" (precise overlap) or "kdtree" (nearest centroid).
+      # Note: KDTree is only mathematically valid when mapping_mode is 'classification'.
+      spatial_method: "intersect"
+
+      # Topology-specific configurations passed directly to the geometry engines.
+      # The orchestrator will only apply the config matching the active 'topology'.
+      topology_config:
+        point_cloud:
+          # Number of randomized points generated in the point cloud
+          n_passes: 100
+          
+          # Underlying probability distribution (either "gaussian" or "uniform") 
+          # with a width determined by the uncertainty radius
+          distribution: "gaussian"
+          
+          # Random seed generator to ensure reproducibility
+          random_seed: 42
+
+        polygon:
+          # Number of quadrant segments of the polygon determining the smoothness of the polygon being constructed.
+          # 2-4 is very coarse, 16-32 is very smooth, 8 is the default value in many libraries.
+          # Note: Increasing this will increase the impact on RAM memory during intersection operations.
+          quad_segs: 8
+
+    # -----------------------------------------------------------------------
+    # ROUTE B: GBIF API CUBE CONFIGURATION (Used when processing_mode: "api_cube")
+    # Maps pre-aggregated GBIF SQL grid cells using cell collection routines.
+    # -----------------------------------------------------------------------
+    api_cube_config:
+      # "discrete" (integer sums/majority rule) or "continuous" (areal weighting).
+      data_type: "discrete"       
+      
+      # "intersect" (geometric overlap/clipping) or "kdtree" (centroid snapping).
+      spatial_method: "intersect"
+
+    # =======================================================================
+    # 5. DATA AGGREGATION & METRICS
+    # =======================================================================
     aggregate:
-      return_count: true
-      return_nmbObservers: false
+      export_unaggregated: true
+      
+      # Defines the non-spatial dimensions of the final data cube.
+      # The spatial cell ID (grid_idx) is automatically appended by the engine.
+      group_by_columns: ["year", "month"]
+      
+      metrics:
+        # 1. Expected Occurrences (Sums the geometric fractions)
+        - column: "areal_fraction"
+          method: "sum"
+          weighted: false
+          rename: "expected_occurrences"
+          
+        # 2. Species Count / Richness
+        - column: "speciesKey"
+          method: "nunique"
+          weighted: false
+          rename: "species_richness"
+          
+        # 3. Distinct Observers
+        - column: "recordedBy"
+          method: "nunique"
+          weighted: false
+          rename: "distinct_observers"
 
   # --------------------------------------------------------------------
   # WEkEO DATASETS (Copernicus Land Monitoring Service)

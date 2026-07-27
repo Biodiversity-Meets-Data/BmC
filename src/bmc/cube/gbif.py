@@ -1,498 +1,358 @@
-#from bmc.datasource.gbif.legacy import layer
 from bmc.cube.spatiotemporal import *
 import yaml
 import os
 import pandas as pd
-
-class gbif_cube(spatiotemporal_cube):
-    def __init__(self):
-        pass
-
-    """
-    def fetch_data(self, param_file, param_path):
-        param_filepath = param_file if os.path.isabs(param_file) else os.path.join(param_path, param_file)
-        with open(param_filepath) as f:
-            param_dict = yaml.safe_load(f)
-    """ 
-
-    def construct_gbif_layer(self, param_file, param_path):
-        #fetch file to be read
-        param_filepath = param_file if os.path.isabs(param_file) else os.path.join(param_path, param_file)
-        with open(param_filepath) as f:
-            param_dict = yaml.safe_load(f)
-        raw_filepath = os.path.join(param_dict["layers"]["gbif"]["file"]["file_path"], 
-                                    param_dict["layers"]["gbif"]["file"]["file_name"])
-        species_df = pd.read_csv(raw_filepath, sep=param_dict["layers"]["gbif"]["file"]["sep"])
-        da = layer.gbif_sparse_array(species_df, ["specieskey", "genuskey", "familykey", "classkey", "eeacellcode"], "occurrences")
-        return da 
-    
-    def sparse_to_pseudodense(self,dataset, var_name):
-        """
-        Convert one sparse DataArray into a "pseudo‐dense" xr.Dataset, but
-        hang onto the original var_name so load_sparse never needs to be told.
-        """
-        sparse_data = dataset[var_name].data  # sparse.COO
-        
-        ds_sparse = xr.Dataset({
-            "coords": (("ndim", "nnz"), sparse_data.coords),
-            "data":   ("nnz", sparse_data.data),
-            "shape":  ("ndim", np.array(sparse_data.shape, dtype=np.int64)),
-            "dims":   ("ndim", list(dataset[var_name].dims)),
-        })
-
-        # copy over the real coordinate variables
-        for c in dataset[var_name].coords:
-            ds_sparse[c] = dataset[var_name].coords[c]
-
-        # save the original var name as a dataset attribute
-        ds_sparse.attrs["__orig_var_name__"] = var_name
-
-        #carry over any top‐level attrs
-        ds_sparse.attrs.update(dataset[var_name].attrs)
-        return ds_sparse
-
-    def load_sparse(self, ds_sparse: xr.Dataset) -> xr.Dataset:
-        """
-        Rebuild the sparse.COO from a pseudo‐dense dataset and return
-        a one‐variable xr.Dataset using the original var_name.
-        """
-        # pull back the components
-        coords = ds_sparse["coords"].values
-        data   = ds_sparse["data"].values
-        shape  = tuple(ds_sparse["shape"].values)
-        dims   = list(ds_sparse["dims"].values)
-
-        # rebuild sparse.COO
-        s = sparse.COO(coords, data, shape=shape)
-
-        # recover any real coords (e.g. time, x, y)
-        coord_vars = {
-            c: ds_sparse[c]
-            for c in ds_sparse.coords
-            if c not in ("coords", "data", "shape", "dims")
-        }
-
-        # read the original var name from attrs
-        var_name = ds_sparse.attrs.get("__orig_var_name__", None)
-        if var_name is None:
-            raise KeyError("Dataset is missing the __orig_var_name__ attribute")
-
-        # build the DataArray
-        da = xr.DataArray(
-            s,
-            dims=dims,
-            coords=coord_vars,
-            name=var_name,
-            attrs={k: v for k, v in ds_sparse.attrs.items() if k != "__orig_var_name__"}
-        )
-
-        # wrap back into a Dataset
-        return da.to_dataset()
-       
-import geopandas as gpd
+from bmc.datasource.gbif import sql
+import re
 from shapely.geometry import box
-import logging
-from typing import Tuple, Optional
 
-def sanitize_gdf_by_bbox(
-    gdf: gpd.GeoDataFrame, 
-    sample_bbox: Tuple[float, float, float, float], 
-    bbox_crs: str = "EPSG:4326",
-    logger: Optional[logging.Logger] = None
-) -> gpd.GeoDataFrame:
-    """
-    Filters out any rows in a GeoDataFrame whose geometries do not intersect 
-    the intended sampling bounding box, safely accounting for CRS mismatches.
-    
-    Parameters:
-    -----------
-    gdf : geopandas.GeoDataFrame
-        The input spatial dataframe to sanitize (e.g., your loaded GBIF cube data).
-    sample_bbox : tuple of float
-        The bounding box limits defined as (minx, miny, maxx, maxy).
-    bbox_crs : str, optional
-        The Coordinate Reference System of the input sample_bbox coordinates. 
-        Default is "EPSG:4326" (WGS84 decimal degrees).
-    logger : logging.Logger, optional
-        An optional logger instance to track how many rows were dropped.
-        
-    Returns:
-    --------
-    geopandas.GeoDataFrame
-        A cleaned copy of the input GeoDataFrame containing only the cells 
-        that validly sit within or touch the sampling bounding box.
-    """
-    if gdf.empty:
-        return gdf.copy()
-        
-    # 1. Represent the bounding box as a formal spatial geometry
-    bbox_poly = box(*sample_bbox)
-    bbox_gdf = gpd.GeoDataFrame(geometry=[bbox_poly], crs=bbox_crs)
-    
-    # 2. Match the bounding box CRS to the data's native projection
-    # (Reprojecting the 1-row box is computationally instant compared to reprojecting the entire gdf)
-    if gdf.crs != bbox_gdf.crs:
-        if logger:
-            logger.info(f"🔄 Aligning sampling box CRS from {bbox_crs} to match data CRS ({gdf.crs})...")
-        bbox_aligned = bbox_gdf.to_crs(gdf.crs)
-    else:
-        bbox_aligned = bbox_gdf.copy()
-        
-    # Extract the reprojected polygon shape for the mask evaluation
-    target_bbox_shape = bbox_aligned.geometry.values[0]
-    
-    # 3. Create a spatial mask using an intersection predicate
-    # This evaluates whether any part of the cell geometry touches or falls inside the box
-    spatial_mask = gdf.geometry.intersects(target_bbox_shape)
-    
-    # 4. Filter the data
-    gdf_cleaned = gdf[spatial_mask].copy()
-    
-    # 5. Log execution metrics for validation tracking
-    dropped_count = len(gdf) - len(gdf_cleaned)
-    if logger:
-        logger.info(
-            f"🧹 Sanitization Complete: Retained {len(gdf_cleaned)} cells. "
-            f"Filtered out {dropped_count} outlier cells that drifted outside the sampling footprint."
+class gbif_cube(spatiotemporal_vector_cube):
+
+    def generate_gbif_query_from_recipe(self, recipe: dict, logger: Optional[logging.Logger] = None) -> str:
+        """
+        Parses a configuration recipe dictionary and generates a validated GBIF SQL query.
+        Dynamically translates YAML metrics into GBIF Hive SQL statements.
+        """
+        from rasterio.warp import transform_bounds
+
+        # 1. Base Configuration Extraction
+        spatial_cfg = recipe.get("spatial", {})
+        gbif_cfg = recipe.get("sources", {}).get("gbif", {})
+        query_filters = gbif_cfg.get("query_filters", {})
+        taxonomy_cfg = gbif_cfg.get("taxonomy", {})
+        target_grid_name = self.resolve_target_grid(spatial_cfg, logger)
+
+        # 2. Spatial extraction, densification, and WKT conversion
+        bbox_cfg = spatial_cfg.get("bbox", {})
+        raw_wgs84_bbox = (
+            bbox_cfg.get("long_min"), bbox_cfg.get("lat_min"),
+            bbox_cfg.get("long_max"), bbox_cfg.get("lat_max")
         )
-    else:
-        print(f"🧹 Sanitized: Kept {len(gdf_cleaned)} rows, dropped {dropped_count} outliers.")
         
-    return gdf_cleaned
+        # Project the raw WGS84 user bounds into the target grid's native CRS and buffer[cite: 1]
+        target_crs = self.GRID_REGISTRY[target_grid_name]["crs"]
+        target_bounds = transform_bounds("EPSG:4326", target_crs, *raw_wgs84_bbox)
+        safe_wgs84_bbox = self.build_safe_fetch_envelope(
+            target_grid_name=target_grid_name,
+            target_bounds=target_bounds,
+            source_crs_or_grid="EPSG:4326",
+            pixel_buffer=5, 
+            logger=logger
+        )
+        wkt_polygon = sql.bbox2polygon_wkt(safe_wgs84_bbox)
 
-import math
-import numpy as np
-import xarray as xr
-import rioxarray
-from pyproj import CRS
-
-def create_aligned_raster_template(sample_bbox, grid_name, registry=spatial_engine.GRID_REGISTRY):
-    """
-    Takes a bounding box and generates an empty xarray DataArray that perfectly 
-    aligns with the specified master grid from the registry. 
-    
-    Bakes in the CRS, grid registry key, resolution, and native spatial units.
-    """
-    master = registry[grid_name]
-    res = master["resolution"]
-    master_minx, master_miny, master_maxx, master_maxy = master["bounds"]
-    
-    # sample_bbox is (minx, miny, maxx, maxy)
-    s_minx, s_miny, s_maxx, s_maxy = sample_bbox
-    
-    # 1. Snap strictly to the Master Grid intervals
-    aligned_minx = master_minx + math.floor((s_minx - master_minx) / res) * res
-    aligned_miny = master_miny + math.floor((s_miny - master_miny) / res) * res
-    aligned_maxx = master_minx + math.ceil((s_maxx - master_minx) / res) * res
-    aligned_maxy = master_miny + math.ceil((s_maxy - master_miny) / res) * res
-    
-    # 2. Calculate integer dimensions safely
-    width = int(round((aligned_maxx - aligned_minx) / res))
-    height = int(round((aligned_maxy - aligned_miny) / res))
-    
-    # 3. Generate spatial coordinates (Pixel Centers)
-    x_coords = aligned_minx + (np.arange(width) + 0.5) * res
-    y_coords = aligned_maxy - (np.arange(height) + 0.5) * res
-    
-    # 4. Dynamically determine spatial units from the CRS
-    crs_obj = CRS.from_string(master["crs"])
-    spatial_unit = "degrees" if crs_obj.is_geographic else "meters"
-    
-    # 5. Create the DataArray template with robust metadata attributes
-    template = xr.DataArray(
-        data=np.zeros((height, width), dtype=np.int32), 
-        coords={"y": y_coords, "x": x_coords},
-        dims=("y", "x"),
-        attrs={
-            "grid_registry_key": grid_name,
-            "res": res,
-            "spatial_unit": spatial_unit
-        }
-    )
-    
-    # 6. Inject CF-compliant spatial topology FIRST (Creates 'spatial_ref')
-    template = template.rio.write_crs(master["crs"])
-    
-    # 7. MANUALLY FORCE IT IN LAST: Assign the text attribute *after* rioxarray finishes its cleanup
-    template.attrs["crs"] = str(master["crs"])
-    
-    return template, (aligned_minx, aligned_miny, aligned_maxx, aligned_maxy)
-
-import numpy as np
-import pandas as pd
-import geopandas as gpd
-from shapely.geometry import box
-from scipy.spatial import KDTree
-
-def transform_gdf_to_template(
-    source_gdf, 
-    target_template, 
-    value_column, 
-    data_type='discrete', 
-    method='kdtree'
-):
-    """
-    Transforms data from a source GeoDataFrame to match an xarray target template.
-    Safely preserves all original attribute columns (species, year, etc.).
-    
-    Parameters:
-    -----------
-    source_gdf : geopandas.GeoDataFrame
-        The input data to transform.
-    target_template : xarray.DataArray
-        The aligned empty template containing metadata attributes ('crs', 'res') and coordinates.
-    value_column : str
-        The name of the numeric column to aggregate.
-    data_type : str
-        'discrete' (sum whole integers) or 'continuous' (areal weighting).
-    method : str
-        'kdtree' (nearest neighbor snapping, perfect mass conservation, discrete only)
-        'intersect' (geometric clipping, strict boundary adherence, discrete or continuous)
-    """
-    # 1. Extract metadata dynamically from the xarray template
-    target_crs = target_template.attrs.get('crs')
-    res = target_template.attrs.get('res')
-    
-    if target_crs is None or res is None:
-        raise ValueError("Target template must have 'crs' and 'res' in its attributes.")
-
-    x_centers = target_template.x.values
-    y_centers = target_template.y.values
-
-    # 2. Build the target grid mesh (Row-major order matching xarray)
-    polygons = []
-    grid_ids = []
-    idx = 0
-    for yi in y_centers:
-        for xi in x_centers:
-            polygons.append(box(
-                xi - (res / 2), 
-                yi - (res / 2), 
-                xi + (res / 2), 
-                yi + (res / 2)
-            ))
-            grid_ids.append(idx)
-            idx += 1
-            
-    target_grid_gdf = gpd.GeoDataFrame({'grid_id': grid_ids}, geometry=polygons, crs=target_crs)
-
-    # 3. Handle Auto-Reprojection of the Source Data
-    if source_gdf.crs != target_crs:
-        source_df = source_gdf.to_crs(target_crs)
-    else:
-        source_df = source_gdf.copy()
-
-    # 4. Prepare Source Data for Aggregation
-    source_df['src_uid'] = source_df.index 
-    source_df['source_area'] = source_df.geometry.area
-    
-    # Identify columns to carry over (ignore temp/geometry columns)
-    ignore_cols = ['geometry', value_column, 'src_uid', 'source_area']
-    preserve_cols = [col for col in source_df.columns if col not in ignore_cols]
-    
-    # Columns used to group the data without flattening taxonomy or time
-    group_cols = ['grid_id'] + preserve_cols
-
-    # ==========================================
-    # STRATEGY A: KDTREE (Point Distance Snapping)
-    # ==========================================
-    if method == 'kdtree':
-        if data_type != 'discrete':
-            raise ValueError("KDTree routing mathematically requires 'discrete' data_type.")
-            
-        src_centroids = source_df.geometry.centroid
-        src_coords = np.column_stack([src_centroids.x, src_centroids.y])
-        tgt_coords = np.array([[xi, yi] for yi in y_centers for xi in x_centers])
+        # 3. Taxonomic & Standard Column Resolution
+        target_level = taxonomy_cfg.get("lowest_level")
+        columns = sql.resolve_taxonomic_columns(target_level) if target_level else ["speciesKey"]
         
-        # Snap every source cell to the nearest target pixel center
-        tree = KDTree(tgt_coords)
-        _, matched_grid_ids = tree.query(src_coords)
-        source_df['grid_id'] = matched_grid_ids
+        for col in gbif_cfg.get("columns", ["year", "month"]):
+            if col not in columns:
+                columns.append(col)
+
+        col_backbone = taxonomy_cfg.get("col_backbone", False)
+        col_uuid = taxonomy_cfg.get("col_uuid", "7ddf754f-d193-4cc9-b351-99906754a03b")
+
+        temporal_cfg = recipe.get("temporal", {})
+        year_range = [temporal_cfg.get("start_year"), temporal_cfg.get("end_year")]
+        month_range = [temporal_cfg.get("start_month"), temporal_cfg.get("end_month")]
+
+        yaml_record_type = query_filters.get("record_type", "presence")
+        record_type = "occurrence" if yaml_record_type == "presence" else yaml_record_type
+
+        default_uncert = query_filters.get("default_Uncertainty", 1000)
+        max_uncertainty = query_filters.get("max_uncertainty", "auto")
+
+        # 4. Query Mode Routing & Dynamic SQL Metrics
+        processing_mode = gbif_cfg.get("processing_mode", "vector").lower()
+        aggregate_cfg = gbif_cfg.get("aggregate", {})
         
-        # Group by target cell AND original attributes, summing the whole integer occurrences
-        aggregated = source_df.groupby(group_cols)[value_column].sum().reset_index()
-
-    # ==========================================
-    # STRATEGY B: INTERSECT (Geometric Overlay)
-    # ==========================================
-    elif method == 'intersect':
-        intersections = gpd.overlay(source_df, target_grid_gdf, how='intersection')
+        sql_group_cols = []
+        sql_metric_selects = []
         
-        if intersections.empty:
-            return target_grid_gdf.iloc[0:0].copy()
-            
-        intersections['intersect_area'] = intersections.geometry.area
+        if processing_mode == "api_cube":
+            aggregate_flag = True
+            # Fetch the raw base string directly from the recipe (e.g., "EEA")
+            query_grid = spatial_cfg.get("target_grid")
 
-        if data_type == 'continuous':
-            # Areal Weighting
-            intersections['weight'] = intersections['intersect_area'] / intersections['source_area']
-            intersections['weighted_val'] = intersections[value_column] * intersections['weight']
-            
-            aggregated = intersections.groupby(group_cols)['weighted_val'].sum().reset_index()
-            aggregated.rename(columns={'weighted_val': value_column}, inplace=True)
+            # Extract Grouping Columns
+            sql_group_cols = aggregate_cfg.get("group_by_columns", [])
+            for col in sql_group_cols:
+                if col not in columns:
+                    columns.append(col)
 
-        elif data_type == 'discrete':
-            # Majority Area Rule
-            idx_max = intersections.sort_values('intersect_area', ascending=False).groupby('src_uid').head(1)
-            aggregated = idx_max.groupby(group_cols)[value_column].sum().reset_index()
+            # Translate Metrics to SQL
+            method_to_sql = {
+                "mean": "AVG({col})",
+                "max": "MAX({col})",
+                "min": "MIN({col})",
+                "nunique": "COUNT(DISTINCT {col})",
+                "count": "COUNT({col})"
+            }
+            
+            for metric in aggregate_cfg.get("metrics", []):
+                col = metric.get("column")
+                method = metric.get("method", "count").lower()
+                rename = metric.get("rename", f"{col}_{method}")
+                
+                # Skip local pipeline artifacts
+                if col in ["areal_fraction", "fraction"]:
+                    continue 
+                
+                # Catch empty DarwinCore counts and assume presence = 1
+                if method == "sum":
+                    sql_expr = f"SUM(COALESCE({col}, 1))"
+                else:
+                    sql_pattern = method_to_sql.get(method)
+                    sql_expr = sql_pattern.format(col=col) if sql_pattern else None
+                
+                if sql_expr:
+                    sql_metric_selects.append(f"{sql_expr} AS {rename}")
+
+            # Master Grid Resolution Parsing
+            res_str = str(spatial_cfg.get("target_resolution", "")).lower().strip()
+            if "km" in res_str: query_res = int(float(res_str.replace("km", "")) * 1000)
+            elif "m" in res_str: query_res = int(float(res_str.replace("m", "")))
+            elif "sec" in res_str or "min" in res_str:
+                query_res = {"0_3sec": 10, "3sec": 100, "7_5sec": 250, "15sec": 500, "30sec": 1000, "5min": 10000}.get(res_str, 1000)
+            else:
+                try: query_res = int(res_str)
+                except ValueError: query_res = 1000
+                    
+        elif processing_mode in ["raw", "vector"]:
+            aggregate_flag = False
+            query_grid = False
+            query_res = None
+            
         else:
-            raise ValueError("Invalid data_type for intersect. Choose 'continuous' or 'discrete'.")
+            raise ValueError(f"Invalid processing_mode '{processing_mode}'.")
+
+        issue_flags = ["hasCoordinate = TRUE"]
+        for issue in query_filters.get("exclude_issues", []):
+            issue_flags.append(f"NOT GBIF_STRINGARRAYCONTAINS(occurrence.issue, '{issue}', TRUE)")
+
+        raw_taxon_keys = query_filters.get("taxon_keys", [])
+        mapped_taxon_keys = sql.map_taxonkeys_to_columns(raw_taxon_keys, col_backbone, col_uuid) if not query_filters.get("fetch_all_taxa", False) and raw_taxon_keys else []
+
+        # 5. Dispatch to SQL generator (Ensure your sql.generate_query accepts the new dynamic SQL lists)
+        gbif_sql_query = sql.generate_query(
+            taxonKeys=mapped_taxon_keys,
+            columns=columns,               
+            record_type=record_type,
+            wkt_polygon=wkt_polygon,
+            year_range=year_range,
+            month_range=month_range,
+            aggregate=aggregate_flag,
+            sql_group_cols=sql_group_cols,       # <-- NEW
+            sql_metric_selects=sql_metric_selects, # <-- NEW
+            grid=query_grid,                          
+            grid_resolution=query_res,     
+            coordinateUncertainty=default_uncert, 
+            max_uncertainty=max_uncertainty,      
+            issue_flags=issue_flags,
+            col_backbone=col_backbone,
+            col_uuid=col_uuid
+        )
+
+        return gbif_sql_query
+
+    def _mine_crs_from_grid(self, df: pd.DataFrame, logger: Optional[logging.Logger] = None) -> str:
+        """
+        Inspects the DataFrame for a GBIF grid cell code column and mines the native CRS.
+        Maps explicit strings (CRS3035, CRS4326) and implicit grid patterns (EEA, EQDG).
+        """
+        # Find the column dynamically generated by the SQL formatter (e.g., 'eeacellcode', 'dmsgcellcode')
+        cell_col = next((col for col in df.columns if 'cellcode' in col.lower()), None)
+        
+        if not cell_col or df[cell_col].dropna().empty:
+            log_execution(logger, "No grid cell codes found. Defaulting to EPSG:4326.", logging.DEBUG)
+            return "EPSG:4326"
             
-    else:
-        raise ValueError("Invalid method. Choose 'kdtree' or 'intersect'.")
-
-    # 5. Re-attach the pristine target grid geometries to our aggregated attribute table
-    target_geometries = target_grid_gdf[['grid_id', 'geometry']]
-    result_grid = target_geometries.merge(aggregated, on='grid_id', how='inner')
-    
-    return result_grid
-
-import numpy as np
-
-def check_grid_alignment(gdf, raster, resolution=250):
-    """
-    Checks if a GeoDataFrame's polygons align perfectly with a raster's grid.
-    """
-    print("--- Alignment Diagnostic Report ---")
-    
-    # 1. Check Polygon Drift
-    # Extract the lower-left coordinates (minx, miny) for all polygons
-    bounds = gdf.bounds
-    poly_minx = bounds['minx'].values
-    poly_miny = bounds['miny'].values
-    
-    # Calculate how far off the polygons are from a pure 250m interval
-    x_drift = np.abs(poly_minx % resolution)
-    y_drift = np.abs(poly_miny % resolution)
-    
-    # Account for modulo wrap-around (e.g., a drift of 249.999 is actually a drift of -0.001)
-    x_drift = np.minimum(x_drift, resolution - x_drift)
-    y_drift = np.minimum(y_drift, resolution - y_drift)
-    
-    max_poly_x_drift = np.max(x_drift)
-    max_poly_y_drift = np.max(y_drift)
-    
-    if np.isclose(max_poly_x_drift, 0, atol=1e-6) and np.isclose(max_poly_y_drift, 0, atol=1e-6):
-        print("✅ Polygons: Perfectly snapped to the 250m grid (No drift detected).")
-    else:
-        print(f"❌ Polygons: Drift detected! Max X drift: {max_poly_x_drift}m, Max Y drift: {max_poly_y_drift}m")
-
-    # 2. Check Raster Grid Drift
-    # Extract the first x and y coordinates from the raster
-    rx = raster.x.values[0]
-    ry = raster.y.values[0]
-    
-    # Determine if raster coords represent edges (remainder 0) or pixel centers (remainder 125)
-    rx_rem = rx % resolution
-    
-    if np.isclose(rx_rem, 0, atol=1e-6):
-        print("✅ Raster: Coordinates represent pixel EDGES and are aligned.")
-        raster_is_aligned = True
-    elif np.isclose(rx_rem, resolution / 2, atol=1e-6):
-        print("✅ Raster: Coordinates represent pixel CENTERS and are aligned.")
-        raster_is_aligned = True
-    else:
-        print(f"❌ Raster: Sub-pixel drift detected in the template raster! Offset: {rx_rem}m")
-        raster_is_aligned = False
+        # Sample the first valid cell code
+        sample_code = str(df[cell_col].dropna().iloc[0]).upper()
+        log_execution(logger, f"Mining native CRS from grid cell code: {sample_code}", logging.INFO)
         
-    # 3. Final Conclusion
-    if np.isclose(max_poly_x_drift, 0, atol=1e-6) and raster_is_aligned:
-        print("\n🏆 CONCLUSION: 1-to-1 Match Confirmed. No drift between datasets.")
-    else:
-        print("\n⚠️ CONCLUSION: Misalignment detected. Do not proceed with rasterization without fixing the grid origins.")
-
-
-import numpy as np
-import pandas as pd
-import geopandas as gpd
-from shapely.geometry import Point
-import ot  # Python Optimal Transport (pip install POT)
-
-def compute_spatial_fidelity(
-    gdf_original: gpd.GeoDataFrame, 
-    gdf_target: gpd.GeoDataFrame, 
-    value_col: str = 'occurrences',
-    group_cols: list = ['scientificname', 'year', 'month'],
-    shared_crs: str = "EPSG:3035"
-) -> pd.DataFrame:
-    """
-    Computes Center of Mass shift and Wasserstein (Earth Mover's) Distance 
-    between two GeoDataFrames, stratified by taxonomy and time.
-    """
-    # 1. Ensure both dataframes are in a shared metric projection (meters)
-    orig_proj = gdf_original.to_crs(shared_crs).copy()
-    targ_proj = gdf_target.to_crs(shared_crs).copy()
-    
-    # Reset index if the group columns are currently trapped in the index
-    if orig_proj.index.name in group_cols or orig_proj.index.names[0] in group_cols:
-        orig_proj = orig_proj.reset_index()
-    if targ_proj.index.name in group_cols or targ_proj.index.names[0] in group_cols:
-        targ_proj = targ_proj.reset_index()
-        
-    # Extract Centroids
-    orig_proj['cx'] = orig_proj.geometry.centroid.x
-    orig_proj['cy'] = orig_proj.geometry.centroid.y
-    targ_proj['cx'] = targ_proj.geometry.centroid.x
-    targ_proj['cy'] = targ_proj.geometry.centroid.y
-    
-    results = []
-    
-    # 2. Iterate through each unique Stratum (Species + Year + Month)
-    groups = orig_proj.groupby(group_cols)
-    
-    for group_keys, orig_group in groups:
-        # Build dictionary for dynamic group keys unpacking
-        group_dict = dict(zip(group_cols, group_keys if isinstance(group_keys, tuple) else [group_keys]))
-        
-        # Find matching group in target dataset
-        query_mask = np.ones(len(targ_proj), dtype=bool)
-        for col, val in group_dict.items():
-            query_mask &= (targ_proj[col] == val)
+        # 1. Explicit CRS strings (Eurostat & DMSG Grids)
+        if sample_code.startswith("CRS3035"):
+            return "EPSG:3035"
+        if sample_code.startswith("CRS4326"):
+            return "EPSG:4326"
             
-        targ_group = targ_proj[query_mask]
-        
-        # Skip if target group is missing or empty
-        if targ_group.empty or orig_group[value_col].sum() == 0 or targ_group[value_col].sum() == 0:
-            continue
+        # 2. Implicit EEA Grid (EPSG:3035)
+        # Matches formats like '100KME51N29' or '250ME510500N293350'
+        if "KME" in sample_code or "ME" in sample_code:
+            return "EPSG:3035"
             
-        # ==========================================
-        # METRIC 1: Center of Mass (Weighted Mean)
-        # ==========================================
-        w_orig = orig_group[value_col].values
-        w_targ = targ_group[value_col].values
+        # 3. Implicit Extended Quarter-Degree Grid / EQDG (EPSG:4326)
+        # Matches formats like 'W175S21' or 'E010N52BDB'
+        if (sample_code.startswith('W') or sample_code.startswith('E')) and ('S' in sample_code or 'N' in sample_code):
+            return "EPSG:4326"
+            
+        # Fallback if ISEA3H or MGRS is used
+        log_execution(logger, f"Unrecognized CRS pattern in code {sample_code}. Defaulting to EPSG:4326.", logging.WARNING)
+        return "EPSG:4326"
+
+    def _parse_cellcode_to_polygon(self, code: str):
+        """
+        Dynamically parses GBIF grid cell codes into Shapely Polygons.
+        Supports implicit EEA formats and explicit Eurostat/DMSG metric formats.
+        Returns None if the code is invalid or unsupported.
+        """
+        if pd.isna(code):
+            return None
+            
+        code = str(code).upper().strip()
         
-        orig_com_x = np.average(orig_group['cx'].values, weights=w_orig)
-        orig_com_y = np.average(orig_group['cy'].values, weights=w_orig)
+        try:
+            # 1. EEA Grid (e.g., '100KME51N29' or '250ME510500N293350')
+            eea_match = re.match(r'^(\d+)(KM|M)E(\d+)N(\d+)$', code)
+            if eea_match:
+                res_val, res_unit, easting_code, northing_code = eea_match.groups()
+                
+                # Convert resolution to meters
+                cell_size_m = int(res_val) * 1000 if res_unit == 'KM' else int(res_val)
+                
+                # Calculate the multiplier based on trailing zeros
+                str_size = str(cell_size_m)
+                trailing_zeros = len(str_size) - len(str_size.rstrip('0'))
+                multiplier = 10 ** trailing_zeros
+                
+                # Calculate coordinates
+                ll_easting = int(easting_code) * multiplier
+                ll_northing = int(northing_code) * multiplier
+                ur_easting = ll_easting + cell_size_m
+                ur_northing = ll_northing + cell_size_m
+                
+                return box(ll_easting, ll_northing, ur_easting, ur_northing)
+                
+            # 2. Eurostat / DMSG Metric Grid (e.g., 'CRS3035RES10000MN2480000E4850000')
+            euro_match = re.match(r'^CRS(\d+)RES(\d+)MN(\d+)E(\d+)$', code)
+            if euro_match:
+                epsg, res_m, northing, easting = euro_match.groups()
+                
+                cell_size_m = int(res_m)
+                ll_easting = int(easting)
+                ll_northing = int(northing)
+                
+                return box(ll_easting, ll_northing, ll_easting + cell_size_m, ll_northing + cell_size_m)
+                
+            # Note: Complex angular grids (like EQDG 'W175S21') are skipped 
+            # and will drop out gracefully, as they cannot be perfectly boxed in planar meters.
+            return None
+            
+        except Exception:
+            return None
+
+    def resolve_target_grid(self, spatial_cfg: Dict[str, Any], logger: Optional[logging.Logger] = None) -> str:
+        """
+        Translates user-defined spatial configurations into a validated master grid key
+        that explicitly matches the parent class's GRID_REGISTRY format.
+        """
+        grid_base = spatial_cfg.get("target_grid")
+        resolution = spatial_cfg.get("target_resolution")
         
-        targ_com_x = np.average(targ_group['cx'].values, weights=w_targ)
-        targ_com_y = np.average(targ_group['cy'].values, weights=w_targ)
+        if not grid_base:
+            log_execution(logger, "No 'target_grid' specified in recipe. Defaulting to Global_WGS84_30sec.", logging.WARNING)
+            return "Global_WGS84_30sec"
+            
+        # 1. Check if the user already provided the full exact key (e.g., "EEA_1km")
+        if grid_base in self.GRID_REGISTRY:
+            log_execution(logger, f"GBIF strictly adhering to recipe master grid: {grid_base}", logging.INFO)
+            return grid_base
+            
+        # 2. If they provided base and resolution separately, construct the key
+        if resolution:
+            constructed_key = f"{grid_base}_{resolution}"
+            if constructed_key in self.GRID_REGISTRY:
+                log_execution(logger, f"Constructed and resolved master grid key: {constructed_key}", logging.INFO)
+                return constructed_key
+                
+        # 3. Fail gracefully if the grid doesn't exist in the registry
+        valid_keys = list(self.GRID_REGISTRY.keys())
+        raise KeyError(
+            f"Could not resolve grid '{grid_base}' with resolution '{resolution}'. "
+            f"Please ensure your recipe perfectly matches a key in the GRID_REGISTRY. Valid keys include: {valid_keys[:5]}..."
+        )
+
+    def fetch_data(self, recipe: dict, logger: Optional[logging.Logger] = None, downloaded_filepath: str = None, **kwargs) -> gpd.GeoDataFrame:
+        """
+        Loads raw GBIF data, parses the YAML processing mode, and generates the 
+        appropriate base geometric topology (Points, Polygons, or Point Clouds).
+        """
+        if not downloaded_filepath or not os.path.exists(downloaded_filepath):
+            log_execution(logger, "No pre-downloaded file provided. Initiating synchronous download...", logging.WARNING)
+            query = self.generate_gbif_query_from_recipe(recipe, logger=logger)
+            download_key = sql.submit_gbif_query(query)
+            downloaded_filepath = sql.fetch_gbif_download(download_key, target_dir=recipe.get('base_dir', './downloads'))
+
+        log_execution(logger, f"Loading GBIF data from {downloaded_filepath}...", logging.INFO)
         
-        # Euclidean distance between the two Centers of Mass (in meters)
-        com_shift_meters = np.sqrt((targ_com_x - orig_com_x)**2 + (targ_com_y - orig_com_y)**2)
+        # Extract and load the CSV payload
+        with zipfile.ZipFile(downloaded_filepath) as z:
+            csv_filename = [name for name in z.namelist() if name.endswith('.csv')][0]
+            with z.open(csv_filename) as f:
+                # quoting=3 tells pandas to completely ignore quotation marks (csv.QUOTE_NONE)
+                # low_memory=False prevents mixed-datatype warnings on massive GBIF files
+                df = pd.read_csv(f, sep='\t', quoting=3, low_memory=False)
+
+        # Extract Recipe Configurations
+        gbif_cfg = recipe.get("sources", {}).get("gbif", {})
+        processing_mode = gbif_cfg.get("processing_mode", "vector").lower()
+
+        # =====================================================================
+        # ROUTE A: GBIF API CUBE (Parse pre-aggregated SQL cell strings)
+        # =====================================================================
+        if processing_mode == "api_cube":
+            native_crs = self._mine_crs_from_grid(df, logger)
+            log_execution(logger, f"API Cube detected. Mapped to native CRS: {native_crs}", logging.INFO)
+            
+            cell_col = next((col for col in df.columns if 'cellcode' in col.lower()), None)
+            if cell_col and not df[cell_col].dropna().empty:
+                log_execution(logger, f"Parsing polygon geometries directly from '{cell_col}'...", logging.INFO)
+                polygons = df[cell_col].apply(self._parse_cellcode_to_polygon)
+                gdf = gpd.GeoDataFrame(df, geometry=polygons, crs=native_crs)
+                
+                failed_parse_count = gdf.geometry.isna().sum()
+                if failed_parse_count > 0:
+                    log_execution(logger, f"Dropped {failed_parse_count} rows with malformed cell codes.", logging.WARNING)
+                    gdf = gdf.dropna(subset=['geometry']).copy()
+                return gdf
+            else:
+                raise ValueError("API Cube mode requested, but no 'cellcode' column found in downloaded data.")
+
+        # =====================================================================
+        # ROUTE B: RAW / VECTOR PROCESSING (Coordinate to Geometry)
+        # =====================================================================
+        lat_col = 'latitude' if 'latitude' in df.columns else 'decimallatitude'
+        lon_col = 'longitude' if 'longitude' in df.columns else 'decimallongitude'
         
-        # ==========================================
-        # METRIC 2: Wasserstein Metric (EMD)
-        # ==========================================
-        coords_orig = np.column_stack((orig_group['cx'], orig_group['cy']))
-        coords_targ = np.column_stack((targ_group['cx'], targ_group['cy']))
+        if lat_col not in df.columns or lon_col not in df.columns:
+            raise ValueError(f"Required coordinate columns ({lat_col}, {lon_col}) missing from downloaded data.")
+
+        # Identify uncertainty column for buffering/jittering
+        uncert_col = 'coordinateuncertaintyinmeters'
+        if uncert_col not in df.columns:
+            uncert_col = next((c for c in df.columns if 'uncertainty' in c.lower()), None)
+
+        if processing_mode == "raw":
+            log_execution(logger, "Raw mode requested. Generating basic Point geometries with no vector transformations.", logging.INFO)
+            return gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df[lon_col], df[lat_col]), crs="EPSG:4326")
+
+        # processing_mode == "vector"
+        vector_cfg = gbif_cfg.get("vector_processing", {})
+        topology = vector_cfg.get("topology", "point")
+        topology_config = vector_cfg.get("topology_config", {})
         
-        # Normalize weights so they sum to 1 (Required for Optimal Transport probabilities)
-        p_orig = w_orig / w_orig.sum()
-        p_targ = w_targ / w_targ.sum()
-        
-        # Calculate the Euclidean distance cost matrix between all points
-        cost_matrix = ot.dist(coords_orig, coords_targ, metric='euclidean')
-        
-        # Compute exact Earth Mover's Distance
-        emd_meters = ot.emd2(p_orig, p_targ, cost_matrix)
-        
-        # Store results
-        results.append({
-            **group_dict,
-            'occurrences_orig': w_orig.sum(),
-            'occurrences_targ': w_targ.sum(),
-            'com_shift_meters': round(com_shift_meters, 2),
-            'wasserstein_meters': round(emd_meters, 2)
-        })
-        
-    return pd.DataFrame(results)
+        # Build geometries based on recipe topology
+        gdf = self.coordinate_to_geometry(
+            df=df,
+            x_col=lon_col,
+            y_col=lat_col,
+            uncert_col=uncert_col,
+            output_type=topology,
+            input_crs="EPSG:4326",
+            on_missing_uncertainty="fallback",
+            quad_segs=topology_config.get("polygon", {}).get("quad_segs", 8),
+            point_cloud_config=topology_config.get("point_cloud", {}),
+            logger=logger
+        )
+        return gdf

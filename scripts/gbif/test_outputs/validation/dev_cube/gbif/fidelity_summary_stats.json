@@ -1,0 +1,7 @@
+{
+    "total_value_delta": 10.0,
+    "avg_com_shift": 136.45267263119155,
+    "max_com_shift": 758.3150460125887,
+    "avg_iou": 0.3925632095897602,
+    "avg_wasserstein": 420.1099219108995
+}

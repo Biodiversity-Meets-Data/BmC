@@ -1,0 +1,7 @@
+{
+    "total_value_delta": 0.0,
+    "avg_com_shift": 0.0,
+    "max_com_shift": 0.0,
+    "avg_iou": 1.0,
+    "avg_wasserstein": 0.0
+}
