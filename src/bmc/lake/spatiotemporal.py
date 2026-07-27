@@ -26,7 +26,7 @@ import geopandas as gpd
 
 from bmc.utils.spatial import build_safe_fetch_envelope
 from bmc.utils.logger import log_execution
-from bmc.engine.spatial import spatial_engine
+from bmc.engine.legacy.spatial import spatial_engine
 
 class spatiotemporal_lake(spatial_engine, ABC):
  

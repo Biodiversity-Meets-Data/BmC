@@ -1,5 +1,5 @@
-from . import spatiotemporal
+from .spatiotemporal import raster, vector
 from . import bmd
-from . import chelsa
-from . import gbif
-from . import wekeo
+from .datasets.raster import chelsa
+from .datasets.vector import gbif
+from .datasets import wekeo

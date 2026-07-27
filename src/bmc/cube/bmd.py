@@ -1,6 +1,5 @@
-from .chelsa import chelsa_cube
-from .wekeo import wekeo_cube
-from xarray import DataTree, open_datatree
+from .datasets.raster.chelsa import chelsa_cube
+from .datasets.vector.gbif import gbif_cube
 import xarray as xr
 import os
 import yaml
@@ -15,8 +14,7 @@ class bmd_cube:
         # Dispatch table mapping YAML keys to their respective class objects
         self._source_map = {
             "chelsa": chelsa_cube,
-            "wekeo": wekeo_cube
-            # "gbif": gbif_cube  <-- commented out until refactored
+            "gbif": gbif_cube
         }
 
     def _load_recipe(self, recipe_file, recipe_path):

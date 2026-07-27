@@ -1,14 +1,24 @@
-import geopandas as gpd
-import pandas as pd
-from shapely import make_valid
-from shapely.geometry import MultiPolygon, MultiLineString, MultiPoint
-from shapely.geometry.collection import GeometryCollection
-from shapely import force_2d
+import gc
 import logging
-from typing import Optional
+import math
+import warnings
+import geopandas as gpd
+import numpy as np
+import pandas as pd
+import shapely
+from scipy.spatial import KDTree
+from pyproj import CRS
+from rasterio.warp import transform_bounds
+from shapely import force_2d, make_valid
+from shapely.geometry import MultiPolygon, MultiLineString, MultiPoint, box
+from shapely.geometry.collection import GeometryCollection
+from typing import Optional, List, Union, Tuple, Dict, Any
+from bmc.engine.base import base_spatial_grid
+from bmc.utils.logger import log_execution
 
+from bmc.engine.base import base_spatial_grid
 
-class spatial_vector_engine(base_spatial_grid):
+class vector_engine(base_spatial_grid):
     def coordinate_to_geometry(
         self,
         df: pd.DataFrame,
