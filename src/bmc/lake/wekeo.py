@@ -5,6 +5,7 @@ import logging
 import urllib
 from pathlib import Path
 from typing import Dict, Any, Optional, List, Tuple
+import gc
 
 os.environ["GDAL_CACHEMAX"] = "1024"      # Give GDAL 1GB of RAM for caching
 os.environ["GDAL_NUM_THREADS"] = "ALL_CPUS" # Unleash multi-threading
@@ -14,7 +15,6 @@ os.environ["GDAL_DISABLE_READDIR_ON_OPEN"] = "EMPTY_DIR" # Speeds up file discov
 import pandas as pd
 import xarray as xr
 import rioxarray
-from dask.distributed import LocalCluster, Client
 
 import hda 
 
@@ -167,52 +167,41 @@ class wekeo_lake(spatiotemporal_lake):
         """
         Executes the queue: Downloads zips, extracts TIFs, builds VRTs, and bakes COGs.
         """
-        # --- 1. INITIALIZE THE DASK MULTI-CORE CLUSTER HERE ---
-        cluster = LocalCluster(n_workers=os.cpu_count(), threads_per_worker=1, memory_limit='auto')
-        client = Client(cluster)
+        log_execution(logger, "Running pipeline in synchronous sequential mode (GDAL C++ Threading enabled).", logging.INFO)
 
         raw_dir = recipe.get("paths", {}).get("raw_dir", "./raw_wekeo")
         base_dir = recipe.get("paths", {}).get("base_dir", "./wekeo_lake")
         lake_name = recipe.get("lake_name", "defaultWekeoLake")
 
-        wekeo_config = recipe.get("sources", {}).get("wekeo", {})
-        if not wekeo_config.get("enabled", False):
-            log_execution(logger, "WEkEO lake generation is disabled.", logging.INFO)
-            client.close()
-            cluster.close()
-            return []
-
         if logger is None:
             log_dir = os.path.join(base_dir, 'logs')
             os.makedirs(log_dir, exist_ok=True)
-            log_filepath = os.path.join(log_dir, f'{lake_name}_generation.log')
-            logger = self._setup_pipeline_logger(logger_name=lake_name, log_filepath=log_filepath)
+            logger = self._setup_pipeline_logger(logger_name=lake_name, log_filepath=os.path.join(log_dir, f'{lake_name}_generation.log'))
             self.logger = logger
+
+        wekeo_config = recipe.get("sources", {}).get("wekeo", {})
+        if not wekeo_config.get("enabled", False):
+            return []
 
         target_grid_key = recipe.get("spatial", {}).get("target_grid_key", "EEA_100m")
         resampling_config = recipe.get("spatial", {}).get("resampling_strategies", {})
         target_grid, target_res = target_grid_key.split("_", 1) if "_" in target_grid_key else (target_grid_key, "unknown")
 
-        # 1. Fetch Phase
         wekeo_client, execution_queue = self.fetch_raw_data(recipe, logger)
         if not execution_queue:
             return []
 
         generated_cogs = []
 
-        # 2. Build Phase
         for query in execution_queue:
             product_type = query.get("productType", "Unknown_Product")
             clean_product = product_type.replace(' ', '_').replace('/', '_')
             year = query.get("year", "AllYears")
-            dataset_id = query.get("dataset_id", "")
-            dataset_cat = dataset_id.split(":")[-1] if dataset_id else "UnknownDataset"
-            
+            dataset_cat = query.get("dataset_id", "").split(":")[-1]
             safe_name = f"{clean_product}_{year}"
+            
             log_execution(logger, f"\n{'='*50}\nBuilding Lake Layer: {safe_name}\n{'='*50}", logging.INFO)
-
-            safe_dataset_id = dataset_id.replace(":", "_")
-            isolated_raw_dir = os.path.join(raw_dir, "wekeo", safe_dataset_id, clean_product)
+            isolated_raw_dir = os.path.join(raw_dir, "wekeo", query.get("dataset_id", "").replace(":", "_"), clean_product)
             os.makedirs(isolated_raw_dir, exist_ok=True)
             
             download_dir = self._fetch_unpack_query(query, wekeo_client, isolated_raw_dir, logger)
@@ -220,14 +209,10 @@ class wekeo_lake(spatiotemporal_lake):
 
             tif_folder = os.path.join(download_dir, "tif_files")
             vrt_path = os.path.join(tif_folder, f"{safe_name}.vrt")
+            if not self.build_virtual_mosaic(tif_folder, vrt_path, logger): continue
 
-            if not self.build_virtual_mosaic(tif_folder, vrt_path, logger):
-                continue
-
-            # Route to Spatial Engine via Lake Dispatcher
             if product_type in self.CATEGORICAL_CLASSES:
-                discrete_strat = resampling_config.get('discrete', 'coverage')
-                if discrete_strat == 'coverage':
+                if resampling_config.get('discrete', 'coverage') == 'coverage':
                     layer_dir = os.path.join(base_dir, dataset_cat, clean_product, "coverage")
                     os.makedirs(layer_dir, exist_ok=True)
                     
@@ -235,16 +220,11 @@ class wekeo_lake(spatiotemporal_lake):
                     class_mapping = {k: v for k, v in raw_class_dict.items() if k not in [48, 128, 254, 255]}
                     
                     self.process_virtual_mosaic(
-                        vrt_path=vrt_path, 
-                        strategy='coverage', 
-                        grid_name=target_grid_key,
-                        output_dir_or_file=layer_dir, 
-                        logger=logger, 
-                        class_values=list(class_mapping.keys()),
-                        class_mapping=class_mapping,
-                        file_prefix=f"{clean_product}_{year}_{target_grid}_{target_res}"
+                        vrt_path=vrt_path, strategy='coverage', grid_name=target_grid_key,
+                        output_dir_or_file=layer_dir, logger=logger, class_values=list(class_mapping.keys()),
+                        class_mapping=class_mapping, file_prefix=f"{clean_product}_{year}_{target_grid}_{target_res}"
                     )
-                    import gc; gc.collect()
+                    gc.collect()
             else:
                 cont_stats = resampling_config.get('continuous', ['average'])
                 for stat in cont_stats if isinstance(cont_stats, list) else [cont_stats]:
@@ -255,24 +235,18 @@ class wekeo_lake(spatiotemporal_lake):
                     final_cog_path = os.path.join(layer_dir, file_name)
                     temp_tif_path = os.path.join(layer_dir, f"temp_{file_name}")
                     
-                    result_xr = self.process_virtual_mosaic(
-                        vrt_path=vrt_path, strategy='reproject', grid_name=target_grid_key,
-                        output_dir_or_file=temp_tif_path, logger=logger, resample_keyword=stat
-                    )
+                    result_xr = self.process_virtual_mosaic(vrt_path=vrt_path, strategy='reproject', grid_name=target_grid_key, output_dir_or_file=temp_tif_path, logger=logger, resample_keyword=stat)
                     self.export_to_cog(result_xr, final_cog_path, logger=logger)
                     generated_cogs.append(final_cog_path)
-                    result_xr.close(); del result_xr
+                    
+                    result_xr.close()
+                    del result_xr
                     if os.path.exists(temp_tif_path): os.remove(temp_tif_path)
-                    import gc; gc.collect()
+                    gc.collect()
 
-        # Clean raw downloads if configured
         self.cleanup_raw_storage(recipe=recipe, logger=logger)
-
-        client.close()
-        cluster.close()
-
         return generated_cogs
-
+    
     def validate_datalake(
     self, 
     base_dir: str, 

@@ -25,7 +25,7 @@ class bmd_cube:
         with open(recipe_filepath) as f:
             return yaml.safe_load(f)
 
-    def generate_bmd_data(self, recipe_file, recipe_path):
+    def generate_bmd_data(self, recipe_file, recipe_path, max_workers=10):
         recipe = self._load_recipe(recipe_file, recipe_path)
         sources = recipe.get("sources", {})
 
@@ -46,7 +46,7 @@ class bmd_cube:
                 cube_inst = cube_class()
                 
                 # process_cube returns a dictionary: Dict[str, xr.Dataset]
-                result_dict = cube_inst.process_cube(recipe)
+                result_dict = cube_inst.process_cube(recipe, max_workers=max_workers)
                 
                 # Guard against empty dictionaries (e.g., if no assets matched the recipe constraints)
                 if not result_dict:

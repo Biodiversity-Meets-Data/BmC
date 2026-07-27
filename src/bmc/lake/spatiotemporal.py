@@ -1,17 +1,12 @@
 import logging
 from typing import Optional, Union, Dict, Any, List, Tuple
 from abc import ABC, abstractmethod
-from concurrent.futures import ThreadPoolExecutor
-from functools import partial
 import gc
-
-import yaml
-import sys
 import os
-import tempfile
-import shutil
 import zipfile
+import shutil
 import glob
+import uuid
 from pathlib import Path
 
 os.environ["GDAL_CACHEMAX"] = "1024"      # Give GDAL 1GB of RAM for caching
@@ -23,15 +18,15 @@ import numpy as np
 import xarray as xr
 import pandas as pd
 import rioxarray
+from rioxarray import set_options
+from rioxarray.enum import Convention
 from osgeo import gdal
-from dask.distributed import Client, LocalCluster
+from shapely.geometry import box
+import geopandas as gpd
 
-from bmc.utils.spatial import build_envelope_from_file
-from bmc.utils.io import parallel_fetch_rasters
+from bmc.utils.spatial import build_safe_fetch_envelope
 from bmc.utils.logger import log_execution
-
 from bmc.engine.spatial import spatial_engine
-
 
 class spatiotemporal_lake(spatial_engine, ABC):
  
@@ -226,6 +221,8 @@ class spatiotemporal_lake(spatial_engine, ABC):
         """
         Lake Orchestrator: Iterates classes, computes fractions to disk, and bakes COGs directly.
         """
+        import uuid
+        
         for cls in class_values:
             cls_int = int(cls)
             
@@ -234,9 +231,10 @@ class spatiotemporal_lake(spatial_engine, ABC):
             else:
                 cls_name = f"class_{cls_int}"
 
-            # 1. Create a safe physical temp file on the hard drive
-            fd, temp_path = tempfile.mkstemp(suffix=".tif", prefix="temp_frac_")
-            os.close(fd) 
+            # --- THE FIX ---
+            # 1. Create a safe physical temp file EXPLICITLY on the target hard drive
+            # Bypassing tempfile.mkstemp entirely to guarantee it stays off the RAM disk.
+            temp_path = os.path.join(output_dir, f"temp_frac_{cls_name}_{uuid.uuid4().hex[:8]}.tif")
 
             final_cog_path = os.path.join(output_dir, f"{file_prefix}_{cls_name}.tif")
 

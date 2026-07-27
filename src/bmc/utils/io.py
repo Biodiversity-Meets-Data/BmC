@@ -1,6 +1,8 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Tuple, Optional, Union, Any
+import time
+import random
 
 import dask
 import rasterio
@@ -51,7 +53,8 @@ def _fetch_single_raster(
     path: str, 
     geom: Union[Tuple[float, float, float, float], Any], 
     gdal_env: Dict[str, str],
-    geom_crs: Optional[str] = None
+    geom_crs: Optional[str] = None,
+    max_retries = 3
 ) -> Tuple[str, Optional[xr.DataArray]]:
     """
     Low-level thread worker to stream and clip a single remote or local raster asset.
@@ -83,31 +86,59 @@ def _fetch_single_raster(
     """
     # Clean fallback: use the module-level constant if no specific override is passed down
     gdal_env = gdal_env or DEFAULT_GDAL_ENV
-    try:
-        with rasterio.Env(**gdal_env):
-            # Enforce single-threaded Dask computation within this specific worker
-            with dask.config.set(scheduler='single-threaded'):
-                da = rioxarray.open_rasterio(path, chunks=True, masked=True)
-                
-                # Route based on geometry type
-                if isinstance(geom, tuple) and len(geom) == 4:
-                    # High-speed rectangular envelope crop
-                    clipped = da.rio.clip_box(*geom).compute()
-                else:
-                    # Precise polygon masking (masks pixels outside boundary to NaN)
-                    # rioxarray expects an iterable of geometries
-                    geometries = geom if isinstance(geom, (list, tuple)) else [geom]
-                    clipped = da.rio.clip(geometries, crs=geom_crs, drop=True).compute()
+    # --- Network Jitter ---
+    # Sleep for a random fraction of a second to prevent the overloading the server
+    # of 32 threads hitting the server at the exact same millisecond.
+    time.sleep(random.uniform(0.5, 3.0))
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            with rasterio.Env(**gdal_env):
+                # Enforce single-threaded Dask computation within this specific worker
+                with dask.config.set(scheduler='single-threaded'):
+                    da = rioxarray.open_rasterio(path, chunks=True, masked=True)
                     
-                return path, clipped
+                    # Route based on geometry type
+                    if isinstance(geom, tuple) and len(geom) == 4:
+                        clipped = da.rio.clip_box(*geom).compute()
+                    else:
+                        geometries = geom if isinstance(geom, (list, tuple)) else [geom]
+                        clipped = da.rio.clip(geometries, crs=geom_crs, drop=True).compute()
+                        
+                    # ==========================================
+                    # INTEGRITY ARMOR (Segfault Prevention)
+                    # ==========================================
+                    # Structural Check: Did the timeout result in a 0-pixel array?
+                    if clipped.size == 0:
+                        raise ValueError(f"Array returned 0 pixels. File header is corrupted or truncated.")
+                    
+                    # Ghost Data Check: Did the timeout silently fill the array with NaNs?
+                    if clipped.isnull().all():
+                        raise ValueError(f"Array contains 100% missing data (Silent connection drop).")
+
+                    # If it passes the gauntlet, return the healthy array and exit the loop
+                    return path, clipped
+                    
+        except Exception as e:
+            if attempt < max_retries:
+                # --- 3. The 10-Second Base Wait + Jitter ---
+                # 10 second strict wait to let the firewall cool down, plus 
+                # up to 5 seconds of random jitter to stagger the retry requests.
+                backoff_time = 10.0 + random.uniform(0.0, 5.0)  
                 
-    except Exception as e:
-        log_execution(
-            logger, 
-            f"Failed to fetch asset '{path}'. Reason: {e}", 
-            logging.DEBUG
-        )
-        return path, None
+                log_execution(
+                    logger, 
+                    f"Network anomaly on '{path}'. Retrying in {backoff_time:.1f}s (Attempt {attempt}/{max_retries}). Error: {e}", 
+                    logging.WARNING
+                )
+                time.sleep(backoff_time)
+            else:
+                log_execution(
+                    logger, 
+                    f"FATAL: Failed to fetch asset '{path}' after {max_retries} attempts. Server is unreachable. Reason: {e}", 
+                    logging.ERROR
+                )
+                return path, None
 
 
 def parallel_fetch_rasters(

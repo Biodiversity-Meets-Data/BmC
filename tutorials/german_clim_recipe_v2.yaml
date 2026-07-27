@@ -1,0 +1,64 @@
+base_dir: ./cubing_output/
+cube_name: german_chelsa_cube_v2
+export_as:
+  format: zarr
+spatial:
+  target_grid: EEA
+  target_resolution: 10km
+  use_bbox: true
+  bbox:
+    long_min: 5.4
+    long_max: 15.17857
+    lat_min: 47.207754
+    lat_max: 54.814383
+temporal:
+  start_year: 2018
+  start_month: 1
+  end_year: 2018
+  end_month: 12
+sources:
+  chelsa:
+    enabled: true
+    catalog_path: C:/Users/niels/Documents/Repositories/BmC/meta/chelsa_gp_stac/chelsa_master.parquet
+    levels:
+      daily:
+        include: true
+        variables:
+          tas: true
+      monthly:
+        include: true
+        variables:
+          tas: true
+          vpd: true
+      annual:
+        include: true
+        variables:
+          tas: true
+      climatologies:
+        include: true
+        time_ranges:
+          1981-2010: true
+          2011-2040: true
+        ensembles:
+          historical: true
+          GFDL-ESM4: true
+        scenarios:
+          historical: true
+          ssp126: true
+        variables:
+          tas: true
+          pr: true
+      bioclim:
+        include: true
+        time_ranges:
+          1981-2010: true
+          2011-2040: true
+        ensembles:
+          historical: true
+          GFDL-ESM4: true
+        scenarios:
+          historical: true
+          ssp126: true
+        variables:
+          bio01: true
+          bio12: true

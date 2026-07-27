@@ -1,0 +1,12 @@
+nohup: ignoring input
+/home/niels/miniconda3/envs/BmC/lib/python3.12/site-packages/distributed/node.py:187: UserWarning: Port 8787 is already in use.
+Perhaps you already have a cluster running?
+Hosting the HTTP server on port 39353 instead
+  warnings.warn(
+WARNING: Could not find hdarc file at ~/.hdarc
+Initializing engine and bootstrapping Dask cluster context safely...
+Warning 1: gdalbuildvrt does not support heterogeneous projection: expected ETRS89-extended / LAEA Europe, got WGS 84 / UTM zone 40S. Skipping /storage/niels/bmc/raw/wekeo/EO_EEA_DAT_HRL_TCF/Dominant_Leaf_Type/tif_files/CLMS_HRLVLCC_DLT_S2018_R10m_RE_32740_V01_R00.tif
+Warning 1: gdalbuildvrt does not support heterogeneous projection: expected ETRS89-extended / LAEA Europe, got WGS 84 / UTM zone 38S. Skipping /storage/niels/bmc/raw/wekeo/EO_EEA_DAT_HRL_TCF/Dominant_Leaf_Type/tif_files/CLMS_HRLVLCC_DLT_S2018_R10m_YT_32738_V01_R00.tif
+Warning 1: gdalbuildvrt does not support heterogeneous projection: expected ETRS89-extended / LAEA Europe, got WGS 84 / UTM zone 22N. Skipping /storage/niels/bmc/raw/wekeo/EO_EEA_DAT_HRL_TCF/Dominant_Leaf_Type/tif_files/CLMS_HRLVLCC_DLT_S2018_R10m_GF_32622_V01_R00.tif
+Warning 1: gdalbuildvrt does not support heterogeneous projection: expected ETRS89-extended / LAEA Europe, got WGS 84 / UTM zone 20N. Skipping /storage/niels/bmc/raw/wekeo/EO_EEA_DAT_HRL_TCF/Dominant_Leaf_Type/tif_files/CLMS_HRLVLCC_DLT_S2018_R10m_MQ_32620_V01_R00.tif
+Warning 1: gdalbuildvrt does not support heterogeneous projection: expected ETRS89-extended / LAEA Europe, got WGS 84 / UTM zone 20N. Skipping /storage/niels/bmc/raw/wekeo/EO_EEA_DAT_HRL_TCF/Dominant_Leaf_Type/tif_files/CLMS_HRLVLCC_DLT_S2018_R10m_GP_32620_V01_R00.tif

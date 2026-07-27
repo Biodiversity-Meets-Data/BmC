@@ -93,60 +93,81 @@ class chelsa_cube(spatiotemporal_cube):
         logger: Optional[logging.Logger] = None
     ) -> str:
         """
-        Intersects target spatial configurations to enforce a minimum atmospheric 
-        resolution of ~1km, while allowing coarser user requests (e.g., 10km) to pass.
-
-        Parameters
-        ----------
-        spatial_cfg : dict
-            The spatial configuration block extracted from the YAML execution recipe.
-        logger : logging.Logger, optional
-            The logger instance used to record configuration modifications.
-
-        Returns
-        -------
-        str
-            The specific, validated target grid key matching `GRID_REGISTRY`.
+        Intersects target spatial configurations to enforce minimum atmospheric resolutions.
+        Enforces 1km for metric grids (EEA, GEA) and 15sec for WGS84 degree grids.
         """
         log_execution(logger, "Resolving target grid base for CHELSA data cube generation...", logging.INFO)
         
         # Extract user requests
         raw_grid = str(spatial_cfg.get('target_grid', 'EEA'))
         raw_res = str(spatial_cfg.get('target_resolution', '1km'))
+        
+        # 0. Direct Registry Check
+        if raw_grid in self.GRID_REGISTRY:
+            log_execution(logger, f"Successfully mapped CHELSA processing to exact registry grid '{raw_grid}'.", logging.INFO)
+            return raw_grid
+            
         grid_base_upper = raw_grid.upper()
 
-        # 1. Standardize the base grid names
+        # 1. Standardize the base grid names and set safe defaults
         if grid_base_upper == "EEA":
             clean_base = "EEA"
-            default_1km_res = "1km"
+            default_res = "1km"
         elif grid_base_upper in ["GEA", "GLOBAL_EQUALAREA", "GLOBAL_EQUAL_AREA"]:
             clean_base = "Global_EqualArea"
-            default_1km_res = "1km"
+            default_res = "1km"
         elif grid_base_upper in ["WGS84", "GLOBAL_WGS84"]:
             clean_base = "Global_WGS84"
-            default_1km_res = "30sec"
+            default_res = "30sec"  # CHELSA native standard
         else:
             clean_base = raw_grid 
-            default_1km_res = "1km"
+            default_res = "1km"
 
-        # 2. Check the mathematical resolution limit
-        res_in_meters = self._parse_res_to_meters(raw_res)
-        
-        if res_in_meters < 1000.0:
-            log_execution(
-                logger, 
-                f"Requested resolution '{raw_res}' is too fine for native CHELSA atmospheric data. Clamping to '{default_1km_res}'.", 
-                logging.WARNING
-            )
-            final_res = default_1km_res
+        # 2. Enforce Minimum Resolutions based on Coordinate System Families
+        if clean_base in ["EEA", "Global_EqualArea"]:
+            # --- Metric Grids ---
+            res_in_meters = self._parse_res_to_meters(raw_res)
+            
+            if res_in_meters < 1000.0:
+                log_execution(
+                    logger, 
+                    f"Requested metric resolution '{raw_res}' is too fine. Clamping to '{default_res}'.", 
+                    logging.WARNING
+                )
+                final_res = default_res
+            else:
+                final_res = raw_res
+
+        elif clean_base == "Global_WGS84":
+            # --- Angular Grids ---
+            too_fine_wgs84 = ["3sec", "7_5sec"]
+            allowed_wgs84 = ["15sec", "30sec", "5min"]
+            
+            if raw_res in too_fine_wgs84:
+                log_execution(
+                    logger, 
+                    f"Requested angular resolution '{raw_res}' is too fine. Clamping to minimum allowable '15sec'.", 
+                    logging.WARNING
+                )
+                final_res = "15sec"
+            elif raw_res in allowed_wgs84:
+                final_res = raw_res
+            else:
+                log_execution(
+                    logger, 
+                    f"Unrecognized WGS84 resolution '{raw_res}'. Falling back to safe default: '{default_res}'.", 
+                    logging.WARNING
+                )
+                final_res = default_res
         else:
+            # Fallback for unrecognized grid bases
             final_res = raw_res
 
         # 3. Construct and validate the final master key
         resolved_grid = f"{clean_base}_{final_res}"
 
         if resolved_grid not in self.GRID_REGISTRY:
-            fallback = f"{clean_base}_{default_1km_res}"
+            fallback = f"{clean_base}_{default_res}"
             if fallback not in self.GRID_REGISTRY:
                 fallback = "EEA_1km" # Absolute safety net
             
@@ -412,9 +433,14 @@ class chelsa_cube(spatiotemporal_cube):
 
         # 3. Continuous timeseries (Daily / Monthly)
         elif pd.notna(row.get('date')) and level in ['daily', 'monthly', 'annual']:
-            coord_val = row['date']
+            # Strip the timezone to ensure compatibility with Zarr/NetCDF serialization
+            raw_date = row['date']
+            if hasattr(raw_date, 'tz') and raw_date.tz is not None:
+                coord_val = raw_date.tz_localize(None)
+            else:
+                coord_val = raw_date                
             dim_name = "time"
-            
+        
         # 4. Fallback for older datasets
         elif pd.notna(row.get('year')):
             coord_val = pd.to_datetime(f"{int(row['year'])}-01-01")
