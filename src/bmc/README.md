@@ -1,19 +1,29 @@
-# Source code
+# bmc source code
 
-## Cube
+## Cubing modules
 
-The `cube` subsection of the source code contains the modules that are related to the definition of the classes that will be used to represent the cubes within this library
+The `bmc` library is structured into different modules depending on the functionality they provide. The main modules within the library that specifically deal with cube generation and harmonization are:
 
-![Class Hierarchy](../img/class_hierarchy.svg)
+- `engine`: Contains the core geospatial base processing functionality.
+- `cube`: Contains the core data cube abstractions and implementations:
+  - `spatiotemporal`: Defines the general behavior of raster and vector data cubes.
+  - `datasets`: Contains dataset-specific implementations of the blueprints provided in `spatiotemporal`.
+  - `bmd`: The orchestrator module containing the main user-facing frontend class.
 
-## Datasource
+An overview of the software architecture is provided in the diagram below:
 
-The `datasource` subsection of the source code contains the modules that are related to interfacing with the different data sources documented within the data catalogue from which the data layers will be constructed.
+![Software architecture](../../img/BmC_Architecture_Diagram.png)
 
-Currently the following data layers have been implemented
-- CHELSA
+## Data Sources
 
-## Utils
+The `datasource` module contains the functionality used to interface with the different data providers integrated into the cubing engine. Currently, the following data sources are supported:
 
-the `utils` subsection of the source code contains the modules that are related to the helper function that link the different modules together
-- parameter extraction functions that read the `param.yaml` file 
+- `chelsa`
+- `gbif`
+
+## Utilities
+
+The `utils` module contains helper functionality utilized across the engine that falls outside the main class hierarchy. Key utilities include:
+
+- `logger`: Formatting functions for pipeline log outputs.
+- `provenance`: Automatically captures a system fingerprint of the active execution environment.
