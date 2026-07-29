@@ -1,0 +1,24 @@
+[2026-07-29 12:46:31] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_eea1km_netcdf' | Dataset: 'gbif' ===
+[2026-07-29 12:46:31] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\test_cubes\combined_test_cube_eea1km_netcdf
+[2026-07-29 12:46:31] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\test_cubes\combined_test_cube_eea1km_netcdf\gbif
+[2026-07-29 12:46:31] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\test_cubes\combined_test_cube_eea1km_netcdf\logs\combined_test_cube_eea1km_netcdf_gbif.log
+[2026-07-29 12:46:31] [INFO] Processing Mode: VECTOR
+[2026-07-29 12:46:31] [INFO] Loading GBIF data from C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\test_cubes\downloads/0016977-260721160103020.zip...
+[2026-07-29 12:46:33] [INFO] Constructed and resolved master grid key: EEA_1km
+[2026-07-29 12:46:33] [INFO] Extracting padded global bounding box from recipe...
+[2026-07-29 12:46:33] [INFO] CRS mismatch detected. Reprojecting from WGS 84 to ETRS89-extended / LAEA Europe...
+[2026-07-29 12:46:33] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-07-29 12:46:34] [INFO] Validation report saved to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\test_cubes\combined_test_cube_eea1km_netcdf\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-07-29 12:46:34] [INFO] Exporting source geometries to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\test_cubes\combined_test_cube_eea1km_netcdf\gbif\gbif_source_geometries.parquet...
+[2026-07-29 12:46:34] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-07-29 12:46:34] [INFO] Fractional geometries detected. Spatial multiplier: 'fraction'.
+[2026-07-29 12:46:34] [INFO] Aggregating 'fraction' -> 'expected_occurrences' (Method: sum, Weighted: False)
+[2026-07-29 12:46:34] [INFO] Vector aggregation complete. Yielded 297 final cells.
+[2026-07-29 12:46:34] [INFO] Exporting final aggregated spatial dataset to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\test_cubes\combined_test_cube_eea1km_netcdf\gbif\gbif_aggregated.parquet...
+[2026-07-29 12:46:34] [INFO] === GBIF Generation Complete ===
+[2026-07-29 12:46:34] [INFO] === Assembling STAC Item for GBIF ===
+[2026-07-29 12:46:34] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-07-29 12:46:34] [INFO] Spatial Dimension Table saved to: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\test_cubes\combined_test_cube_eea1km_netcdf\gbif\gbif_EEA_1km_dimension_table.parquet
+[2026-07-29 12:46:34] [INFO] === STAC Item Assembly Complete: combined_test_cube_eea1km_netcdf_gbif_20260729124634 ===
+[2026-07-29 12:46:34] [INFO] Exported STAC item to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\test_cubes\combined_test_cube_eea1km_netcdf\meta\gbif_stac.json

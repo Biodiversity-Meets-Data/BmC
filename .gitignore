@@ -12,6 +12,7 @@ scripts/dev_notebooks/
 *.parquet
 .ipynb_checkpoints/
 *.egg-info/
+*.json
 __pycache__/
 
 # EXCEPTIONS: Allow CSVs in the meta directory

@@ -153,7 +153,7 @@ def generate_provenance_metadata(
 
     # --- 4. Compile the full Provenance Dictionary ---
     provenance_record = {
-        "lake_name": recipe.get('raw_config', {}).get('cube_name', 'unknown_lake'),
+        "cube_name": recipe.get('raw_config', {}).get('cube_name', 'unknown_lake'),
         "execution_timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "code_provenance": {
             "pipeline_package": target_package,

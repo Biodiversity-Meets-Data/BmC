@@ -1,10 +1,10 @@
 base_dir: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\test_cubes
-cube_name: combined_test_cube_eea1km_netcdf
+cube_name: combined_test_cube_wgs84_netcdf
 export_as:
   format: netcdf
 spatial:
-  target_grid: EEA
-  target_resolution: 1km
+  target_grid: Global_WGS84
+  target_resolution: 30sec
   use_bbox: true
   bbox:
     long_min: 3.376891
@@ -24,37 +24,8 @@ sources:
       monthly:
         include: true
         variables:
-          tas: true
-          tasmax: false
-          tasmin: false
           pr: true
-      annual:
-        include: true
-        variables:
           tas: true
-          tasmax: false
-          tasmin: false
-          pr: false
-      climatologies:
-        include: true
-        time_ranges:
-          1981-2010: true
-          2011-2040: false
-          2041-2070: false
-        ensembles:
-          historical: true
-          GFDL-ESM4: true
-          IPSL-CM6A-LR: true
-        scenarios:
-          historical: true
-          ssp126: true
-          ssp370: true
-          ssp585: true
-        variables:
-          tas: true
-          tasmax: false
-          tasmin: false
-          pr: true
       bioclim:
         include: true
         time_ranges:
@@ -64,31 +35,17 @@ sources:
         ensembles:
           historical: true
           GFDL-ESM4: true
-          IPSL-CM6A-LR: true
+          MPI-ESM1-2-HR: true
         scenarios:
           historical: true
           ssp126: true
-          ssp370: true
           ssp585: true
         variables:
           bio01: true
-          bio02: true
+          bio12: true
   gbif:
     enabled: true
-    query_filters:
-      taxon_keys:
-      - G59D
-      - 4F6YZ
-      - 3Y9W2
-      record_type: presence
-      default_Uncertainty: 1000
-      max_uncertainty: 1000
-      exclude_issues:
-      - ZERO_COORDINATE
-      - COORDINATE_OUT_OF_RANGE
-      - COUNTRY_COORDINATE_MISMATCH
-    taxonomy:
-      col_backbone: true
+    local_file_path: C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/test_cubes/downloads/0016977-260721160103020.zip
     columns:
     - year
     - month
@@ -98,14 +55,12 @@ sources:
     - month
     processing_mode: vector
     vector_processing:
-      topology: point_cloud
+      topology: polygon
       mapping_mode: fractional
       spatial_method: intersect
       topology_config:
-        point_cloud:
-          n_passes: 25
-          distribution: gaussian
-          random_seed: 42
+        polygon:
+          quad_segs: 8
     aggregate:
       export_unaggregated: false
       group_by_columns:
@@ -113,7 +68,7 @@ sources:
       - year
       - month
       metrics:
-      - column: fraction
+      - column: areal_fraction
         method: sum
         weighted: false
         rename: expected_occurrences

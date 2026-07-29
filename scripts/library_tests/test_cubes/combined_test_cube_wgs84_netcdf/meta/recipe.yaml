@@ -1,0 +1,74 @@
+base_dir: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\test_cubes
+cube_name: combined_test_cube_wgs84_netcdf
+export_as:
+  format: netcdf
+spatial:
+  target_grid: Global_WGS84
+  target_resolution: 30sec
+  use_bbox: true
+  bbox:
+    long_min: 3.376891
+    long_max: 4.804775
+    lat_min: 50.583876
+    lat_max: 51.386124
+temporal:
+  start_year: 2018
+  start_month: 1
+  end_year: 2018
+  end_month: 12
+sources:
+  chelsa:
+    enabled: true
+    catalog_path: C:\Users\niels\Documents\Repositories\BmC\meta\chelsa_gp_stac\chelsa_master.parquet
+    levels:
+      monthly:
+        include: true
+        variables:
+          pr: true
+          tas: true
+      bioclim:
+        include: true
+        time_ranges:
+          1981-2010: true
+          2011-2040: true
+          2041-2070: true
+        ensembles:
+          historical: true
+          GFDL-ESM4: true
+          MPI-ESM1-2-HR: true
+        scenarios:
+          historical: true
+          ssp126: true
+          ssp585: true
+        variables:
+          bio01: true
+          bio12: true
+  gbif:
+    enabled: true
+    local_file_path: C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/test_cubes/downloads/0016977-260721160103020.zip
+    columns:
+    - year
+    - month
+    - recordedby
+    time_cols:
+    - year
+    - month
+    processing_mode: vector
+    vector_processing:
+      topology: polygon
+      mapping_mode: fractional
+      spatial_method: intersect
+      topology_config:
+        polygon:
+          quad_segs: 8
+    aggregate:
+      export_unaggregated: false
+      group_by_columns:
+      - specieskey
+      - year
+      - month
+      metrics:
+      - column: areal_fraction
+        method: sum
+        weighted: false
+        rename: expected_occurrences

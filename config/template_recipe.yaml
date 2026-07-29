@@ -27,6 +27,8 @@ temporal:
 # ======================================================================
 sources:
   gbif:
+    #When the user wishes to load in a file on disc provide path here
+    local_file_path: 
     # =======================================================================
     # 1. QUERY & FILTER CONFIGURATION
     # Defines exactly what data is pulled from the GBIF network.

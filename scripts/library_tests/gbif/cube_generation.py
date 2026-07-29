@@ -13,9 +13,11 @@ faulthandler.enable()
 output_dir = "../test_cubes/"
 os.makedirs(output_dir, exist_ok=True)
 
-credentials = {"GBIF_USER":"nbilliet",
-               "GBIF_EMAIL":"niels.billiet@plantentuinmeise.be",
-               "GBIF_PWD": "xax9yahc"}
+creds = {
+    "GBIF_USER": "YOUR_GBIF_USERNAME",
+    "GBIF_PWD": "YOUR_GBIF_PASSWORD",
+    "GBIF_MAIL": "YOUR_EMAIL@DOMAIN.COM"
+}
 
 # =======================================================================
 # 1. BASE RECIPE DEFINITION (Raw Points / Vector)

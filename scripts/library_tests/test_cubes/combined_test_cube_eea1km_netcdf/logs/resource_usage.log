@@ -1,0 +1,60 @@
+12:06:43 | PID: 41100 | [START Processing bio01] - CPU Load: 11.8% (22 Cores) | Active Threads: 72 | Script RAM: 0.62 GB | Server RAM: 83.9%
+12:06:50 | PID: 41100 | [STRAIN] Network Fetch (bio01) | Duration: 7.8s | Avg CPU: 8.9% | RAM Shift: +0.02 GB | Final RAM: 0.64 GB
+12:06:52 | PID: 41100 | [STRAIN] Main-Thread Sequential Warp (bio01) | Duration: 1.8s | Avg CPU: 10.7% | RAM Shift: -0.01 GB | Final RAM: 0.64 GB
+12:06:52 | PID: 41100 | [STRAIN] Dask Materialization (bio01) | Duration: 0.0s | Avg CPU: 0.0% | RAM Shift: +0.00 GB | Final RAM: 0.64 GB
+12:07:23 | PID: 41100 | [END Processing bio01] - CPU Load: 3.1% (22 Cores) | Active Threads: 67 | Script RAM: 0.63 GB | Server RAM: 84.2%
+12:07:23 | PID: 41100 | [START Processing bio12] - CPU Load: 12.1% (22 Cores) | Active Threads: 67 | Script RAM: 0.63 GB | Server RAM: 84.2%
+12:07:31 | PID: 41100 | [STRAIN] Network Fetch (bio12) | Duration: 7.7s | Avg CPU: 5.1% | RAM Shift: +0.02 GB | Final RAM: 0.65 GB
+12:07:31 | PID: 41100 | [STRAIN] Main-Thread Sequential Warp (bio12) | Duration: 0.7s | Avg CPU: 13.9% | RAM Shift: -0.01 GB | Final RAM: 0.64 GB
+12:07:31 | PID: 41100 | [STRAIN] Dask Materialization (bio12) | Duration: 0.0s | Avg CPU: 66.7% | RAM Shift: +0.00 GB | Final RAM: 0.64 GB
+12:08:02 | PID: 41100 | [END Processing bio12] - CPU Load: 3.0% (22 Cores) | Active Threads: 67 | Script RAM: 0.64 GB | Server RAM: 83.6%
+12:08:02 | PID: 41100 | [START Processing pr] - CPU Load: 9.5% (22 Cores) | Active Threads: 67 | Script RAM: 0.64 GB | Server RAM: 83.6%
+12:08:09 | PID: 41100 | [STRAIN] Network Fetch (pr) | Duration: 7.7s | Avg CPU: 5.4% | RAM Shift: +0.01 GB | Final RAM: 0.66 GB
+12:08:10 | PID: 41100 | [STRAIN] Main-Thread Sequential Warp (pr) | Duration: 0.7s | Avg CPU: 13.8% | RAM Shift: +0.00 GB | Final RAM: 0.64 GB
+12:08:10 | PID: 41100 | [STRAIN] Dask Materialization (pr) | Duration: 0.0s | Avg CPU: 0.0% | RAM Shift: +0.00 GB | Final RAM: 0.64 GB
+12:08:41 | PID: 41100 | [END Processing pr] - CPU Load: 5.3% (22 Cores) | Active Threads: 65 | Script RAM: 0.64 GB | Server RAM: 83.9%
+12:08:41 | PID: 41100 | [START Processing tas] - CPU Load: 8.3% (22 Cores) | Active Threads: 65 | Script RAM: 0.65 GB | Server RAM: 83.9%
+12:08:52 | PID: 41100 | [STRAIN] Network Fetch (tas) | Duration: 11.3s | Avg CPU: 4.3% | RAM Shift: +0.01 GB | Final RAM: 0.66 GB
+12:08:53 | PID: 41100 | [STRAIN] Main-Thread Sequential Warp (tas) | Duration: 0.8s | Avg CPU: 12.7% | RAM Shift: +0.00 GB | Final RAM: 0.64 GB
+12:08:53 | PID: 41100 | [STRAIN] Dask Materialization (tas) | Duration: 0.0s | Avg CPU: 50.0% | RAM Shift: +0.00 GB | Final RAM: 0.64 GB
+12:09:23 | PID: 41100 | [END Processing tas] - CPU Load: 0.6% (22 Cores) | Active Threads: 66 | Script RAM: 0.65 GB | Server RAM: 83.8%
+12:46:59 | PID: 41100 | [START Processing bio01] - CPU Load: 5.6% (22 Cores) | Active Threads: 63 | Script RAM: 0.36 GB | Server RAM: 83.0%
+12:47:06 | PID: 41100 | [STRAIN] Network Fetch (bio01) | Duration: 6.5s | Avg CPU: 6.7% | RAM Shift: +0.00 GB | Final RAM: 0.36 GB
+12:47:07 | PID: 41100 | [STRAIN] Main-Thread Sequential Warp (bio01) | Duration: 0.9s | Avg CPU: 16.5% | RAM Shift: +0.00 GB | Final RAM: 0.36 GB
+12:47:07 | PID: 41100 | [STRAIN] Dask Materialization (bio01) | Duration: 0.0s | Avg CPU: 42.9% | RAM Shift: +0.00 GB | Final RAM: 0.36 GB
+12:47:37 | PID: 41100 | [END Processing bio01] - CPU Load: 6.7% (22 Cores) | Active Threads: 63 | Script RAM: 0.37 GB | Server RAM: 82.2%
+12:47:37 | PID: 41100 | [START Processing bio12] - CPU Load: 9.6% (22 Cores) | Active Threads: 63 | Script RAM: 0.37 GB | Server RAM: 82.2%
+12:47:45 | PID: 41100 | [STRAIN] Network Fetch (bio12) | Duration: 7.1s | Avg CPU: 6.3% | RAM Shift: +0.01 GB | Final RAM: 0.38 GB
+12:47:46 | PID: 41100 | [STRAIN] Main-Thread Sequential Warp (bio12) | Duration: 1.5s | Avg CPU: 7.4% | RAM Shift: -0.01 GB | Final RAM: 0.37 GB
+12:47:46 | PID: 41100 | [STRAIN] Dask Materialization (bio12) | Duration: 0.0s | Avg CPU: 25.0% | RAM Shift: +0.00 GB | Final RAM: 0.37 GB
+12:48:17 | PID: 41100 | [END Processing bio12] - CPU Load: 3.2% (22 Cores) | Active Threads: 63 | Script RAM: 0.37 GB | Server RAM: 80.7%
+12:48:17 | PID: 41100 | [START Processing pr] - CPU Load: 3.1% (22 Cores) | Active Threads: 63 | Script RAM: 0.37 GB | Server RAM: 80.7%
+12:48:24 | PID: 41100 | [STRAIN] Network Fetch (pr) | Duration: 7.2s | Avg CPU: 5.1% | RAM Shift: +0.02 GB | Final RAM: 0.38 GB
+12:48:25 | PID: 41100 | [STRAIN] Main-Thread Sequential Warp (pr) | Duration: 1.2s | Avg CPU: 7.3% | RAM Shift: +0.00 GB | Final RAM: 0.36 GB
+12:48:26 | PID: 41100 | [STRAIN] Dask Materialization (pr) | Duration: 0.1s | Avg CPU: 8.7% | RAM Shift: +0.00 GB | Final RAM: 0.37 GB
+12:48:56 | PID: 41100 | [END Processing pr] - CPU Load: 2.9% (22 Cores) | Active Threads: 63 | Script RAM: 0.37 GB | Server RAM: 80.7%
+12:48:56 | PID: 41100 | [START Processing tas] - CPU Load: 5.8% (22 Cores) | Active Threads: 63 | Script RAM: 0.37 GB | Server RAM: 80.6%
+12:49:05 | PID: 41100 | [STRAIN] Network Fetch (tas) | Duration: 8.6s | Avg CPU: 3.2% | RAM Shift: +0.02 GB | Final RAM: 0.38 GB
+12:49:06 | PID: 41100 | [STRAIN] Main-Thread Sequential Warp (tas) | Duration: 0.9s | Avg CPU: 6.9% | RAM Shift: +0.00 GB | Final RAM: 0.36 GB
+12:49:06 | PID: 41100 | [STRAIN] Dask Materialization (tas) | Duration: 0.0s | Avg CPU: 5.3% | RAM Shift: +0.00 GB | Final RAM: 0.37 GB
+12:49:36 | PID: 41100 | [END Processing tas] - CPU Load: 4.8% (22 Cores) | Active Threads: 63 | Script RAM: 0.37 GB | Server RAM: 80.5%
+12:49:49 | PID: 41100 | [START Processing bio01] - CPU Load: 6.8% (22 Cores) | Active Threads: 63 | Script RAM: 0.72 GB | Server RAM: 82.7%
+12:49:55 | PID: 41100 | [STRAIN] Network Fetch (bio01) | Duration: 5.7s | Avg CPU: 2.5% | RAM Shift: +0.00 GB | Final RAM: 0.72 GB
+12:49:55 | PID: 41100 | [STRAIN] Main-Thread Sequential Warp (bio01) | Duration: 0.6s | Avg CPU: 7.2% | RAM Shift: +0.00 GB | Final RAM: 0.72 GB
+12:49:56 | PID: 41100 | [STRAIN] Dask Materialization (bio01) | Duration: 0.0s | Avg CPU: 4.5% | RAM Shift: +0.00 GB | Final RAM: 0.72 GB
+12:50:26 | PID: 41100 | [END Processing bio01] - CPU Load: 5.4% (22 Cores) | Active Threads: 69 | Script RAM: 0.73 GB | Server RAM: 83.0%
+12:50:27 | PID: 41100 | [START Processing bio12] - CPU Load: 6.8% (22 Cores) | Active Threads: 69 | Script RAM: 0.73 GB | Server RAM: 83.0%
+12:50:33 | PID: 41100 | [STRAIN] Network Fetch (bio12) | Duration: 6.9s | Avg CPU: 3.6% | RAM Shift: +0.01 GB | Final RAM: 0.74 GB
+12:50:34 | PID: 41100 | [STRAIN] Main-Thread Sequential Warp (bio12) | Duration: 0.7s | Avg CPU: 7.4% | RAM Shift: -0.01 GB | Final RAM: 0.72 GB
+12:50:34 | PID: 41100 | [STRAIN] Dask Materialization (bio12) | Duration: 0.0s | Avg CPU: 20.0% | RAM Shift: +0.00 GB | Final RAM: 0.73 GB
+12:51:05 | PID: 41100 | [END Processing bio12] - CPU Load: 3.1% (22 Cores) | Active Threads: 71 | Script RAM: 0.73 GB | Server RAM: 83.1%
+12:51:05 | PID: 41100 | [START Processing pr] - CPU Load: 3.8% (22 Cores) | Active Threads: 71 | Script RAM: 0.73 GB | Server RAM: 83.1%
+12:51:13 | PID: 41100 | [STRAIN] Network Fetch (pr) | Duration: 8.0s | Avg CPU: 3.6% | RAM Shift: +0.02 GB | Final RAM: 0.74 GB
+12:51:14 | PID: 41100 | [STRAIN] Main-Thread Sequential Warp (pr) | Duration: 1.1s | Avg CPU: 8.5% | RAM Shift: +0.00 GB | Final RAM: 0.72 GB
+12:51:14 | PID: 41100 | [STRAIN] Dask Materialization (pr) | Duration: 0.0s | Avg CPU: 4.8% | RAM Shift: +0.00 GB | Final RAM: 0.72 GB
+12:51:45 | PID: 41100 | [END Processing pr] - CPU Load: 3.5% (22 Cores) | Active Threads: 75 | Script RAM: 0.73 GB | Server RAM: 83.1%
+12:51:45 | PID: 41100 | [START Processing tas] - CPU Load: 3.8% (22 Cores) | Active Threads: 75 | Script RAM: 0.73 GB | Server RAM: 83.1%
+12:51:53 | PID: 41100 | [STRAIN] Network Fetch (tas) | Duration: 8.7s | Avg CPU: 3.2% | RAM Shift: +0.02 GB | Final RAM: 0.74 GB
+12:51:55 | PID: 41100 | [STRAIN] Main-Thread Sequential Warp (tas) | Duration: 1.3s | Avg CPU: 6.7% | RAM Shift: +0.00 GB | Final RAM: 0.72 GB
+12:51:55 | PID: 41100 | [STRAIN] Dask Materialization (tas) | Duration: 0.0s | Avg CPU: 16.7% | RAM Shift: +0.00 GB | Final RAM: 0.72 GB
+12:52:25 | PID: 41100 | [END Processing tas] - CPU Load: 5.8% (22 Cores) | Active Threads: 78 | Script RAM: 0.72 GB | Server RAM: 80.7%
