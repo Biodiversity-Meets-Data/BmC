@@ -44,7 +44,7 @@ Also inheriting from `base_spatial_grid`, the `vector_engine` class handles all 
 * **Spatial Point Clouds:** Generates memory-efficient spatial point clouds around feature centroids using specified distributions (e.g., Gaussian or Uniform) to account for coordinate uncertainty.
 * **Template Mapping:** Provides specialized methods to map various vector formats to the master grid template:
     * **Points:** Executes point geometry intersections using spatial joins or KDTree nearest-neighbor queries.
-    * **Point Clouds:** Computes probabilistic point cloud distributions to map fractional weights onto the spatial topology blueprint.
+    * **Point Clouds:** Computes probabilistic point cloud distributions (Monte Carlo procedure) to map fractional weights onto the spatial topology blueprint (point distribution over raster) or to assign points to grid cells based on majority ruling.
     * **Polygons:** Maps polygon datasets by perfectly fracturing and distributing intersection weights (areal fractions) onto the grid blueprint.
     * **Cell Collections:** Maps pre-aggregated, perfectly aligned grid cell polygons directly to the template.
 * **Vector Transformation QA/QC:** Validates the mathematical and topological integrity of spatial transformations, specifically tracking mass conservation (fractional mapping) and topological drift (classification).
