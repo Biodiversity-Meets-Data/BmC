@@ -1,6 +1,6 @@
-# Biodiversity meets Cubes
+# Biodiversity meets Cubes: the BMD Cubing Engine
 
-A repository aimed at the development of the cubing engine that combines biodiversity data with abiotic data to produce data cubes ready for use within the VRE's of the BmD project.
+A repository aimed at the development of the cubing engine that combines biodiversity data with abiotic data to produce data cubes ready for use within the VRE's of the [Biodiversity Meets Data (BMD)](https://bmd-project.eu/) project.
 
 ## Repository Setup
 
