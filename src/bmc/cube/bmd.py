@@ -2,6 +2,7 @@ import os
 import yaml
 import logging
 from typing import Optional, List, Dict, Any
+import shutil
 
 try:
     import pystac
@@ -72,31 +73,6 @@ class bmd_cube:
         recipe_filepath = recipe_file if os.path.isabs(recipe_file) else os.path.join(recipe_path, recipe_file)
         with open(recipe_filepath) as f:
             return yaml.safe_load(f)
-
-    def _dump_recipe(self, recipe: Dict[str, Any], meta_dir: str, logger: Optional[logging.Logger] = None) -> None:
-        """
-        Dumps a frozen copy of the executed recipe dictionary to the metadata directory.
-        
-        This guarantees reproducibility by preserving the exact configurations used to 
-        generate the data cube, even if the original user YAML file is later modified.
-
-        Parameters
-        ----------
-        recipe : dict
-            The parsed configuration dictionary to serialize.
-        meta_dir : str
-            The target directory where the `recipe.yaml` file will be saved.
-        logger : logging.Logger, optional
-            Pipeline execution logger.
-        """
-        os.makedirs(meta_dir, exist_ok=True)
-        recipe_dump_path = os.path.join(meta_dir, "recipe.yaml")
-        
-        # Serialize the dictionary back to YAML cleanly
-        with open(recipe_dump_path, "w") as f:
-            yaml.dump(recipe, f, default_flow_style=False, sort_keys=False)
-            
-        log_execution(logger, f"Dumped executed recipe to: {recipe_dump_path}", logging.INFO)
 
     def _export_provenance(self, recipe: Dict[str, Any], meta_dir: str, logger: Optional[logging.Logger] = None) -> str:
         """
@@ -174,6 +150,9 @@ class bmd_cube:
         # Scenario 2: Engine dumped STAC to disk and returned paths (e.g., raster_cube limits memory overhead)
         # Search candidate hierarchical locations based on the metadata schema
         candidate_paths = [
+            # Updated: Look in the new centralized STAC_assets folder first
+            os.path.join(cube_dir, "meta", "STAC_assets", f"{dataset_name}_stac.json"),
+            # Legacy fallbacks just in case older datasets haven't been re-run yet
             os.path.join(cube_dir, "meta", f"{dataset_name}_stac.json"),
             os.path.join(cube_dir, dataset_name, "meta", f"{dataset_name}_stac.json")
         ]
@@ -183,11 +162,13 @@ class bmd_cube:
                 try:
                     item = pystac.Item.from_file(path)
                     log_execution(logger, f"Collected STAC Item for '{dataset_name}' from {path}", logging.INFO)
+                    
+                    # Add this line to delete the unlinked, redundant file once it is safely in memory
+                    os.remove(path) 
+                    
                     return item
                 except Exception as e:
                     log_execution(logger, f"Failed to parse STAC Item at {path}: {e}", logging.WARNING)
-
-        return None
 
     def _create_unifying_stac_catalog(
         self, 
@@ -235,12 +216,27 @@ class bmd_cube:
         for item in stac_items:
             catalog.add_item(item)
 
+        # Updated: Create the dedicated STAC directory inside meta_dir
+        stac_out_dir = os.path.join(meta_dir, "STAC")
+        os.makedirs(stac_out_dir, exist_ok=True)
+
         # Ensure all internal asset pointers are resolved relatively to maintain catalog portability
-        catalog_path = os.path.join(meta_dir, "catalog.json")
-        catalog.normalize_hrefs(meta_dir)
+        catalog_path = os.path.join(stac_out_dir, "catalog.json")
+        catalog.normalize_hrefs(stac_out_dir)
         catalog.save(pystac.CatalogType.SELF_CONTAINED)
 
         log_execution(logger, f"Exported unifying STAC Catalog to: {catalog_path}", logging.INFO)
+        
+        # Clean up the temporary STAC_assets folder and its contents
+        temp_assets_dir = os.path.join(meta_dir, "STAC_assets")
+        if os.path.exists(temp_assets_dir):
+            try:
+                import shutil
+                shutil.rmtree(temp_assets_dir)
+                log_execution(logger, f"Successfully removed temporary STAC assets directory: {temp_assets_dir}", logging.INFO)
+            except Exception as e:
+                log_execution(logger, f"Failed to remove temporary STAC assets directory {temp_assets_dir}: {e}", logging.WARNING)
+
         return catalog
 
     def process_recipe(
@@ -291,7 +287,6 @@ class bmd_cube:
         # PHASE 0: EXPORT RECIPE AND PROVENANCE METADATA
         # =================================================================
         # Archive structural context before execution prevents missing context upon crash.
-        self._dump_recipe(recipe, meta_dir, logger=logger)
         self._export_provenance(recipe, meta_dir, logger=logger)
 
         stac_items: List['pystac.Item'] = []
@@ -361,7 +356,7 @@ class bmd_cube:
                 # poll the API. This thread will now block execution safely until the 
                 # payload is fully ready and downloaded to the local hard drive.
                 # Pass credentials down for authentication retrieval
-                download_info = sql.fetch_gbif_download(gbif_download_key, target_dir=download_dir, creds=creds)
+                download_info = sql.fetch_gbif_download(gbif_download_key, target_dir=download_dir, max_time=10800, creds=creds)
                 local_data_path = download_info.get("path") if isinstance(download_info, dict) else download_info
             else:
                 local_data_path = None

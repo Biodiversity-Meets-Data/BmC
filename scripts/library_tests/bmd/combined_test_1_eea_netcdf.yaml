@@ -1,4 +1,4 @@
-base_dir: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\test_cubes
+base_dir: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes
 cube_name: combined_test_cube_eea1km_netcdf
 export_as:
   format: netcdf

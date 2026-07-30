@@ -1,0 +1,23 @@
+{
+  "type": "Catalog",
+  "id": "combined_test_cube_equalarea_zarr_catalog",
+  "stac_version": "1.1.0",
+  "description": "Unified STAC catalog aggregating all sub-cube STAC items for 'combined_test_cube_equalarea_zarr'.",
+  "links": [
+    {
+      "rel": "root",
+      "href": "./catalog.json",
+      "type": "application/json"
+    },
+    {
+      "rel": "item",
+      "href": "./combined_test_cube_equalarea_zarr_chelsa_20260730234736/combined_test_cube_equalarea_zarr_chelsa_20260730234736.json",
+      "type": "application/geo+json"
+    },
+    {
+      "rel": "item",
+      "href": "./combined_test_cube_equalarea_zarr_gbif_20260730234737/combined_test_cube_equalarea_zarr_gbif_20260730234737.json",
+      "type": "application/geo+json"
+    }
+  ]
+}

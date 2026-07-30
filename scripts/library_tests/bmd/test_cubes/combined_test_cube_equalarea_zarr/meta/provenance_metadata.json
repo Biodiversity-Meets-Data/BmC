@@ -1,0 +1,299 @@
+{
+    "cube_name": "combined_test_cube_equalarea_zarr",
+    "execution_timestamp_utc": "2026-07-30T21:44:48.740449+00:00",
+    "code_provenance": {
+        "pipeline_package": "bmc",
+        "pipeline_version": "0.1.0",
+        "git_branch": "main",
+        "git_commit_sha": "97cd249fdccf3dfc6343e49d7739bf4c223e4dce"
+    },
+    "system_environment": {
+        "os": "Windows",
+        "os_release": "11",
+        "os_version": "10.0.26200",
+        "architecture": "AMD64",
+        "python_version": "3.12.13",
+        "tracked_variables": {
+            "GDAL_DATA": "C:\\Users\\niels\\Anaconda3\\envs\\bmc_test\\Library\\share\\gdal",
+            "PROJ_LIB": "Not Set",
+            "PROJ_NETWORK": "ON",
+            "OMP_NUM_THREADS": "Not Set",
+            "NUMBA_NUM_THREADS": "Not Set",
+            "OPENBLAS_NUM_THREADS": "Not Set",
+            "MKL_NUM_THREADS": "Not Set",
+            "CURL_CA_BUNDLE": "Not Set",
+            "REQUESTS_CA_BUNDLE": "Not Set",
+            "CONDA_DEFAULT_ENV": "bmc_test"
+        }
+    },
+    "hardware_environment": {
+        "cpu_cores": 22,
+        "total_ram_gb": 15.46,
+        "c_level_threadpools": [
+            {
+                "user_api": "blas",
+                "internal_api": "mkl",
+                "num_threads": 16,
+                "prefix": "mkl_rt",
+                "filepath": "C:\\Users\\niels\\anaconda3\\envs\\bmc_test\\Library\\bin\\mkl_rt.3.dll",
+                "version": "2026.1-Product",
+                "threading_layer": "intel"
+            },
+            {
+                "user_api": "openmp",
+                "internal_api": "openmp",
+                "num_threads": 22,
+                "prefix": "vcomp",
+                "filepath": "C:\\Users\\niels\\anaconda3\\envs\\bmc_test\\vcomp140.dll",
+                "version": null
+            },
+            {
+                "user_api": "openmp",
+                "internal_api": "openmp",
+                "num_threads": 22,
+                "prefix": "libiomp",
+                "filepath": "C:\\Users\\niels\\anaconda3\\envs\\bmc_test\\Library\\bin\\libiomp5md.dll",
+                "version": null
+            },
+            {
+                "user_api": "openmp",
+                "internal_api": "openmp",
+                "num_threads": 22,
+                "prefix": "libomp",
+                "filepath": "C:\\Users\\niels\\anaconda3\\envs\\bmc_test\\Library\\bin\\libomp.dll",
+                "version": null
+            }
+        ]
+    },
+    "software_environment": {
+        "packaging": "26.2",
+        "PySocks": "1.7.1",
+        "psutil": "7.2.2",
+        "click": "8.4.2",
+        "locket": "1.0.0",
+        "dask": "2026.7.1",
+        "pooch": "1.9.0",
+        "certifi": "2026.7.22",
+        "tzdata": "2026.3",
+        "snuggs": "1.4.7",
+        "url-normalize": "3.0.0",
+        "zipp": "4.1.0",
+        "Jinja2": "3.1.6",
+        "rioxarray": "0.22.0",
+        "branca": "0.8.2",
+        "bmc": "0.1.0",
+        "networkx": "3.6.1",
+        "geojson-rewind": "1.2.1",
+        "partd": "1.4.2",
+        "MarkupSafe": "3.0.3",
+        "pyogrio": "0.12.1",
+        "colorama": "0.4.6",
+        "zarr": "3.2.1",
+        "hyperframe": "6.1.0",
+        "netCDF4": "1.7.4",
+        "pandas": "3.0.3",
+        "contourpy": "1.3.3",
+        "pyyaml": "6.0.3",
+        "typing_extensions": "4.16.0",
+        "click-plugins": "1.1.1.2",
+        "geomet": "1.1.0",
+        "fsspec": "2026.6.0",
+        "numpy": "2.4.6",
+        "cligj": "0.7.2",
+        "requests": "2.34.2",
+        "pyparsing": "3.3.2",
+        "h2": "4.4.0",
+        "six": "1.17.0",
+        "importlib_metadata": "9.0.0",
+        "kiwisolver": "1.5.0",
+        "cftime": "1.6.5",
+        "platformdirs": "4.11.0",
+        "folium": "0.20.0",
+        "cattrs": "26.1.0",
+        "mapclassify": "2.10.0",
+        "pillow": "12.3.0",
+        "mpi4py": "4.0.3",
+        "joblib": "1.5.3",
+        "rasterio": "1.5.0",
+        "backports.zstd": "1.6.0",
+        "xarray": "2026.7.0",
+        "appdirs": "1.4.4",
+        "h5py": "3.15.1",
+        "pyproj": "3.7.2",
+        "python-duckdb": "Not Installed",
+        "dask-geopandas": "0.5.0",
+        "setuptools": "83.0.0",
+        "regionmask": "0.13.0",
+        "cycler": "0.12.1",
+        "Brotli": "1.2.0",
+        "attrs": "26.1.0",
+        "Deprecated": "1.3.1",
+        "hda": "2.39",
+        "beautifulsoup4": "4.15.0",
+        "narwhals": "2.24.0",
+        "pygbif": "0.6.6",
+        "google-crc32c": "1.8.0",
+        "matplotlib": "3.11.1",
+        "pyarrow": "25.0.0",
+        "charset-normalizer": "3.4.9",
+        "donfig": "0.8.1.post1",
+        "fonttools": "4.63.0",
+        "munkres": "1.1.4",
+        "PyYAML": "6.0.3",
+        "GDAL": "3.12.3",
+        "unicodedata2": "17.0.1",
+        "xyzservices": "2026.3.0",
+        "urllib3": "2.7.0",
+        "requests-cache": "1.3.3",
+        "duckdb": "1.5.5",
+        "scikit-learn": "1.9.0",
+        "cloudpickle": "3.1.2",
+        "toolz": "1.1.0",
+        "POT": "0.9.6.post1",
+        "wrapt": "2.2.2",
+        "wheel": "0.47.0",
+        "pot": "0.9.6.post1",
+        "hpack": "4.2.0",
+        "soupsieve": "2.9.1",
+        "odc-geo": "0.5.3",
+        "sparse": "0.19.0",
+        "netcdf4": "1.7.4",
+        "numcodecs": "0.16.5",
+        "threadpoolctl": "3.6.0",
+        "python-dateutil": "2.9.0.post0",
+        "affine": "2.4.0",
+        "llvmlite": "0.48.0",
+        "pip": "26.1.2",
+        "geocube": "0.7.1",
+        "pystac": "1.14.3",
+        "esda": "2.10.0",
+        "geopandas": "1.1.4",
+        "numba": "0.66.0",
+        "win_inet_pton": "1.1.0",
+        "shapely": "2.1.2",
+        "cachetools": "7.1.6",
+        "idna": "3.18",
+        "tqdm": "4.69.1",
+        "libpysal": "4.15.0",
+        "scipy": "1.18.0",
+        "gdal": "3.12.3",
+        "openeo": "0.51.0",
+        "gdal_cpp_backend": "3.12.3"
+    },
+    "input_data_hashes": {
+        "chelsa_catalog_path": {
+            "path": "C:\\Users\\niels\\Documents\\Repositories\\BmC\\meta\\chelsa_gp_stac\\chelsa_master.parquet",
+            "sha256": "a7da33299f55c97cf8524bd03bfa6382691d95ed1620e3e705b558a232581cab"
+        },
+        "gbif_local_file_path": {
+            "path": "C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/test_cubes/downloads/0016977-260721160103020.zip",
+            "sha256": "a8420ae236c3ca912310d69eb8cfdfe3961e74b379dccc0629c485905c358a1f"
+        }
+    },
+    "execution_recipe": {
+        "base_dir": "C:\\Users\\niels\\Documents\\Repositories\\BmC\\scripts\\library_tests\\bmd\\test_cubes",
+        "cube_name": "combined_test_cube_equalarea_zarr",
+        "export_as": {
+            "format": "zarr"
+        },
+        "spatial": {
+            "target_grid": "Global_EqualArea",
+            "target_resolution": "1km",
+            "use_bbox": true,
+            "bbox": {
+                "long_min": 3.376891,
+                "long_max": 4.804775,
+                "lat_min": 50.583876,
+                "lat_max": 51.386124
+            }
+        },
+        "temporal": {
+            "start_year": 2018,
+            "start_month": 1,
+            "end_year": 2018,
+            "end_month": 12
+        },
+        "sources": {
+            "chelsa": {
+                "enabled": true,
+                "catalog_path": "C:\\Users\\niels\\Documents\\Repositories\\BmC\\meta\\chelsa_gp_stac\\chelsa_master.parquet",
+                "levels": {
+                    "monthly": {
+                        "include": true,
+                        "variables": {
+                            "pr": true,
+                            "tas": true
+                        }
+                    },
+                    "bioclim": {
+                        "include": true,
+                        "time_ranges": {
+                            "1981-2010": true,
+                            "2011-2040": true,
+                            "2041-2070": true
+                        },
+                        "ensembles": {
+                            "historical": true,
+                            "GFDL-ESM4": true,
+                            "MPI-ESM1-2-HR": true
+                        },
+                        "scenarios": {
+                            "historical": true,
+                            "ssp126": true,
+                            "ssp585": true
+                        },
+                        "variables": {
+                            "bio01": true,
+                            "bio12": true
+                        }
+                    }
+                }
+            },
+            "gbif": {
+                "enabled": true,
+                "local_file_path": "C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/test_cubes/downloads/0016977-260721160103020.zip",
+                "columns": [
+                    "year",
+                    "month",
+                    "recordedby"
+                ],
+                "time_cols": [
+                    "year",
+                    "month"
+                ],
+                "processing_mode": "vector",
+                "vector_processing": {
+                    "topology": "point_cloud",
+                    "mapping_mode": "fractional",
+                    "spatial_method": "intersect",
+                    "topology_config": {
+                        "point_cloud": {
+                            "n_passes": 10,
+                            "distribution": "gaussian",
+                            "random_seed": 42
+                        }
+                    }
+                },
+                "aggregate": {
+                    "export_unaggregated": false,
+                    "group_by_columns": [
+                        "specieskey",
+                        "year",
+                        "month"
+                    ],
+                    "metrics": [
+                        {
+                            "column": "fraction",
+                            "method": "sum",
+                            "weighted": false,
+                            "rename": "expected_occurrences"
+                        }
+                    ]
+                }
+            }
+        },
+        "paths": {
+            "base_dir": "C:\\Users\\niels\\Documents\\Repositories\\BmC\\scripts\\library_tests\\bmd\\test_cubes\\combined_test_cube_equalarea_zarr\\meta"
+        }
+    }
+}

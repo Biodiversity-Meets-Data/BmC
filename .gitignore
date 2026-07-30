@@ -12,7 +12,6 @@ scripts/dev_notebooks/
 *.parquet
 .ipynb_checkpoints/
 *.egg-info/
-*.json
 __pycache__/
 
 # EXCEPTIONS: Allow CSVs in the meta directory
@@ -21,7 +20,9 @@ __pycache__/
 !scripts/prototype/img/AOI.png
 !scripts/prototype/out/prototype_cube/prototype_test.nc
 !img/*.png
-
+!scripts/library_tests/bmd/test_cubes/combined_test_cube_wgs84_netcdf/gbif/*.parquet
+!scripts/library_tests/bmd/test_cubes/combined_test_cube_wgs84_netcdf/chelsa/bioclim/*.nc
+!scripts/library_tests/bmd/test_cubes/combined_test_cube_wgs84_netcdf/chelsa/monthly/*.nc
 # IGNORE R files
 .Rhistory
 .RData

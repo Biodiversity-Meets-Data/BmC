@@ -518,10 +518,12 @@ class vector_cube(vector_engine, dataCube, ABC):
             logger=logger
         )
 
-        meta_dir = os.path.join(cube_dir, "meta")
-        os.makedirs(meta_dir, exist_ok=True)
-        stac_filepath = os.path.join(meta_dir, f"{dataset_name}_stac.json")
+        # Updated: Create the targeted STAC_assets subfolder
+        stac_assets_dir = os.path.join(cube_dir, "meta", "STAC_assets")
+        os.makedirs(stac_assets_dir, exist_ok=True)
+        stac_filepath = os.path.join(stac_assets_dir, f"{dataset_name}_stac.json")
         
+        # Dump the constructed PySTAC dictionary
         with open(stac_filepath, "w") as f:
             json.dump(stac_item.to_dict(), f, indent=4)
             

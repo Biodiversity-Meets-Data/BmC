@@ -5,9 +5,59 @@ import platform
 import subprocess
 import importlib.metadata
 import importlib
+import hashlib
 from datetime import datetime, timezone
 import logging
 from typing import Optional, List, Set
+
+def _hash_file(filepath: str) -> str:
+    """Generates a SHA-256 hash for a given file to track statefulness."""
+    if not isinstance(filepath, str) or not os.path.isfile(filepath):
+        return "File not found or invalid path"
+    
+    hasher = hashlib.sha256()
+    try:
+        # Read in 4K chunks to maintain low RAM footprint for massive datasets
+        with open(filepath, 'rb') as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hasher.update(chunk)
+        return hasher.hexdigest()
+    except Exception as e:
+        return f"Error hashing file: {str(e)}"
+
+def _extract_input_hashes(recipe: dict) -> dict:
+    """Scans the recipe for known local input paths and hashes them."""
+    hashes = {}
+    sources = recipe.get("sources", {})
+    
+    for source_name, source_cfg in sources.items():
+        if not isinstance(source_cfg, dict):
+            continue
+            
+        # Target the specific keys used in this pipeline's configuration schema
+        for path_key in ["catalog_path", "local_file_path"]:
+            if path_key in source_cfg:
+                target_path = source_cfg[path_key]
+                hashes[f"{source_name}_{path_key}"] = {
+                    "path": target_path,
+                    "sha256": _hash_file(target_path)
+                }
+                
+    return hashes
+
+def _get_threadpool_info() -> list:
+    """
+    Safely extracts C-level threadpool configurations (e.g., OpenBLAS, MKL) 
+    active at runtime.
+    """
+    try:
+        import threadpoolctl
+        # Returns a list of dictionaries detailing the underlying math libraries
+        return threadpoolctl.threadpool_info()
+    except ImportError:
+        return [{"error": "threadpoolctl not installed or accessible"}]
+    except Exception as e:
+        return [{"error": f"Failed to retrieve threadpool info: {str(e)}"}]
 
 def _find_repo_root() -> str:
     """Uses git to find the absolute root directory of the repository. Falls back to current dir."""
@@ -152,8 +202,29 @@ def generate_provenance_metadata(
         hardware_info["total_ram_gb"] = "psutil library not installed"
 
     # --- 4. Compile the full Provenance Dictionary ---
+    
+    tracked_env_vars = {
+        # Spatial / GDAL Backends
+        "GDAL_DATA": os.environ.get("GDAL_DATA", "Not Set"),
+        "PROJ_LIB": os.environ.get("PROJ_LIB", "Not Set"),
+        "PROJ_NETWORK": os.environ.get("PROJ_NETWORK", "Not Set"),
+        
+        # Threading & Performance
+        "OMP_NUM_THREADS": os.environ.get("OMP_NUM_THREADS", "Not Set"),
+        "NUMBA_NUM_THREADS": os.environ.get("NUMBA_NUM_THREADS", "Not Set"),
+        "OPENBLAS_NUM_THREADS": os.environ.get("OPENBLAS_NUM_THREADS", "Not Set"),
+        "MKL_NUM_THREADS": os.environ.get("MKL_NUM_THREADS", "Not Set"),
+        
+        # Network & SSL
+        "CURL_CA_BUNDLE": os.environ.get("CURL_CA_BUNDLE", "Not Set"),
+        "REQUESTS_CA_BUNDLE": os.environ.get("REQUESTS_CA_BUNDLE", "Not Set"),
+        
+        # Conda Context
+        "CONDA_DEFAULT_ENV": os.environ.get("CONDA_DEFAULT_ENV", "Not Set")
+    }
+
     provenance_record = {
-        "cube_name": recipe.get('raw_config', {}).get('cube_name', 'unknown_lake'),
+        "cube_name": recipe.get('cube_name', 'unknown_lake'),
         "execution_timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "code_provenance": {
             "pipeline_package": target_package,
@@ -167,9 +238,14 @@ def generate_provenance_metadata(
             "os_version": platform.version(),
             "architecture": platform.machine(),
             "python_version": platform.python_version(),
+            "tracked_variables": tracked_env_vars  # Updated to include all critical variables
         },
-        "hardware_environment": hardware_info,
+        "hardware_environment": {
+            **hardware_info,  # Unpacks your CPU cores and RAM
+            "c_level_threadpools": _get_threadpool_info() # Injects active math thread states
+        },
         "software_environment": software_env,
+        "input_data_hashes": _extract_input_hashes(recipe), # Injected stateful hashes
         "execution_recipe": recipe
     }
 

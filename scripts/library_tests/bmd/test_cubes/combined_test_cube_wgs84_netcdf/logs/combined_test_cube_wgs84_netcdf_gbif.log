@@ -1,0 +1,23 @@
+[2026-07-30 23:44:45] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'gbif' ===
+[2026-07-30 23:44:45] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_wgs84_netcdf
+[2026-07-30 23:44:45] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_wgs84_netcdf\gbif
+[2026-07-30 23:44:45] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_gbif.log
+[2026-07-30 23:44:45] [INFO] Processing Mode: VECTOR
+[2026-07-30 23:44:45] [INFO] Loading GBIF data from C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/test_cubes/downloads/0016977-260721160103020.zip...
+[2026-07-30 23:44:45] [INFO] Constructed and resolved master grid key: Global_WGS84_30sec
+[2026-07-30 23:44:45] [INFO] Extracting padded global bounding box from recipe...
+[2026-07-30 23:44:47] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-07-30 23:44:48] [INFO] Validation report saved to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_wgs84_netcdf\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-07-30 23:44:48] [INFO] Exporting source geometries to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_wgs84_netcdf\gbif\gbif_source_geometries.parquet...
+[2026-07-30 23:44:48] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-07-30 23:44:48] [INFO] Fractional geometries detected. Spatial multiplier: 'areal_fraction'.
+[2026-07-30 23:44:48] [INFO] Aggregating 'areal_fraction' -> 'expected_occurrences' (Method: sum, Weighted: False)
+[2026-07-30 23:44:48] [INFO] Vector aggregation complete. Yielded 700 final cells.
+[2026-07-30 23:44:48] [INFO] Exporting final aggregated spatial dataset to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_wgs84_netcdf\gbif\gbif_aggregated.parquet...
+[2026-07-30 23:44:48] [INFO] === GBIF Generation Complete ===
+[2026-07-30 23:44:48] [INFO] === Assembling STAC Item for GBIF ===
+[2026-07-30 23:44:48] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-07-30 23:44:48] [INFO] Spatial Dimension Table saved to: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_wgs84_netcdf\gbif\gbif_Global_WGS84_30sec_dimension_table.parquet
+[2026-07-30 23:44:48] [INFO] === STAC Item Assembly Complete: combined_test_cube_wgs84_netcdf_gbif_20260730234448 ===
+[2026-07-30 23:44:48] [INFO] Exported STAC item to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_wgs84_netcdf\meta\STAC_assets\gbif_stac.json

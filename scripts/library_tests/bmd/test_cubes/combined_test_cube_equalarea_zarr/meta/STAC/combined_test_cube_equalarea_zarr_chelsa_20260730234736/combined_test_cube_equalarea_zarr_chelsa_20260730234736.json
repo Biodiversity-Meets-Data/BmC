@@ -1,0 +1,144 @@
+{
+  "type": "Feature",
+  "stac_version": "1.1.0",
+  "stac_extensions": [],
+  "id": "combined_test_cube_equalarea_zarr_chelsa_20260730234736",
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [
+          4.804775,
+          50.583876
+        ],
+        [
+          4.804775,
+          51.386124
+        ],
+        [
+          3.376891,
+          51.386124
+        ],
+        [
+          3.376891,
+          50.583876
+        ],
+        [
+          4.804775,
+          50.583876
+        ]
+      ]
+    ]
+  },
+  "bbox": [
+    3.376891,
+    50.583876,
+    4.804775,
+    51.386124
+  ],
+  "properties": {
+    "cube:dataset": "chelsa",
+    "cube:grid_registry_key": "Global_EqualArea_1km",
+    "cube:crs": "EPSG:6933",
+    "cube:resolution": 1000,
+    "cube:export_format": "zarr",
+    "start_datetime": "2018-01-01T00:00:00+00:00",
+    "end_datetime": "2018-12-31T23:59:59+00:00",
+    "cube:monthly_time": [
+      "2018-01-01T00:00:00",
+      "2018-02-01T00:00:00",
+      "2018-03-01T00:00:00",
+      "2018-04-01T00:00:00",
+      "2018-05-01T00:00:00",
+      "2018-06-01T00:00:00",
+      "2018-07-01T00:00:00",
+      "2018-08-01T00:00:00",
+      "2018-09-01T00:00:00",
+      "2018-10-01T00:00:00",
+      "2018-11-01T00:00:00",
+      "2018-12-01T00:00:00"
+    ],
+    "cube:bioclim_ensemble": [
+      "GFDL-ESM4",
+      "MPI-ESM1-2-HR",
+      "historical"
+    ],
+    "cube:bioclim_scenario": [
+      "ssp126",
+      "ssp585",
+      "historical"
+    ],
+    "cube:bioclim_time_range": [
+      "2011-2040",
+      "2041-2070",
+      "1981-2010"
+    ],
+    "datetime": "2018-01-01T00:00:00Z"
+  },
+  "links": [
+    {
+      "rel": "root",
+      "href": "../catalog.json",
+      "type": "application/json"
+    },
+    {
+      "rel": "parent",
+      "href": "../catalog.json",
+      "type": "application/json"
+    }
+  ],
+  "assets": {
+    "monthly_pr": {
+      "href": "C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/test_cubes/combined_test_cube_equalarea_zarr/chelsa/monthly/pr.zarr",
+      "type": "application/x-zarr",
+      "title": "PR (Monthly)",
+      "description": "Spatially reprojected raster array warped using 'average' resampling.",
+      "processing:level": "monthly",
+      "processing:variable": "pr",
+      "processing:resample_rule": "average",
+      "roles": [
+        "data",
+        "datacube"
+      ]
+    },
+    "monthly_tas": {
+      "href": "C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/test_cubes/combined_test_cube_equalarea_zarr/chelsa/monthly/tas.zarr",
+      "type": "application/x-zarr",
+      "title": "TAS (Monthly)",
+      "description": "Spatially reprojected raster array warped using 'bilinear' resampling.",
+      "processing:level": "monthly",
+      "processing:variable": "tas",
+      "processing:resample_rule": "bilinear",
+      "roles": [
+        "data",
+        "datacube"
+      ]
+    },
+    "bioclim_bio01": {
+      "href": "C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/test_cubes/combined_test_cube_equalarea_zarr/chelsa/bioclim/bio01.zarr",
+      "type": "application/x-zarr",
+      "title": "BIO01 (Bioclim)",
+      "description": "Spatially reprojected raster array warped using 'bilinear' resampling.",
+      "processing:level": "bioclim",
+      "processing:variable": "bio01",
+      "processing:resample_rule": "bilinear",
+      "roles": [
+        "data",
+        "datacube"
+      ]
+    },
+    "bioclim_bio12": {
+      "href": "C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/test_cubes/combined_test_cube_equalarea_zarr/chelsa/bioclim/bio12.zarr",
+      "type": "application/x-zarr",
+      "title": "BIO12 (Bioclim)",
+      "description": "Spatially reprojected raster array warped using 'average' resampling.",
+      "processing:level": "bioclim",
+      "processing:variable": "bio12",
+      "processing:resample_rule": "average",
+      "roles": [
+        "data",
+        "datacube"
+      ]
+    }
+  }
+}

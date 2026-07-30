@@ -1,4 +1,4 @@
-base_dir: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\test_cubes
+base_dir: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes
 cube_name: combined_test_cube_equalarea_zarr
 export_as:
   format: zarr
@@ -45,7 +45,7 @@ sources:
           bio12: true
   gbif:
     enabled: true
-    local_file_path: C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/test_cubes/downloads/0016977-260721160103020.zip
+    local_file_path: C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/test_cubes/downloads/0016977-260721160103020.zip
     columns:
     - year
     - month

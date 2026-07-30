@@ -14,17 +14,17 @@ logger = logging.getLogger(__name__)
 # Dynamically resolve paths based on this script's location
 script_dir = os.path.dirname(os.path.abspath(__file__))
 catalog_path = os.path.abspath(os.path.join(script_dir, "../../../meta/chelsa_gp_stac/chelsa_master.parquet"))
-output_dir = os.path.abspath(os.path.join(script_dir, "../test_cubes/"))
+output_dir = os.path.abspath(os.path.join(script_dir, "test_cubes/"))
 os.makedirs(output_dir, exist_ok=True)
-
+local_zip_path = "test_cubes/downloads"
 # =======================================================================
 # TEMPLATE CREDENTIALS
 # =======================================================================
 # Dictionary for passing API credentials dynamically to the pipeline
 creds = {
-    "GBIF_USER": "YOUR_GBIF_USERNAME",
-    "GBIF_PWD": "YOUR_GBIF_PASSWORD",
-    "GBIF_MAIL": "YOUR_EMAIL@DOMAIN.COM"
+    "GBIF_USER": "username",
+    "GBIF_PWD": "password",
+    "GBIF_MAIL": "email"
 }
 # =======================================================================
 # 1. TEST 1: EEA GRID | NETCDF EXPORT | ASYNCHRONOUS GBIF DOWNLOAD
@@ -82,6 +82,7 @@ sources:
 
   gbif:
     enabled: true
+    local_file_path: "{local_zip_path}"
     query_filters:
       taxon_keys: ['G59D', '4F6YZ', '3Y9W2'] 
       record_type: presence
@@ -278,6 +279,7 @@ sources:
 # =======================================================================
 def run_combined_suite():
     orchestrator = bmd_cube()
+    """
     # ---------------------------------------------------------
     # RUN TEST 1: EEA Grid (NetCDF + Async GBIF Download)
     # ---------------------------------------------------------
@@ -296,9 +298,9 @@ def run_combined_suite():
         recipe_file=yaml_1_filename, 
         recipe_path=script_dir, 
         max_workers=8,
-        creds=credentials
+        creds=creds
     )
-
+    """
     # ---------------------------------------------------------
     # FIND THE DOWNLOADED ZIP FILE FOR TESTS 2 & 3
     # ---------------------------------------------------------
@@ -327,8 +329,7 @@ def run_combined_suite():
     orchestrator.process_recipe(
         recipe_file=yaml_2_filename, 
         recipe_path=script_dir, 
-        max_workers=8,
-        creds=credentials
+        max_workers=8
     )
 
     # ---------------------------------------------------------
@@ -348,8 +349,7 @@ def run_combined_suite():
     orchestrator.process_recipe(
         recipe_file=yaml_3_filename, 
         recipe_path=script_dir, 
-        max_workers=8,
-        creds=credentials
+        max_workers=8
     )
     
     print("\n=== All Combined Test Suites Completed Successfully ===")
