@@ -18,7 +18,7 @@ By parsing YAML configuration recipes, `bmd_cube` completely automates the gener
 
 ## Output Directory Structure
 
-![Datatree](../../../img/datatree.png)
+<img src="../../img/datatree.png" alt="Datatree" width="50%">
 
 The orchestrator generates a highly organized, standardized directory tree upon successful execution. This structure cleanly separates the harmonized ecological datasets from their machine-readable metadata and provenance logs.
 
