@@ -38,7 +38,7 @@ The `vectorCube` engine standardizes spatial vector datasets into a highly struc
 
 Below is the Entity-Relationship Diagram mapping the standard output structure:
 
-![Vector Cube Relational Output](../../../vectorCube_output.png)
+![Vector Cube Relational Output](../../../img/vectorCube_output.png)
 
 ### 1. Source Geometries Table (Dimension)
 This table preserves the original, complex geometries ingested from the raw dataset (e.g., points, multi-polygons) alongside their untouched raw attributes. 
