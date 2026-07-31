@@ -29,11 +29,11 @@ try:
 except ImportError:
     HAS_PYSTAC = False
 
-from bmc.engine.vector import vector_engine
+from bmc.engine.vector import vectorEngine
 from bmc.cube.spatiotemporal.cube import dataCube
 from bmc.utils.logger import log_execution
 
-class vector_cube(vector_engine, dataCube, ABC):
+class vectorCube(vectorEngine, dataCube, ABC):
     """
     Base class governing discrete, event-based spatial mapping into vector cubes.
 

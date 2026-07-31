@@ -14,7 +14,7 @@ from bmc.cube.spatiotemporal.raster import *
 from bmc.utils.logger import log_execution
 
 
-class chelsa_cube(raster_cube):
+class chelsaCube(rasterCube):
     """
     Child class dedicated to the single-pass generation of high-resolution 
     CHELSA V2.1 spatiotemporal data cubes.

@@ -10,10 +10,10 @@ import xarray as xr
 from osgeo import gdal
 from rasterio.warp import transform_bounds
 from typing import Optional, Union, List, Any
-from bmc.engine.base import base_spatial_grid
+from bmc.engine.base import baseGrid
 from bmc.utils.logger import log_execution
 
-class raster_engine(base_spatial_grid):
+class rasterEngine(baseGrid):
     """
     The fundamental spatial physics and geometric transformation engine.
 

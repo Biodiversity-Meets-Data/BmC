@@ -7,7 +7,7 @@ import re
 from shapely.geometry import box
 import zipfile
 
-class gbif_cube(vector_cube):
+class gbifCube(vectorCube):
     """
     Child class dedicated to generating and processing GBIF (Global Biodiversity 
     Information Facility) spatiotemporal vector data cubes.

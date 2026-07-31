@@ -4,19 +4,23 @@ import logging
 from typing import Optional, List, Dict, Any
 import shutil
 
+import importlib
+import pkgutil
+import inspect
+
 try:
     import pystac
     HAS_PYSTAC = True
 except ImportError:
     HAS_PYSTAC = False
 
-from .datasets.raster.chelsa import chelsa_cube
-from .datasets.vector.gbif import gbif_cube
+from .datasets.raster.chelsa import chelsaCube
+from .datasets.vector.gbif import gbifCube
 from bmc.datasource.gbif import sql
 from bmc.utils.logger import log_execution
 from bmc.utils.provenance import generate_provenance_metadata
 
-class bmd_cube:
+class bmdCube:
     """
     The central orchestrator for constructing multi-dimensional spatiotemporal data cubes.
 
@@ -42,16 +46,75 @@ class bmd_cube:
         Executes the full pipeline: triggers asynchronous downloads, processes data, and writes the output tree.
     """
     
-    def __init__(self):
+    def __init__(self) -> None:
         """
-        Initializes the bmd_cube orchestrator and establishes the dynamic engine dispatcher.
+        Initialize the bmd orchestrator and build the dynamic engine dispatcher.
+
+        Triggers dynamic discovery to discover and map available raster and vector
+        dataset engines located within the `bmc.cube.datasets` sub-packages.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
         """
-        # Dispatch table mapping YAML dataset string keys to their respective uninstantiated class objects.
-        # This allows dynamic scaling of the pipeline as more data sources are added.
-        self._source_map = {
-            "chelsa": chelsa_cube,
-            "gbif": gbif_cube
-        }
+        self._source_map: Dict[str, Any] = self._build_source_map()
+
+    def _build_source_map(self) -> Dict[str, Any]:
+        """
+        Dynamically discover and register Cube engine classes from dataset modules.
+
+        Scans the `raster` and `vector` package directories inside `bmc.cube.datasets` 
+        for classes adhering to the `{datasource}Cube` naming convention (e.g., `chelsaCube`, 
+        `gbifCube`). Strips the 'Cube' suffix to populate the lookup dictionary.
+
+        Returns
+        -------
+        Dict[str, Any]
+            A dictionary mapping lowercased datasource string keys (e.g., 'chelsa', 
+            'gbif') to their corresponding uninstantiated class objects.
+
+        Raises
+        ------
+        ImportError
+            If any of the dataset target packages cannot be dynamically imported.
+        """
+        source_map: Dict[str, Any] = {}
+
+        # Resolve base package path (resolves to 'bmc.cube' when imported)
+        base_pkg = __package__ if __package__ else "bmc.cube"
+
+        packages_to_scan = [
+            f"{base_pkg}.datasets.raster",
+            f"{base_pkg}.datasets.vector",
+        ]
+
+        for pkg_name in packages_to_scan:
+            try:
+                # 1. Import the dataset package (e.g., bmc.cube.datasets.raster)
+                pkg = importlib.import_module(pkg_name)
+
+                if not hasattr(pkg, "__path__"):
+                    continue
+
+                # 2. Iterate over modules inside the package directory (chelsa.py, gbif.py, etc.)
+                for _, module_name, _ in pkgutil.iter_modules(pkg.__path__):
+                    full_module_name = f"{pkg_name}.{module_name}"
+                    module = importlib.import_module(full_module_name)
+
+                    # 3. Inspect module classes matching the {datasource}Cube convention
+                    for name, obj in inspect.getmembers(module, inspect.isclass):
+                        if name.endswith("Cube") and obj.__module__ == full_module_name:
+                            datasource_key = name[:-4].lower()  # Converts 'chelsaCube' -> 'chelsa'
+                            source_map[datasource_key] = obj
+
+            except ImportError as e:
+                logging.warning(f"Could not load package '{pkg_name}' during dynamic discovery: {e}")
+
+        return source_map
 
     def _load_recipe(self, recipe_file: str, recipe_path: str) -> Dict[str, Any]:
         """

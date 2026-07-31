@@ -6,7 +6,7 @@ from typing import Optional, Tuple
 from pyproj import CRS, Transformer
 from bmc.utils.logger import log_execution
 
-class base_spatial_grid():
+class baseGrid():
     """
     The foundational spatial truth of the spatiotemporal pipeline.
     

@@ -30,10 +30,10 @@ from bmc.utils.logger import log_execution, ResourceProfiler
 from bmc.utils.spatial import build_envelope_from_file
 from bmc.utils.io import parallel_fetch_rasters
 
-from bmc.engine.raster import raster_engine
+from bmc.engine.raster import rasterEngine
 from bmc.cube.spatiotemporal.cube import dataCube
 
-class raster_cube(raster_engine, dataCube, ABC):
+class rasterCube(rasterEngine, dataCube, ABC):
     """
     Base class for constructing multidimensional ecological data lakes/cubes.
 

@@ -13,10 +13,10 @@ from shapely import force_2d, make_valid
 from shapely.geometry import MultiPolygon, MultiLineString, MultiPoint, box
 from shapely.geometry.collection import GeometryCollection
 from typing import Optional, List, Union, Tuple, Dict, Any
-from bmc.engine.base import base_spatial_grid
+from bmc.engine.base import baseGrid
 from bmc.utils.logger import log_execution
 
-class vector_engine(base_spatial_grid):
+class vectorEngine(baseGrid):
     """
     The fundamental vector spatial transformation and mapping engine.
 
