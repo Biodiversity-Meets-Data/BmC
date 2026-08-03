@@ -744,15 +744,18 @@ class vectorEngine(baseGrid):
             return pd.DataFrame(columns=[output_col, "src_grid_idx", fraction_col] + preserve_cols)
 
         # 2. Extract and define global mappings
+        cloud_bounds = gpd.GeoSeries(source_gdf[geom_column], crs=source_gdf.crs).total_bounds
+
         target_grid_gdf, _, res = self._build_target_grid(
             target_grid_name=target_grid_name,
             source_crs=source_gdf.crs,
-            source_bounds=source_gdf.total_bounds,
+            source_bounds=cloud_bounds,
             target_bbox=target_bbox,
             logger=logger,
         )
 
         grid_centroids = target_grid_gdf.geometry.centroid
+
         target_grid_gdf["grid_idx"] = self.calculate_deterministic_global_indices(
             x_coords=grid_centroids.x.values,
             y_coords=grid_centroids.y.values,
@@ -771,21 +774,24 @@ class vectorEngine(baseGrid):
 
         # 3. Source Mapping Indexation
         orig_pts = source_gdf[[original_geom_name]].copy()
+        orig_pts[_uid_col] = source_gdf.index
         orig_pts = orig_pts.set_geometry(original_geom_name, crs=target_crs)
 
-        tree = KDTree(np.column_stack([grid_centroids.x.values, grid_centroids.y.values]))
-        centroid_mapping = self._compute_home_cell_mapping(
-            reference_geom=orig_pts.geometry,
-            uid_values=source_gdf.index,
-            uid_col_name=_uid_col,
-            tree=tree,
-            grid_idx_values=target_grid_gdf["grid_idx"].values,
-            res=res,
-            output_col_name="src_grid_idx"
+        # Evaluate the singular point against the grid using spatial join (intersects)
+        joined_orig = gpd.sjoin(orig_pts, target_grid_gdf, how="inner", predicate="intersects")
+        
+        # Tie-break boundary points consistently to match map_points_to_template
+        centroid_mapping = (
+            joined_orig.sort_values(by=[_uid_col, "grid_idx"])
+            .drop_duplicates(subset=[_uid_col])[[_uid_col, "grid_idx"]]
+            .rename(columns={"grid_idx": "src_grid_idx"})
         )
 
         # 4. Target Tree classification branch limits mapping arrays setup configs parameters
         if mode == "classify" and classify_method == "kdtree":
+            # Instantiate KDTree for spatial lookup when KDTree method is requested
+            tree = KDTree(np.column_stack([grid_centroids.x.values, grid_centroids.y.values]))
+            
             mapping = self._compute_home_cell_mapping(
                 reference_geom=work_df.geometry,
                 uid_values=work_df[_uid_col].values,
@@ -808,6 +814,7 @@ class vectorEngine(baseGrid):
                     
             if geom_column in result_gdf.columns and geom_column != result_gdf.geometry.name:
                 result_gdf = result_gdf.drop(columns=[geom_column])
+                
             return result_gdf
 
         # 5. Batched Intersect execution logic mappings 
