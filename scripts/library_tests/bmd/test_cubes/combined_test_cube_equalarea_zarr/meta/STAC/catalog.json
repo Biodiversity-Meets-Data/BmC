@@ -11,12 +11,7 @@
     },
     {
       "rel": "item",
-      "href": "./combined_test_cube_equalarea_zarr_chelsa_20260730234736/combined_test_cube_equalarea_zarr_chelsa_20260730234736.json",
-      "type": "application/geo+json"
-    },
-    {
-      "rel": "item",
-      "href": "./combined_test_cube_equalarea_zarr_gbif_20260730234737/combined_test_cube_equalarea_zarr_gbif_20260730234737.json",
+      "href": "./combined_test_cube_equalarea_zarr_gbif_20260810140043/combined_test_cube_equalarea_zarr_gbif_20260810140043.json",
       "type": "application/geo+json"
     }
   ]

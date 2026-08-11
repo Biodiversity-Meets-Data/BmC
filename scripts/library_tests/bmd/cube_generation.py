@@ -3,7 +3,7 @@ import os
 import glob
 import logging
 import faulthandler
-from bmc.cube.bmd import bmd_cube
+from bmc.cube.orchestrator.bmd import bmdCube
 
 faulthandler.enable()
 
@@ -185,7 +185,7 @@ sources:
         polygon:
           quad_segs: 8
     aggregate:
-      export_unaggregated: false
+      export_unaggregated: true
       group_by_columns: ["specieskey", "year", "month"]
       metrics:
         - column: "areal_fraction"
@@ -265,7 +265,7 @@ sources:
           distribution: "gaussian"
           random_seed: 42
     aggregate:
-      export_unaggregated: false
+      export_unaggregated: true
       group_by_columns: ["specieskey", "year", "month"]
       metrics:
         - column: "fraction"
@@ -278,7 +278,7 @@ sources:
 # 4. EXECUTE ORCHESTRATOR SUITE
 # =======================================================================
 def run_combined_suite():
-    orchestrator = bmd_cube()
+    orchestrator = bmdCube()
     """
     # ---------------------------------------------------------
     # RUN TEST 1: EEA Grid (NetCDF + Async GBIF Download)

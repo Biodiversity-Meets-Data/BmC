@@ -62,7 +62,7 @@ sources:
         polygon:
           quad_segs: 8
     aggregate:
-      export_unaggregated: false
+      export_unaggregated: true
       group_by_columns:
       - specieskey
       - year

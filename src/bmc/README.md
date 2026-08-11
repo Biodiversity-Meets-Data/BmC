@@ -10,16 +10,15 @@ The `bmc` library is structured into different modules depending on the function
   - `datasets`: Contains dataset-specific implementations of the blueprints provided in `spatiotemporal`.
   - `bmd`: The orchestrator module containing the main user-facing frontend class.
 
-An overview of the software architecture is provided in the diagram below:
-
 ![Software architecture](../../img/BmC_Architecture_Diagram.png)
 
 ## Data Sources
 
-The `datasource` module contains the functionality used to interface with the different data providers integrated into the cubing engine. Currently, the following data sources are supported:
+The `datasource` module contains the functionality used to interface with the different data providers integrated into the cubing engine. It handles API authentication, query generation, and raw data download/polling. Currently, the following data sources are supported:
 
-- `chelsa`
-- `gbif`
+- `chelsa`: Climatologies at high resolution for the earth’s land surface areas via S3 scraping.
+- `gbif`: Global Biodiversity Information Facility occurrence data via SQL download API.
+- `wekeo`: Harmonized Data Access (HDA) interface for Copernicus and Sentinel data (HRL, CORINE, etc.).
 
 ## Utilities
 

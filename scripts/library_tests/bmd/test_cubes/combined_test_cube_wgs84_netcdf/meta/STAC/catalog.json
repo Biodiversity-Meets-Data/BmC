@@ -11,12 +11,7 @@
     },
     {
       "rel": "item",
-      "href": "./combined_test_cube_wgs84_netcdf_chelsa_20260730234445/combined_test_cube_wgs84_netcdf_chelsa_20260730234445.json",
-      "type": "application/geo+json"
-    },
-    {
-      "rel": "item",
-      "href": "./combined_test_cube_wgs84_netcdf_gbif_20260730234448/combined_test_cube_wgs84_netcdf_gbif_20260730234448.json",
+      "href": "./combined_test_cube_wgs84_netcdf_gbif_20260810135802/combined_test_cube_wgs84_netcdf_gbif_20260810135802.json",
       "type": "application/geo+json"
     }
   ]

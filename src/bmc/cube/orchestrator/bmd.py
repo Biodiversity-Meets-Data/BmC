@@ -14,8 +14,8 @@ try:
 except ImportError:
     HAS_PYSTAC = False
 
-from .datasets.raster.chelsa import chelsaCube
-from .datasets.vector.gbif import gbifCube
+from ..datasets.raster.chelsa import chelsaCube
+from ..datasets.vector.gbif import gbifCube
 from bmc.datasource.gbif import sql
 from bmc.utils.logger import log_execution
 from bmc.utils.provenance import generate_provenance_metadata
