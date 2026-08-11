@@ -3,7 +3,7 @@ import os
 import glob
 import logging
 import faulthandler
-from bmc.cube.bmd import bmd_cube
+from bmc.cube.orchestrator.bmd import bmd_cube
 
 faulthandler.enable()
 

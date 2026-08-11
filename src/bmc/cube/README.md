@@ -1,64 +1,41 @@
-# BMD Cube Orchestrator
+# Cube Module Overview
 
-The `bmd_cube` class serves as the central orchestrator for constructing multi-dimensional spatiotemporal data cubes. It is designed to manage the end-to-end execution of ecological data pipelines, dynamically dispatching tasks to specific raster and vector engines.
+The `cube` module is the core generation engine of the `bmc` spatiotemporal pipeline. It is responsible for orchestrating, standardizing, and generating mathematically aligned data cubes from disparate raw ecological data. 
 
----
-
-## High-Level Overview
-
-By parsing YAML configuration recipes, `bmd_cube` completely automates the generation of unified datasets. It handles asynchronous data fetching, localized dataset warping, and metadata generation, culminating in a highly structured and reproducible output directory. 
-
-**Key Capabilities:**
-*   **Dynamic Dispatch:** Automatically routes processing tasks to designated engines like CHELSA (raster) and GBIF (vector) based on YAML configurations.
-*   **Asynchronous Execution:** Optimizes pipeline speed by submitting heavy remote API requests (like GBIF) to run in the background while simultaneously downloading and processing synchronous local tasks.
-*   **Strict Reproducibility:** Automatically dumps a frozen copy of the executed `recipe.yaml` and generates a rigid `provenance_metadata.json` audit log capturing system environments and execution timestamps.
-*   **STAC Integration:** Wraps disparate dataset outputs into cohesive, hierarchically structured PySTAC Catalogs (`catalog.json`) to ensure machine-readable spatial metadata.
+To enforce the separation of concerns and maintain a scalable architecture, the module is partitioned into three primary submodules: **Spatiotemporal**, and **Datasets**, **Orchestrator**.
 
 ---
 
-## Output Directory Structure
+## 1. Spatiotemporal Submodule
+**Goal:** Provide the architectural blueprints and Abstract Base Classes (ABCs) that define how spatial data is handled, warped, and standardized.
 
-<p align="center">
-  <img src="../../../img/datatree.png" alt="Datatree" width="50%">
-</p>
+This submodule ensures that all datasets behave consistently regardless of their origin. It enforces consistent dual-stream logging, hardware telemetry, topological sanitization, and mathematical resolution against a master `GRID_REGISTRY`.
 
-The orchestrator generates a highly organized, standardized directory tree upon successful execution. This structure cleanly separates the harmonized ecological datasets from their machine-readable metadata and provenance logs.
+**Key Functionality:**
+*   **`cube.py` (Parent Base):** Centralizes non-spatial boilerplate functionality, including logging, directory topology provisioning, and resource profiling.
+*   **`raster.py` (Raster Base):** The engine for **continuous** environmental variables. It manages out-of-core spatial warping via GDAL C++ multithreading, grid snapping, and metadata injection to reassemble 2D TIFFs into 3D/4D arrays.
+*   **`vector.py` (Vector Base):** The engine for **discrete, event-based** spatial mapping. It manages geometry sanitization, DuckDB spatial pushdown, mass-conserving translation into target templates, and outputs a highly structured relational star schema (Dimensions and Fact tables).
 
-### Harmonized Data Cubes
-Each processed data source receives its own dedicated subdirectory within the main cube directory. These folders contain the specific variables filtered by the requested Area of Interest (AOI) and temporal window.
-* **Strict Alignment:** All data within the cube is spatially and temporally harmonized to describe the exact same bounds, utilizing the same Coordinate Reference System (CRS) and spatial resolution.
-* **Optimized Formats:** Raster datasets are exported natively as **Zarr** and **NetCDF**, while vector datasets are exported as **GeoParquet**.
+---
 
-### Cube Metadata & Provenance
-Alongside the physical data, a dedicated `meta/` directory is generated to guarantee full auditability and reproducibility of the pipeline.
-* **Enriched STAC Catalog:** A SpatioTemporal Asset Catalog (STAC) describes each data source and its spatial properties. Every STAC item is enriched with explicit ETL (Extract, Transform, Load) metadata to document the exact processing steps applied to the source data.
-* **Environment Snapshot:** The orchestrator outputs a JSON record (`provenance_metadata.json`) containing a complete snapshot of the compute environment, detailing the exact software and hardware configurations used during execution.
+## 2. Datasets Submodule
+**Goal:** House the concrete, vendor-specific implementations of the `rasterCube` and `vectorCube` base classes.
 
-## Vector Cube Output Structure
+This submodule is logically partitioned into `raster` and `vector` directories. Each script here acts as an adapter, translating the strict rules of the `spatiotemporal` base classes into the specific API logic required by external data providers.
 
-The `vectorCube` engine standardizes spatial vector datasets into a highly structured relational star schema. This architecture separates the complex physical geometries from the mathematical attribute data, optimizing the data for both spatial visualization and multidimensional analysis.
+**Key Functionality:**
+*   **Raster Implementations (e.g., `chelsaCube`):** Handles the ingestion of CHELSA V2.1 data. It maps physical environmental variables to strict GDAL resampling algorithms (e.g., `bilinear` for temperature, `average` for precipitation) and parses CMIP6 ensembles into Xarray coordinates using a metadata catch-and-release architecture.
+*   **Vector Implementations (e.g., `gbifCube`):** Handles the ingestion of GBIF occurrence data. It translates YAML recipes into executable GBIF Hive SQL queries, dynamically generates spatial topologies (Points, Polygons, Point Clouds), parses native grid cell codes (EEA, EQDG), and supports `api_cube` modes that offload spatial aggregation to the provider's servers.
 
-Below is the Entity-Relationship Diagram mapping the standard output structure:
+---
 
-![Vector Cube Relational Output](../../../img/vectorCube_output.png)
+## 3. Orchestrator Submodule
+**Goal:** Serve as the central command center for the end-to-end execution of ecological data pipelines. 
 
-### 1. Source Geometries Table (Dimension)
-This table preserves the original, complex geometries ingested from the raw dataset (e.g., points, multi-polygons) alongside their untouched raw attributes. 
-*   **Primary Key (PK):** `src_uid` (Integer or String)
-*   **Columns:** `geometry` (WKB Geometry), `raw_attributes`
+The `bmd_cube` class resides here and is responsible for fully automating the generation of unified datasets. It acts as the bridge between user-defined YAML configuration recipes and the underlying processing engines. 
 
-### 2. Spatial Dimensions Table (Dimension)
-Generated during the spatial mapping phase, this table defines the rigid, standard grid topology. It stores the discrete polygons (the "cookie-cutter" cells) that make up the target master grid.
-*   **Primary Key (PK):** `grid_idx` (Integer or String)
-*   **Columns:** `cellGeometry` (WKB Geometry)
-
-### 3. Unaggregated Vector Data (Base Fact Table)
-This acts as the central mapping bridge linking the original source records to the standardized grid. When a source geometry overlaps multiple grid cells, this table captures the fractured relationships and standardizes the temporal data. (Not included standardly in the output but can be included in the recipe explicitly)
-*   **Foreign Key 1 (FK1):** `grid_idx` → Links to Spatial Dimensions Table.
-*   **Foreign Key 2 (FK2):** `src_uid` → Links to Source Geometries Table.
-*   **Columns:** `Datetime` (CF-compliant temporal coordinate), `Attributes` (including spatial weights/fractions).
-
-### 4. Aggregated Vector Data (Summarized Fact Table)
-Through the aggregate procedure, the unaggregated mappings are mathematically rolled up into a final multidimensional dataset. Because the spatial mapping and weighting have already been applied, this table drops the `src_uid` and links exclusively to the master grid.
-*   **Foreign Key (FK):** `grid_idx` → Links to Spatial Dimensions Table.
-*   **Columns:** `Datetime`, `Aggregated_attr` (Summarized mathematical metrics).
+**Key Functionality:**
+*   **Dynamic Dispatch & Async Execution:** Automatically routes processing tasks to the correct raster or vector engines and optimizes pipeline speed by submitting heavy remote API requests in the background while processing local tasks.
+*   **Output Tree Generation:** Generates a highly organized directory structure that clearly separates harmonized data cubes (exported as Zarr, NetCDF, or GeoParquet) from metadata.
+*   **Reproducibility & Provenance:** Dumps a frozen copy of the executed recipe and generates a strict `provenance_metadata.json` audit log capturing system environments.
+*   **STAC Cataloging:** Wraps disparate dataset outputs into cohesive, hierarchically structured PySTAC Catalogs (`catalog.json`).

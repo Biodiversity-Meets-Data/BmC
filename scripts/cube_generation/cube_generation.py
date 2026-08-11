@@ -1,7 +1,7 @@
 import yaml
 import os
 import logging
-from bmc.cube.bmd import bmd_cube
+from bmc.cube.orchestrator.bmd import bmd_cube
 
 import faulthandler
 faulthandler.enable()
