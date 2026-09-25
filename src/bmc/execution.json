@@ -1,0 +1,7 @@
+{
+    "min_slices_for_parallel": 16,
+    "max_safe_threadpool_workers": 8,
+    "large_slice_threshold_mb": 50.0,
+    "gdal_warp_block_size": 2048,
+    "warp_cache_cleanup_delay_sec": 30
+}

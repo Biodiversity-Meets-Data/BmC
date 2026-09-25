@@ -84,8 +84,8 @@ class bmdCube:
         """
         source_map: Dict[str, Any] = {}
 
-        # Resolve base package path (resolves to 'bmc.cube' when imported)
-        base_pkg = __package__ if __package__ else "bmc.cube"
+        # Force the base package string to prevent the orchestrator sub-directory from breaking imports
+        base_pkg = "bmc.cube"
 
         packages_to_scan = [
             f"{base_pkg}.datasets.raster",

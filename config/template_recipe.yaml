@@ -1,6 +1,17 @@
 base_dir: "./test_outputs/"
 cube_name: "dev_cube"
 
+# Only include this if you want to change the execution configuration 
+# For more explanation of these options, consult the readme file in the config directory
+"""
+execution:
+    min_slices_for_parallel: 16,
+    max_safe_threadpool_workers: 8,
+    large_slice_threshold_mb: 50.0,
+    gdal_warp_block_size: 2048,
+    warp_cache_cleanup_delay_sec: 30
+"""
+
 export_as:
   format: "zarr"
 # ======================================================================

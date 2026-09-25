@@ -3,7 +3,12 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Tuple, Optional, Union, Any
 import time
 import random
+import os
 
+from osgeo import gdal
+import geopandas as gpd
+import pandas as pd
+from shapely.geometry import box
 import dask
 import rasterio
 import rioxarray
@@ -142,6 +147,7 @@ def parallel_fetch_rasters(
     paths: Union[str, List[str]],
     geom: Union[Tuple[float, float, float, float], Any],
     max_workers: int = 10,
+    credentials: Optional[Dict[str, Any]] = None,
     gdal_config: Optional[Dict[str, str]] = None,
     geom_crs: Optional[str] = None
 ) -> Dict[str, xr.DataArray]:
@@ -162,6 +168,11 @@ def parallel_fetch_rasters(
     max_workers : int, optional
         The maximum number of concurrent threads to spawn for network I/O. 
         Default is 10.
+    credentials : dict, optional
+        A dictionary containing S3 authentication keys. Expected keys are 
+        's3_access_key' (or 'aws_access_key_id'), 's3_secret_key' 
+        (or 'aws_secret_access_key'), and 's3_endpoint'. If None or missing 
+        keys, the environment configures for anonymous public bucket access.
     gdal_config : dict, optional
         Overrides for the GDAL environment configuration. If None, a highly 
         optimized default configuration for Cloud Optimized GeoTIFF (COG) 
@@ -176,15 +187,37 @@ def parallel_fetch_rasters(
     dict
         A dictionary mapping the original file path (str) directly to its 
         in-memory `xarray.DataArray`.
-
-    Notes
-    -----
-    Files that fail to download (due to network timeouts or missing assets) 
-    are logged and automatically excluded from the returned dictionary to 
-    ensure pipeline continuity.
     """
-    # Clean fallback: use the module-level constant if no specific override is passed down
-    gdal_env = gdal_config or DEFAULT_GDAL_ENV
+    # Start with the base GDAL configuration or the optimized default
+    gdal_env = (gdal_config or DEFAULT_GDAL_ENV).copy()
+
+    # Apply dynamic S3 Credential Resolution
+    if credentials:
+        access_key = credentials.get("s3_access_key") or credentials.get("aws_access_key_id")
+        secret_key = credentials.get("s3_secret_key") or credentials.get("aws_secret_access_key")
+        endpoint = credentials.get("s3_endpoint") or credentials.get("endpoint")
+        
+        if endpoint:
+            gdal_env["AWS_S3_ENDPOINT"] = endpoint
+
+        if access_key and secret_key:
+            gdal_env["AWS_ACCESS_KEY_ID"] = access_key
+            gdal_env["AWS_SECRET_ACCESS_KEY"] = secret_key
+            
+            # Allow the credentials dictionary to optionally override kwargs
+            is_virtual = credentials.get("virtual_hosting", False)
+            is_https = credentials.get("use_https", True)
+            
+            gdal_env["AWS_VIRTUAL_HOSTING"] = "TRUE" if is_virtual else "FALSE"
+            gdal_env["AWS_HTTPS"] = "YES" if is_https else "NO"
+            
+            # Ensure no sign request isn't accidentally active for private buckets
+            gdal_env.pop("AWS_NO_SIGN_REQUEST", None)
+        else:
+            gdal_env["AWS_NO_SIGN_REQUEST"] = "YES"
+    elif not any(k.startswith("AWS_") for k in gdal_env):
+        # Fallback to anonymous requests if no credentials or AWS overrides exist
+        gdal_env["AWS_NO_SIGN_REQUEST"] = "YES"
 
     if isinstance(paths, str):
         paths = [paths]
@@ -200,6 +233,7 @@ def parallel_fetch_rasters(
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {
+            # Pass the dynamically resolved gdal_env to each worker
             executor.submit(_fetch_single_raster, path, geom, gdal_env, geom_crs): path
             for path in paths}     
         for future in as_completed(futures):
@@ -222,3 +256,241 @@ def parallel_fetch_rasters(
             logging.INFO
         )
     return fetched_arrays
+
+
+def filter_and_group_catalog(catalog_path, bbox, start_date, end_date, group_cols=None):
+    """
+    Filters a GeoParquet catalog spatially and temporally, optionally grouping 
+    results to aggregate S3 paths for Virtual Raster (VRT) generation.
+
+    This function enables rapid preprocessing of large Earth observation 
+    catalogs. By passing specific grouping columns (like 'datetime' and 
+    'proj:epsg'), it clusters intersecting tiles into consistent coordinate 
+    and temporal systems, which is required for building valid GDAL VRTs.
+
+    Parameters
+    ----------
+    catalog_path : str
+        The file path to the input GeoParquet catalog.
+    bbox : list or tuple of float
+        The spatial bounding box in the format [west, south, east, north]. 
+        Coordinates must match the CRS of the catalog (typically EPSG:4326).
+    start_date : str or datetime.datetime
+        The start of the temporal bounding box (inclusive). Accepts standard 
+        date strings (e.g., '2017-01-01').
+    end_date : str or datetime.datetime
+        The end of the temporal bounding box (inclusive). Accepts standard 
+        date strings (e.g., '2020-12-31').
+    group_cols : list of str, optional
+        Columns by which to group the filtered dataframe. Defaults to None.
+
+    Returns
+    -------
+    dict or list
+        If `group_cols` is provided, returns a dictionary where keys are the 
+        unique grouping combinations and values are lists of `s3_href` strings. 
+        If `group_cols` is None, returns a flat list of all matching `s3_href` 
+        strings. Returns an empty dict or list if no intersections are found.
+
+    Examples
+    --------
+    Extracting a flat list of tiles for a specific region:
+    
+    >>> bbox = [3.5, 50.5, 4.0, 51.0]
+    >>> filter_and_group_catalog("catalog.parquet", bbox, "2018-01-01", "2018-12-31")
+    ['s3://eodata/tile1.tif', 's3://eodata/tile2.tif']
+
+    Grouping tiles by year and CRS for mosaicking:
+    
+    >>> filter_and_group_catalog("catalog.parquet", bbox, "2017-01-01", "2020-12-31", ['datetime', 'proj:epsg'])
+    {(Timestamp('2018-01-01'), 3035): ['s3://eodata/t1.tif', ...], ...}
+    """
+    # --- 1. Load the Catalog ---
+    # Read the pre-indexed GeoParquet file into memory. 
+    # This format allows spatial operations directly on the dataframe.
+    gdf = gpd.read_parquet(catalog_path)
+    
+    # --- 2. Spatial Filter ---
+    # Construct a Shapely polygon from the bounding box [w, s, e, n]
+    search_geom = box(*bbox)
+    
+    # Filter the GeoDataFrame for any geometries that intersect the search box.
+    # We use .copy() to decouple the filtered data from the original dataframe, 
+    # preventing pandas SettingWithCopyWarnings during downstream manipulations.
+    filtered_gdf = gdf[gdf.intersects(search_geom)].copy()
+    
+    # --- 3. Temporal Filter ---
+    # Convert input strings to pandas Timestamp objects for reliable comparisons
+    start = pd.to_datetime(start_date)
+    end = pd.to_datetime(end_date)
+    
+    # Filter for records that fall on or between the start and end dates
+    filtered_gdf = filtered_gdf[
+        (filtered_gdf['datetime'] >= start) & 
+        (filtered_gdf['datetime'] <= end)
+    ]
+    
+    # Early exit if the combined spatial/temporal filters yield no results
+    if filtered_gdf.empty:
+        print("No matching tiles found for the given criteria.")
+        return {} if group_cols else []
+
+    # --- 4. Grouping Logic ---
+    if group_cols:
+        # Group the dataframe by the requested columns (e.g., year, EPSG).
+        # We select only the 's3_href' column and apply list() to collapse 
+        # all matching S3 paths for each group into a single list element.
+        grouped = filtered_gdf.groupby(group_cols)['s3_href'].apply(list)
+        
+        # Convert the resulting pandas Series into a standard Python dictionary.
+        # Format: {(group_val_1, group_val_2): ['s3://...', 's3://...']}
+        return grouped.to_dict()
+    
+    # If no grouping was requested, return a flat Python list of all matching hrefs
+    return filtered_gdf['s3_href'].tolist()
+
+def s3_to_vrt(
+    s3_hrefs, 
+    vrt_path, 
+    credentials: Optional[Dict[str, Any]] = None,
+    export_tif_path=None, 
+    resample_alg="near",
+    virtual_hosting=False,
+    use_https=True,
+    creation_options=None
+):
+    """
+    Constructs a GDAL Virtual Raster (VRT) from a list of S3 raster URIs, 
+    enabling lightweight, virtual mosaicking and optional local GeoTIFF export.
+
+    This function configures GDAL's Virtual File System (`/vsis3/`) to stream 
+    remote cloud raster assets dynamically[cite: 2]. By creating a VRT, GDAL maps the 
+    spatial footprints of input rasters without downloading pixel data upfront[cite: 2]. 
+    If an `export_tif_path` is specified, it streams and compresses the mosaic 
+    into a local GeoTIFF file[cite: 2].
+
+    Parameters
+    ----------
+    s3_hrefs : list of str
+        A list of S3 URIs (e.g., `['s3://bucket/raster1.tif', ...]`) to be 
+        mosaicked into the virtual dataset.
+    vrt_path : str
+        The output target path for the VRT file. Can be a physical file path 
+        (e.g., `./mosaic.vrt`) or an in-memory virtual file (e.g., `/vsimem/mosaic.vrt`).
+    credentials : dict, optional
+        A dictionary containing S3 authentication keys. Expected keys are 
+        's3_access_key' (or 'aws_access_key_id'), 's3_secret_key' 
+        (or 'aws_secret_access_key'), and 's3_endpoint'. If None or missing 
+        keys, GDAL configures for anonymous public bucket access.
+    export_tif_path : str, optional
+        An optional local file path to write a compiled GeoTIFF raster. If 
+        None, only the VRT is constructed. Defaults to None.
+    resample_alg : str, optional
+        The resampling algorithm used when pixel interpolation or reprojection 
+        occurs (e.g., `'near'`, `'bilinear'`, `'cubic'`). Defaults to `'near'`, 
+        which preserves discrete categorical class values[cite: 2].
+    virtual_hosting : bool, optional
+        Toggles whether GDAL uses bucket-virtual hosting (True) or path-style 
+        addressing (False). Defaults to False.
+    use_https : bool, optional
+        Toggles whether GDAL uses HTTPS (True) or HTTP (False) protocol for 
+        fetching S3 objects. Defaults to True.
+    creation_options : list of str, optional
+        Custom driver creation options passed to `gdal.TranslateOptions` if 
+        exporting a GeoTIFF. Defaults to `["COMPRESS=DEFLATE", "TILED=YES", 
+        "BIGTIFF=IF_SAFER"]`[cite: 2].
+
+    Returns
+    -------
+    bool
+        Returns True if the VRT (and optional GeoTIFF) was generated successfully; 
+        returns False if the input list is empty or GDAL fails to build the VRT[cite: 2].
+    """
+    if not s3_hrefs:
+        print("No S3 URIs provided. Skipping VRT construction.")
+        return False
+
+    # --- 1. Global GDAL Configuration ---
+    # Disable directory listing on open to avoid latency/timeouts on vast S3 object stores[cite: 2]
+    gdal.SetConfigOption('GDAL_DISABLE_READDIR_ON_OPEN', 'EMPTY_DIR')
+    
+    # Reset any previous authentication state in the global GDAL configuration
+    gdal.SetConfigOption('AWS_NO_SIGN_REQUEST', 'NO')
+    gdal.SetConfigOption('AWS_ACCESS_KEY_ID', '')
+    gdal.SetConfigOption('AWS_SECRET_ACCESS_KEY', '')
+    gdal.SetConfigOption('AWS_S3_ENDPOINT', '')
+
+    if credentials:
+        access_key = credentials.get("s3_access_key") or credentials.get("aws_access_key_id")
+        secret_key = credentials.get("s3_secret_key") or credentials.get("aws_secret_access_key")
+        endpoint = credentials.get("s3_endpoint") or credentials.get("endpoint")
+        
+        if endpoint:
+            gdal.SetConfigOption('AWS_S3_ENDPOINT', endpoint)
+            
+        if access_key and secret_key:
+            gdal.SetConfigOption('AWS_ACCESS_KEY_ID', access_key)
+            gdal.SetConfigOption('AWS_SECRET_ACCESS_KEY', secret_key)
+            
+            # Allow the credentials dictionary to optionally override kwargs
+            is_virtual = credentials.get("virtual_hosting", virtual_hosting)
+            is_https = credentials.get("use_https", use_https)
+            
+            gdal.SetConfigOption('AWS_VIRTUAL_HOSTING', 'TRUE' if is_virtual else 'FALSE')
+            gdal.SetConfigOption('AWS_HTTPS', 'YES' if is_https else 'NO')
+        else:
+            gdal.SetConfigOption('AWS_NO_SIGN_REQUEST', 'YES')
+    else:
+        # Public/Anonymous access
+        gdal.SetConfigOption('AWS_NO_SIGN_REQUEST', 'YES')
+
+    # --- 2. Standardize Prefixes ---
+    # Convert 's3://' paths into GDAL '/vsis3/' virtual filesystem paths[cite: 2]
+    vsi_paths = [p.replace("s3://", "/vsis3/") for p in s3_hrefs]
+
+    # --- 3. Construct Virtual Raster (VRT) ---
+    print(f"Constructing VRT from {len(vsi_paths)} remote raster source(s)...")
+    
+    vrt_options = gdal.BuildVRTOptions(
+        resampleAlg=resample_alg,
+        addAlpha=False
+    )
+    
+    vrt_ds = gdal.BuildVRT(vrt_path, vsi_paths, options=vrt_options)
+    
+    if vrt_ds is None:
+        print("Failed to construct GDAL VRT dataset.")
+        return False
+
+    # --- 4. Optional GeoTIFF Export ---
+    if export_tif_path:
+        print(f"Translating virtual mosaic to physical raster: {export_tif_path}")
+        
+        target_dir = os.path.dirname(os.path.abspath(export_tif_path))
+        os.makedirs(target_dir, exist_ok=True)
+        
+        if creation_options is None:
+            creation_options = [
+                "COMPRESS=DEFLATE",
+                "TILED=YES",
+                "BIGTIFF=IF_SAFER"
+            ]
+            
+        translate_options = gdal.TranslateOptions(
+            format="GTiff",
+            creationOptions=creation_options
+        )
+        
+        gdal.Translate(export_tif_path, vrt_ds, options=translate_options)
+        
+        file_size_mb = os.path.getsize(export_tif_path) / (1024 * 1024)
+        print(f"Export complete. File Size: {file_size_mb:.2f} MB")
+
+    # --- 5. Memory Management & Cleanup ---
+    vrt_ds = None 
+    
+    # Automatically unlink /vsimem/ virtual memory files upon completion to prevent memory leaks[cite: 2]
+    if vrt_path.startswith("/vsimem/"):
+        gdal.Unlink(vrt_path)
+        
+    return True

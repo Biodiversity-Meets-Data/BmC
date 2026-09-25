@@ -1,0 +1,18 @@
+{
+  "type": "Catalog",
+  "id": "combined_test_cube_wgs84_netcdf_catalog",
+  "stac_version": "1.1.0",
+  "description": "Unified STAC catalog aggregating all sub-cube STAC items for 'combined_test_cube_wgs84_netcdf'.",
+  "links": [
+    {
+      "rel": "root",
+      "href": "./catalog.json",
+      "type": "application/json"
+    },
+    {
+      "rel": "item",
+      "href": "./combined_test_cube_wgs84_netcdf_gbif_20260925141657/combined_test_cube_wgs84_netcdf_gbif_20260925141657.json",
+      "type": "application/geo+json"
+    }
+  ]
+}

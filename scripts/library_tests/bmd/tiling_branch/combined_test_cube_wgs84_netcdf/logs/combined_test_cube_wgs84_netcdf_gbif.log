@@ -1,0 +1,250 @@
+[2026-09-25 10:43:40] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 10:43:40] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'gbif' ===
+[2026-09-25 10:43:40] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 10:43:40] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif
+[2026-09-25 10:43:40] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_gbif.log
+[2026-09-25 10:43:40] [INFO] Processing Mode: VECTOR
+[2026-09-25 10:43:40] [INFO] Loading GBIF data from C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/tiling_branch/downloads/0016977-260721160103020.zip...
+[2026-09-25 10:43:40] [INFO] Constructed and resolved master grid key: Global_WGS84_30sec
+[2026-09-25 10:43:40] [INFO] Extracting padded global bounding box from recipe...
+[2026-09-25 10:43:41] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-09-25 10:43:41] [INFO] Validation report saved to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-09-25 10:43:41] [INFO] Exporting source geometries to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_source_geometries.parquet...
+[2026-09-25 10:43:41] [INFO] Exporting unaggregated relational table to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_unaggregated.parquet...
+[2026-09-25 10:43:41] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-09-25 10:43:41] [INFO] Fractional geometries detected. Spatial multiplier: 'areal_fraction'.
+[2026-09-25 10:43:41] [INFO] Aggregating 'areal_fraction' -> 'expected_occurrences' (Method: sum, Weighted: False)
+[2026-09-25 10:43:41] [INFO] Vector aggregation complete. Yielded 700 final cells.
+[2026-09-25 10:43:41] [INFO] Exporting final aggregated spatial dataset to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_aggregated.parquet...
+[2026-09-25 10:43:41] [INFO] === GBIF Generation Complete ===
+[2026-09-25 10:43:41] [INFO] === Assembling STAC Item for GBIF ===
+[2026-09-25 10:43:41] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-09-25 10:43:41] [INFO] Spatial Dimension Table saved to: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_Global_WGS84_30sec_dimension_table.parquet
+[2026-09-25 10:43:41] [INFO] === STAC Item Assembly Complete: combined_test_cube_wgs84_netcdf_gbif_20260925104341 ===
+[2026-09-25 10:43:41] [INFO] Exported STAC item to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\meta\STAC_assets\gbif_stac.json
+[2026-09-25 11:18:17] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 11:18:17] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'gbif' ===
+[2026-09-25 11:18:17] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 11:18:17] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif
+[2026-09-25 11:18:17] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_gbif.log
+[2026-09-25 11:18:17] [INFO] Processing Mode: VECTOR
+[2026-09-25 11:18:17] [INFO] Loading GBIF data from C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/tiling_branch/downloads/0016977-260721160103020.zip...
+[2026-09-25 11:18:17] [INFO] Constructed and resolved master grid key: Global_WGS84_30sec
+[2026-09-25 11:18:17] [INFO] Extracting padded global bounding box from recipe...
+[2026-09-25 11:18:18] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-09-25 11:18:18] [INFO] Validation report saved to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-09-25 11:18:18] [INFO] Exporting source geometries to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_source_geometries.parquet...
+[2026-09-25 11:18:18] [INFO] Exporting unaggregated relational table to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_unaggregated.parquet...
+[2026-09-25 11:18:18] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-09-25 11:18:18] [INFO] Fractional geometries detected. Spatial multiplier: 'areal_fraction'.
+[2026-09-25 11:18:18] [INFO] Aggregating 'areal_fraction' -> 'expected_occurrences' (Method: sum, Weighted: False)
+[2026-09-25 11:18:19] [INFO] Vector aggregation complete. Yielded 700 final cells.
+[2026-09-25 11:18:19] [INFO] Exporting final aggregated spatial dataset to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_aggregated.parquet...
+[2026-09-25 11:18:19] [INFO] === GBIF Generation Complete ===
+[2026-09-25 11:18:19] [INFO] === Assembling STAC Item for GBIF ===
+[2026-09-25 11:18:19] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-09-25 11:18:19] [INFO] Spatial Dimension Table saved to: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_Global_WGS84_30sec_dimension_table.parquet
+[2026-09-25 11:18:19] [INFO] === STAC Item Assembly Complete: combined_test_cube_wgs84_netcdf_gbif_20260925111819 ===
+[2026-09-25 11:18:19] [INFO] Exported STAC item to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\meta\STAC_assets\gbif_stac.json
+[2026-09-25 11:19:40] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 11:19:40] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'gbif' ===
+[2026-09-25 11:19:40] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 11:19:40] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif
+[2026-09-25 11:19:40] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_gbif.log
+[2026-09-25 11:19:40] [INFO] Processing Mode: VECTOR
+[2026-09-25 11:19:40] [INFO] Loading GBIF data from C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/tiling_branch/downloads/0016977-260721160103020.zip...
+[2026-09-25 11:19:40] [INFO] Constructed and resolved master grid key: Global_WGS84_30sec
+[2026-09-25 11:19:40] [INFO] Extracting padded global bounding box from recipe...
+[2026-09-25 11:19:42] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-09-25 11:19:42] [INFO] Validation report saved to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-09-25 11:19:42] [INFO] Exporting source geometries to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_source_geometries.parquet...
+[2026-09-25 11:19:42] [INFO] Exporting unaggregated relational table to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_unaggregated.parquet...
+[2026-09-25 11:19:42] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-09-25 11:19:42] [INFO] Fractional geometries detected. Spatial multiplier: 'areal_fraction'.
+[2026-09-25 11:19:42] [INFO] Aggregating 'areal_fraction' -> 'expected_occurrences' (Method: sum, Weighted: False)
+[2026-09-25 11:19:42] [INFO] Vector aggregation complete. Yielded 700 final cells.
+[2026-09-25 11:19:42] [INFO] Exporting final aggregated spatial dataset to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_aggregated.parquet...
+[2026-09-25 11:19:42] [INFO] === GBIF Generation Complete ===
+[2026-09-25 11:19:42] [INFO] === Assembling STAC Item for GBIF ===
+[2026-09-25 11:19:42] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-09-25 11:19:42] [INFO] Spatial Dimension Table saved to: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_Global_WGS84_30sec_dimension_table.parquet
+[2026-09-25 11:19:42] [INFO] === STAC Item Assembly Complete: combined_test_cube_wgs84_netcdf_gbif_20260925111942 ===
+[2026-09-25 11:19:42] [INFO] Exported STAC item to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\meta\STAC_assets\gbif_stac.json
+[2026-09-25 11:21:13] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 11:21:13] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'gbif' ===
+[2026-09-25 11:21:13] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 11:21:13] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif
+[2026-09-25 11:21:13] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_gbif.log
+[2026-09-25 11:21:13] [INFO] Processing Mode: VECTOR
+[2026-09-25 11:21:13] [INFO] Loading GBIF data from C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/tiling_branch/downloads/0016977-260721160103020.zip...
+[2026-09-25 11:21:14] [INFO] Constructed and resolved master grid key: Global_WGS84_30sec
+[2026-09-25 11:21:14] [INFO] Extracting padded global bounding box from recipe...
+[2026-09-25 11:21:15] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-09-25 11:21:15] [INFO] Validation report saved to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-09-25 11:21:15] [INFO] Exporting source geometries to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_source_geometries.parquet...
+[2026-09-25 11:21:15] [INFO] Exporting unaggregated relational table to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_unaggregated.parquet...
+[2026-09-25 11:21:15] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-09-25 11:21:15] [INFO] Fractional geometries detected. Spatial multiplier: 'areal_fraction'.
+[2026-09-25 11:21:15] [INFO] Aggregating 'areal_fraction' -> 'expected_occurrences' (Method: sum, Weighted: False)
+[2026-09-25 11:21:15] [INFO] Vector aggregation complete. Yielded 700 final cells.
+[2026-09-25 11:21:15] [INFO] Exporting final aggregated spatial dataset to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_aggregated.parquet...
+[2026-09-25 11:21:15] [INFO] === GBIF Generation Complete ===
+[2026-09-25 11:21:15] [INFO] === Assembling STAC Item for GBIF ===
+[2026-09-25 11:21:15] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-09-25 11:21:15] [INFO] Spatial Dimension Table saved to: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_Global_WGS84_30sec_dimension_table.parquet
+[2026-09-25 11:21:15] [INFO] === STAC Item Assembly Complete: combined_test_cube_wgs84_netcdf_gbif_20260925112115 ===
+[2026-09-25 11:21:15] [INFO] Exported STAC item to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\meta\STAC_assets\gbif_stac.json
+[2026-09-25 11:26:20] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 11:26:20] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'gbif' ===
+[2026-09-25 11:26:20] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 11:26:20] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif
+[2026-09-25 11:26:20] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_gbif.log
+[2026-09-25 11:26:20] [INFO] Processing Mode: VECTOR
+[2026-09-25 11:26:20] [INFO] Loading GBIF data from C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/tiling_branch/downloads/0016977-260721160103020.zip...
+[2026-09-25 11:26:20] [INFO] Constructed and resolved master grid key: Global_WGS84_30sec
+[2026-09-25 11:26:20] [INFO] Extracting padded global bounding box from recipe...
+[2026-09-25 11:26:22] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-09-25 11:26:22] [INFO] Validation report saved to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-09-25 11:26:22] [INFO] Exporting source geometries to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_source_geometries.parquet...
+[2026-09-25 11:26:22] [INFO] Exporting unaggregated relational table to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_unaggregated.parquet...
+[2026-09-25 11:26:22] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-09-25 11:26:22] [INFO] Fractional geometries detected. Spatial multiplier: 'areal_fraction'.
+[2026-09-25 11:26:22] [INFO] Aggregating 'areal_fraction' -> 'expected_occurrences' (Method: sum, Weighted: False)
+[2026-09-25 11:26:22] [INFO] Vector aggregation complete. Yielded 700 final cells.
+[2026-09-25 11:26:22] [INFO] Exporting final aggregated spatial dataset to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_aggregated.parquet...
+[2026-09-25 11:26:22] [INFO] === GBIF Generation Complete ===
+[2026-09-25 11:26:22] [INFO] === Assembling STAC Item for GBIF ===
+[2026-09-25 11:26:22] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-09-25 11:26:22] [INFO] Spatial Dimension Table saved to: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_Global_WGS84_30sec_dimension_table.parquet
+[2026-09-25 11:26:22] [INFO] === STAC Item Assembly Complete: combined_test_cube_wgs84_netcdf_gbif_20260925112622 ===
+[2026-09-25 11:26:22] [INFO] Exported STAC item to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\meta\STAC_assets\gbif_stac.json
+[2026-09-25 11:29:12] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 11:29:12] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'gbif' ===
+[2026-09-25 11:29:12] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 11:29:12] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif
+[2026-09-25 11:29:12] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_gbif.log
+[2026-09-25 11:29:12] [INFO] Processing Mode: VECTOR
+[2026-09-25 11:29:12] [INFO] Loading GBIF data from C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/tiling_branch/downloads/0016977-260721160103020.zip...
+[2026-09-25 11:29:12] [INFO] Constructed and resolved master grid key: Global_WGS84_30sec
+[2026-09-25 11:29:12] [INFO] Extracting padded global bounding box from recipe...
+[2026-09-25 11:29:13] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-09-25 11:29:13] [INFO] Validation report saved to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-09-25 11:29:13] [INFO] Exporting source geometries to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_source_geometries.parquet...
+[2026-09-25 11:29:13] [INFO] Exporting unaggregated relational table to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_unaggregated.parquet...
+[2026-09-25 11:29:13] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-09-25 11:29:13] [INFO] Fractional geometries detected. Spatial multiplier: 'areal_fraction'.
+[2026-09-25 11:29:13] [INFO] Aggregating 'areal_fraction' -> 'expected_occurrences' (Method: sum, Weighted: False)
+[2026-09-25 11:29:13] [INFO] Vector aggregation complete. Yielded 700 final cells.
+[2026-09-25 11:29:13] [INFO] Exporting final aggregated spatial dataset to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_aggregated.parquet...
+[2026-09-25 11:29:13] [INFO] === GBIF Generation Complete ===
+[2026-09-25 11:29:13] [INFO] === Assembling STAC Item for GBIF ===
+[2026-09-25 11:29:13] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-09-25 11:29:13] [INFO] Spatial Dimension Table saved to: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_Global_WGS84_30sec_dimension_table.parquet
+[2026-09-25 11:29:13] [INFO] === STAC Item Assembly Complete: combined_test_cube_wgs84_netcdf_gbif_20260925112913 ===
+[2026-09-25 11:29:13] [INFO] Exported STAC item to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\meta\STAC_assets\gbif_stac.json
+[2026-09-25 13:13:00] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 13:13:00] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'gbif' ===
+[2026-09-25 13:13:00] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 13:13:00] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif
+[2026-09-25 13:13:00] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_gbif.log
+[2026-09-25 13:13:00] [INFO] Processing Mode: VECTOR
+[2026-09-25 13:13:00] [INFO] Loading GBIF data from C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/tiling_branch/downloads/0016977-260721160103020.zip...
+[2026-09-25 13:13:00] [INFO] Constructed and resolved master grid key: Global_WGS84_30sec
+[2026-09-25 13:13:00] [INFO] Extracting padded global bounding box from recipe...
+[2026-09-25 13:13:01] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-09-25 13:13:01] [INFO] Validation report saved to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-09-25 13:13:01] [INFO] Exporting source geometries to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_source_geometries.parquet...
+[2026-09-25 13:13:01] [INFO] Exporting unaggregated relational table to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_unaggregated.parquet...
+[2026-09-25 13:13:01] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-09-25 13:13:01] [INFO] Fractional geometries detected. Spatial multiplier: 'areal_fraction'.
+[2026-09-25 13:13:01] [INFO] Aggregating 'areal_fraction' -> 'expected_occurrences' (Method: sum, Weighted: False)
+[2026-09-25 13:13:01] [INFO] Vector aggregation complete. Yielded 700 final cells.
+[2026-09-25 13:13:01] [INFO] Exporting final aggregated spatial dataset to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_aggregated.parquet...
+[2026-09-25 13:13:01] [INFO] === GBIF Generation Complete ===
+[2026-09-25 13:13:01] [INFO] === Assembling STAC Item for GBIF ===
+[2026-09-25 13:13:01] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-09-25 13:13:02] [INFO] Spatial Dimension Table saved to: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_Global_WGS84_30sec_dimension_table.parquet
+[2026-09-25 13:13:02] [INFO] === STAC Item Assembly Complete: combined_test_cube_wgs84_netcdf_gbif_20260925131301 ===
+[2026-09-25 13:13:02] [INFO] Exported STAC item to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\meta\STAC_assets\gbif_stac.json
+[2026-09-25 13:18:56] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 13:18:56] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'gbif' ===
+[2026-09-25 13:18:56] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 13:18:56] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif
+[2026-09-25 13:18:56] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_gbif.log
+[2026-09-25 13:18:56] [INFO] Processing Mode: VECTOR
+[2026-09-25 13:18:56] [INFO] Loading GBIF data from C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/tiling_branch/downloads/0016977-260721160103020.zip...
+[2026-09-25 13:18:56] [INFO] Constructed and resolved master grid key: Global_WGS84_30sec
+[2026-09-25 13:18:56] [INFO] Extracting padded global bounding box from recipe...
+[2026-09-25 13:18:57] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-09-25 13:18:57] [INFO] Validation report saved to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-09-25 13:18:57] [INFO] Exporting source geometries to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_source_geometries.parquet...
+[2026-09-25 13:18:57] [INFO] Exporting unaggregated relational table to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_unaggregated.parquet...
+[2026-09-25 13:18:57] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-09-25 13:18:57] [INFO] Fractional geometries detected. Spatial multiplier: 'areal_fraction'.
+[2026-09-25 13:18:57] [INFO] Aggregating 'areal_fraction' -> 'expected_occurrences' (Method: sum, Weighted: False)
+[2026-09-25 13:18:57] [INFO] Vector aggregation complete. Yielded 700 final cells.
+[2026-09-25 13:18:57] [INFO] Exporting final aggregated spatial dataset to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_aggregated.parquet...
+[2026-09-25 13:18:57] [INFO] === GBIF Generation Complete ===
+[2026-09-25 13:18:57] [INFO] === Assembling STAC Item for GBIF ===
+[2026-09-25 13:18:57] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-09-25 13:18:57] [INFO] Spatial Dimension Table saved to: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_Global_WGS84_30sec_dimension_table.parquet
+[2026-09-25 13:18:57] [INFO] === STAC Item Assembly Complete: combined_test_cube_wgs84_netcdf_gbif_20260925131857 ===
+[2026-09-25 13:18:57] [INFO] Exported STAC item to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\meta\STAC_assets\gbif_stac.json
+[2026-09-25 13:52:00] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 13:52:00] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'gbif' ===
+[2026-09-25 13:52:00] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 13:52:00] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif
+[2026-09-25 13:52:00] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_gbif.log
+[2026-09-25 13:52:00] [INFO] Processing Mode: VECTOR
+[2026-09-25 13:52:00] [INFO] Loading GBIF data from C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/tiling_branch/downloads/0016977-260721160103020.zip...
+[2026-09-25 13:52:00] [INFO] Constructed and resolved master grid key: Global_WGS84_30sec
+[2026-09-25 13:52:00] [INFO] Extracting padded global bounding box from recipe...
+[2026-09-25 13:52:01] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-09-25 13:52:01] [INFO] Validation report saved to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-09-25 13:52:01] [INFO] Exporting source geometries to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_source_geometries.parquet...
+[2026-09-25 13:52:01] [INFO] Exporting unaggregated relational table to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_unaggregated.parquet...
+[2026-09-25 13:52:01] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-09-25 13:52:01] [INFO] Fractional geometries detected. Spatial multiplier: 'areal_fraction'.
+[2026-09-25 13:52:01] [INFO] Aggregating 'areal_fraction' -> 'expected_occurrences' (Method: sum, Weighted: False)
+[2026-09-25 13:52:01] [INFO] Vector aggregation complete. Yielded 700 final cells.
+[2026-09-25 13:52:01] [INFO] Exporting final aggregated spatial dataset to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_aggregated.parquet...
+[2026-09-25 13:52:01] [INFO] === GBIF Generation Complete ===
+[2026-09-25 13:52:01] [INFO] === Assembling STAC Item for GBIF ===
+[2026-09-25 13:52:01] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-09-25 13:52:01] [INFO] Spatial Dimension Table saved to: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_Global_WGS84_30sec_dimension_table.parquet
+[2026-09-25 13:52:01] [INFO] === STAC Item Assembly Complete: combined_test_cube_wgs84_netcdf_gbif_20260925135201 ===
+[2026-09-25 13:52:01] [INFO] Exported STAC item to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\meta\STAC_assets\gbif_stac.json
+[2026-09-25 14:16:54] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 14:16:54] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'gbif' ===
+[2026-09-25 14:16:54] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 14:16:54] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif
+[2026-09-25 14:16:54] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_gbif.log
+[2026-09-25 14:16:54] [INFO] Processing Mode: VECTOR
+[2026-09-25 14:16:54] [INFO] Loading GBIF data from C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/tiling_branch/downloads/0016977-260721160103020.zip...
+[2026-09-25 14:16:54] [INFO] Constructed and resolved master grid key: Global_WGS84_30sec
+[2026-09-25 14:16:54] [INFO] Extracting padded global bounding box from recipe...
+[2026-09-25 14:16:57] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-09-25 14:16:57] [INFO] Validation report saved to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-09-25 14:16:57] [INFO] Exporting source geometries to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_source_geometries.parquet...
+[2026-09-25 14:16:57] [INFO] Exporting unaggregated relational table to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_unaggregated.parquet...
+[2026-09-25 14:16:57] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-09-25 14:16:57] [INFO] Fractional geometries detected. Spatial multiplier: 'areal_fraction'.
+[2026-09-25 14:16:57] [INFO] Aggregating 'areal_fraction' -> 'expected_occurrences' (Method: sum, Weighted: False)
+[2026-09-25 14:16:57] [INFO] Vector aggregation complete. Yielded 700 final cells.
+[2026-09-25 14:16:57] [INFO] Exporting final aggregated spatial dataset to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_aggregated.parquet...
+[2026-09-25 14:16:57] [INFO] === GBIF Generation Complete ===
+[2026-09-25 14:16:57] [INFO] === Assembling STAC Item for GBIF ===
+[2026-09-25 14:16:57] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-09-25 14:16:57] [INFO] Spatial Dimension Table saved to: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\gbif\gbif_Global_WGS84_30sec_dimension_table.parquet
+[2026-09-25 14:16:57] [INFO] === STAC Item Assembly Complete: combined_test_cube_wgs84_netcdf_gbif_20260925141657 ===
+[2026-09-25 14:16:57] [INFO] Exported STAC item to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\meta\STAC_assets\gbif_stac.json

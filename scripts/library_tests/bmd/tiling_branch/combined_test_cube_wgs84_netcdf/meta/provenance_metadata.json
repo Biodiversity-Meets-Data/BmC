@@ -1,0 +1,267 @@
+{
+    "cube_name": "combined_test_cube_wgs84_netcdf",
+    "execution_timestamp_utc": "2026-09-25T12:14:07.391532+00:00",
+    "code_provenance": {
+        "pipeline_package": "bmc",
+        "pipeline_version": "0.1.0",
+        "git_branch": "tiled_raster",
+        "git_commit_sha": "691e6b0123adf7d167bc778fd6109f3e072c3d72"
+    },
+    "system_environment": {
+        "os": "Windows",
+        "os_release": "11",
+        "os_version": "10.0.26200",
+        "architecture": "AMD64",
+        "python_version": "3.12.13",
+        "tracked_variables": {
+            "GDAL_DATA": "C:\\Users\\niels\\Anaconda3\\envs\\BmC\\Library\\share\\gdal",
+            "PROJ_LIB": "Not Set",
+            "PROJ_NETWORK": "Not Set",
+            "OMP_NUM_THREADS": "Not Set",
+            "NUMBA_NUM_THREADS": "Not Set",
+            "OPENBLAS_NUM_THREADS": "Not Set",
+            "MKL_NUM_THREADS": "Not Set",
+            "CURL_CA_BUNDLE": "Not Set",
+            "REQUESTS_CA_BUNDLE": "Not Set",
+            "CONDA_DEFAULT_ENV": "BmC"
+        }
+    },
+    "hardware_environment": {
+        "cpu_cores": 22,
+        "total_ram_gb": 15.46,
+        "c_level_threadpools": [
+            {
+                "user_api": "openmp",
+                "internal_api": "openmp",
+                "num_threads": 22,
+                "prefix": "vcomp",
+                "filepath": "C:\\Users\\niels\\anaconda3\\envs\\BmC\\vcomp140.dll",
+                "version": null
+            }
+        ]
+    },
+    "software_environment": {
+        "pyogrio": "0.10.0",
+        "wrapt": "1.17.0",
+        "cligj": "0.7.2",
+        "pip": "26.1.2",
+        "google-crc32c": "Not Installed",
+        "requests": "2.32.3",
+        "shapely": "2.1.2",
+        "colorama": "0.4.6",
+        "unicodedata2": "15.1.0",
+        "threadpoolctl": "3.5.0",
+        "xarray": "2025.12.0",
+        "pygbif": "0.6.6",
+        "dask-geopandas": "0.5.0",
+        "win_inet_pton": "1.1.0",
+        "cattrs": "24.1.2",
+        "kiwisolver": "1.4.8",
+        "psutil": "7.0.0",
+        "click": "8.1.8",
+        "soupsieve": "2.5",
+        "locket": "1.0.0",
+        "donfig": "0.8.1.post1",
+        "toolz": "1.1.0",
+        "joblib": "1.4.2",
+        "branca": "0.6.0",
+        "netCDF4": "1.7.2",
+        "pot": "0.9.6.post1",
+        "cachetools": "7.0.1",
+        "certifi": "2026.7.22",
+        "folium": "0.19.6",
+        "libpysal": "4.15.0",
+        "backports.zstd": "Not Installed",
+        "odc-geo": "0.5.0",
+        "MarkupSafe": "3.0.2",
+        "click-plugins": "1.1.1",
+        "requests-cache": "1.2.0",
+        "Brotli": "1.0.9",
+        "pyproj": "3.6.1",
+        "sparse": "0.15.4",
+        "idna": "3.7",
+        "zarr": "2.18.7",
+        "hpack": "Not Installed",
+        "dask": "2026.1.2",
+        "openeo": "0.43.0",
+        "pyarrow": "19.0.0",
+        "duckdb": "1.5.4",
+        "PySocks": "1.7.1",
+        "matplotlib": "3.10.0",
+        "attrs": "24.3.0",
+        "PyYAML": "6.0.2",
+        "fonttools": "4.55.3",
+        "geopandas": "1.1.4",
+        "Jinja2": "3.1.6",
+        "setuptools": "82.0.1",
+        "snuggs": "Not Installed",
+        "pandas": "3.0.3",
+        "numcodecs": "0.15.1",
+        "cloudpickle": "3.1.2",
+        "charset-normalizer": "3.3.2",
+        "python-duckdb": "Not Installed",
+        "scikit-learn": "1.6.1",
+        "python-dateutil": "2.9.0.post0",
+        "rasterio": "1.4.3",
+        "platformdirs": "4.3.7",
+        "gdal": "3.6.2",
+        "packaging": "26.2",
+        "geocube": "0.7.1",
+        "six": "1.17.0",
+        "rioxarray": "0.22.0",
+        "urllib3": "2.3.0",
+        "Deprecated": "1.2.13",
+        "pillow": "11.1.0",
+        "url-normalize": "1.4.3",
+        "pyparsing": "3.2.0",
+        "POT": "0.9.6.post1",
+        "numpy": "2.4.6",
+        "zipp": "Not Installed",
+        "netcdf4": "1.7.2",
+        "tzdata": "2026.2",
+        "hyperframe": "Not Installed",
+        "esda": "2.10.0",
+        "beautifulsoup4": "4.15.0",
+        "regionmask": "0.13.0",
+        "pooch": "1.9.0",
+        "cftime": "1.6.4.post1",
+        "pyyaml": "6.0.2",
+        "scipy": "1.18.0",
+        "fsspec": "2026.2.0",
+        "GDAL": "3.6.2",
+        "typing_extensions": "4.12.2",
+        "h2": "Not Installed",
+        "pystac": "1.14.3",
+        "bmc": "0.1.0",
+        "llvmlite": "0.47.0",
+        "wheel": "0.47.0",
+        "hda": "2.34",
+        "importlib_metadata": "Not Installed",
+        "geomet": "1.1.0",
+        "mapclassify": "2.10.0",
+        "partd": "1.4.2",
+        "contourpy": "1.3.1",
+        "numba": "0.65.1",
+        "appdirs": "1.4.4",
+        "tqdm": "4.67.1",
+        "mpi4py": "Not Installed",
+        "munkres": "Not Installed",
+        "h5py": "Not Installed",
+        "xyzservices": "2022.9.0",
+        "networkx": "3.4.2",
+        "cycler": "0.11.0",
+        "narwhals": "2.7.0",
+        "affine": "2.3.0",
+        "geojson-rewind": "1.1.0",
+        "gdal_cpp_backend": "3.6.2"
+    },
+    "input_data_hashes": {
+        "gbif_local_file_path": {
+            "path": "C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/tiling_branch/downloads/0016977-260721160103020.zip",
+            "sha256": "a8420ae236c3ca912310d69eb8cfdfe3961e74b379dccc0629c485905c358a1f"
+        }
+    },
+    "execution_recipe": {
+        "base_dir": "C:\\Users\\niels\\Documents\\Repositories\\BmC\\scripts\\library_tests\\bmd\\tiling_branch",
+        "cube_name": "combined_test_cube_wgs84_netcdf",
+        "export_as": {
+            "format": "netcdf"
+        },
+        "spatial": {
+            "target_grid": "Global_WGS84",
+            "target_resolution": "30sec",
+            "use_bbox": true,
+            "bbox": {
+                "long_min": 3.376891,
+                "long_max": 4.804775,
+                "lat_min": 50.583876,
+                "lat_max": 51.386124
+            }
+        },
+        "temporal": {
+            "start_year": 2018,
+            "start_month": 1,
+            "end_year": 2018,
+            "end_month": 12
+        },
+        "sources": {
+            "chelsa": {
+                "enabled": true,
+                "levels": {
+                    "monthly": {
+                        "include": true,
+                        "variables": {
+                            "pr": true,
+                            "tas": true
+                        }
+                    },
+                    "bioclim": {
+                        "include": true,
+                        "time_ranges": {
+                            "1981-2010": true,
+                            "2011-2040": true,
+                            "2041-2070": true
+                        },
+                        "ensembles": {
+                            "historical": true,
+                            "GFDL-ESM4": true,
+                            "MPI-ESM1-2-HR": true
+                        },
+                        "scenarios": {
+                            "historical": true,
+                            "ssp126": true,
+                            "ssp585": true
+                        },
+                        "variables": {
+                            "bio01": true,
+                            "bio12": true
+                        }
+                    }
+                }
+            },
+            "gbif": {
+                "enabled": true,
+                "local_file_path": "C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/tiling_branch/downloads/0016977-260721160103020.zip",
+                "columns": [
+                    "year",
+                    "month",
+                    "recordedby"
+                ],
+                "time_cols": [
+                    "year",
+                    "month"
+                ],
+                "processing_mode": "vector",
+                "vector_processing": {
+                    "topology": "polygon",
+                    "mapping_mode": "fractional",
+                    "spatial_method": "intersect",
+                    "topology_config": {
+                        "polygon": {
+                            "quad_segs": 8
+                        }
+                    }
+                },
+                "aggregate": {
+                    "export_unaggregated": true,
+                    "group_by_columns": [
+                        "specieskey",
+                        "year",
+                        "month"
+                    ],
+                    "metrics": [
+                        {
+                            "column": "areal_fraction",
+                            "method": "sum",
+                            "weighted": false,
+                            "rename": "expected_occurrences"
+                        }
+                    ]
+                }
+            }
+        },
+        "paths": {
+            "base_dir": "C:\\Users\\niels\\Documents\\Repositories\\BmC\\scripts\\library_tests\\bmd\\tiling_branch\\combined_test_cube_wgs84_netcdf\\meta"
+        }
+    }
+}

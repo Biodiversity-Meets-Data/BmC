@@ -1,0 +1,13 @@
+{
+    "interior_mass_failures": [],
+    "boundary_mass_failures": [
+        31,
+        47,
+        52,
+        59,
+        61,
+        73,
+        93
+    ],
+    "drift_failures": []
+}

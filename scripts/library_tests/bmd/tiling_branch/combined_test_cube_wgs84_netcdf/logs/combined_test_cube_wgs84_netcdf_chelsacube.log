@@ -1,0 +1,280 @@
+[2026-09-25 10:43:40] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 10:43:40] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'chelsacube' ===
+[2026-09-25 10:43:40] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 10:43:40] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\chelsacube
+[2026-09-25 10:43:40] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_chelsacube.log
+[2026-09-25 10:43:40] [ERROR] Fatal: 'catalog_path' attribute not set on child class.
+[2026-09-25 10:43:40] [WARNING] Terminating pipeline: no candidate asset catalog generated.
+[2026-09-25 11:18:06] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 11:18:06] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'chelsacube' ===
+[2026-09-25 11:18:06] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 11:18:06] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\chelsacube
+[2026-09-25 11:18:06] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_chelsacube.log
+[2026-09-25 11:18:17] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 11:18:17] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'chelsacube' ===
+[2026-09-25 11:18:17] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 11:18:17] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\chelsacube
+[2026-09-25 11:18:17] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_chelsacube.log
+[2026-09-25 11:18:17] [INFO] Loading catalog from C:\Users\niels\Documents\Repositories\BmC\meta\chelsa_gp_stac\chelsa_catalog.parquet...
+[2026-09-25 11:18:17] [ERROR] Failed to load catalog: name 'gpd' is not defined
+[2026-09-25 11:18:17] [WARNING] Terminating pipeline: no candidate asset catalog generated.
+[2026-09-25 11:19:40] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 11:19:40] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'chelsacube' ===
+[2026-09-25 11:19:40] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 11:19:40] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\chelsacube
+[2026-09-25 11:19:40] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_chelsacube.log
+[2026-09-25 11:19:40] [INFO] Loading catalog from C:\Users\niels\Documents\Repositories\BmC\meta\chelsa_gp_stac\chelsa_catalog.parquet...
+[2026-09-25 11:19:40] [ERROR] Failed to load catalog: [WinError 3] Failed to open local file 'C:/Users/niels/Documents/Repositories/BmC/meta/chelsa_gp_stac/chelsa_catalog.parquet'. Detail: [Windows error 3] The system cannot find the path specified.
+
+[2026-09-25 11:19:40] [WARNING] Terminating pipeline: no candidate asset catalog generated.
+[2026-09-25 11:21:13] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 11:21:13] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'chelsacube' ===
+[2026-09-25 11:21:13] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 11:21:13] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\chelsacube
+[2026-09-25 11:21:13] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_chelsacube.log
+[2026-09-25 11:21:13] [INFO] Loading catalog from C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\meta\chelsa\chelsa_catalog.parquet...
+[2026-09-25 11:21:13] [ERROR] Failed to load catalog: [WinError 3] Failed to open local file 'C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/meta/chelsa/chelsa_catalog.parquet'. Detail: [Windows error 3] The system cannot find the path specified.
+
+[2026-09-25 11:21:13] [WARNING] Terminating pipeline: no candidate asset catalog generated.
+[2026-09-25 11:26:20] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 11:26:20] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'chelsacube' ===
+[2026-09-25 11:26:20] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 11:26:20] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\chelsacube
+[2026-09-25 11:26:20] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_chelsacube.log
+[2026-09-25 11:26:20] [INFO] Loading catalog from C:\Users\niels\Documents\Repositories\BmC\src\meta\chelsa\chelsa_catalog.parquet...
+[2026-09-25 11:26:20] [ERROR] Failed to load catalog: [WinError 3] Failed to open local file 'C:/Users/niels/Documents/Repositories/BmC/src/meta/chelsa/chelsa_catalog.parquet'. Detail: [Windows error 3] The system cannot find the path specified.
+
+[2026-09-25 11:26:20] [WARNING] Terminating pipeline: no candidate asset catalog generated.
+[2026-09-25 11:28:16] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 11:28:16] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'chelsacube' ===
+[2026-09-25 11:28:16] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 11:28:16] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\chelsacube
+[2026-09-25 11:28:16] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_chelsacube.log
+[2026-09-25 11:28:16] [INFO] Loading catalog from C:\Users\niels\Documents\Repositories\BmC\meta\chelsa\chelsa_catalog.parquet...
+[2026-09-25 11:29:11] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 11:29:11] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'chelsacube' ===
+[2026-09-25 11:29:11] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 11:29:11] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\chelsacube
+[2026-09-25 11:29:11] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_chelsacube.log
+[2026-09-25 11:29:11] [INFO] Loading catalog from C:\Users\niels\Documents\Repositories\BmC\meta\chelsa\chelsa_catalog.parquet...
+[2026-09-25 11:29:12] [WARNING] Terminating pipeline: no candidate asset catalog generated.
+[2026-09-25 13:04:36] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 13:04:36] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'chelsacube' ===
+[2026-09-25 13:04:36] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 13:04:36] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\chelsacube
+[2026-09-25 13:04:36] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_chelsacube.log
+[2026-09-25 13:04:37] [INFO] Initial catalog rows loaded: 339225
+[2026-09-25 13:04:37] [INFO] Rows surviving Category filter: 1123
+[2026-09-25 13:04:37] [INFO] Rows surviving Auxiliary filter: 1049
+[2026-09-25 13:04:37] [INFO] Rows surviving Spatial filter: 1049
+[2026-09-25 13:04:37] [INFO] Rows surviving Temporal filter: 42
+[2026-09-25 13:04:37] [INFO] Resolving target grid base for CHELSA data cube generation...
+[2026-09-25 13:04:37] [INFO] Successfully mapped CHELSA processing to registry grid 'Global_WGS84_30sec'.
+[2026-09-25 13:04:37] [INFO] Pinging '['/vsicurl/https://os.unil.cloud.switch.ch/chelsa02/chelsa/global/bioclim/bio01/1981-2010/CHELSA_bio01_1981-2010_V.2.1.tif']' to detect spatial metadata...
+[2026-09-25 13:06:29] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 13:06:29] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'chelsacube' ===
+[2026-09-25 13:06:29] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 13:06:29] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\chelsacube
+[2026-09-25 13:06:29] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_chelsacube.log
+[2026-09-25 13:06:29] [INFO] Initial catalog rows loaded: 339225
+[2026-09-25 13:06:29] [INFO] Rows surviving Category filter: 1123
+[2026-09-25 13:06:29] [INFO] Rows surviving Auxiliary filter: 1049
+[2026-09-25 13:06:29] [INFO] Rows surviving Spatial filter: 1049
+[2026-09-25 13:06:29] [INFO] Rows surviving Temporal filter: 42
+[2026-09-25 13:06:29] [INFO] Resolving target grid base for CHELSA data cube generation...
+[2026-09-25 13:06:29] [INFO] Successfully mapped CHELSA processing to registry grid 'Global_WGS84_30sec'.
+[2026-09-25 13:06:29] [INFO] Pinging '/vsicurl/https://os.unil.cloud.switch.ch/chelsa02/chelsa/global/bioclim/bio01/1981-2010/CHELSA_bio01_1981-2010_V.2.1.tif' to detect spatial metadata...
+[2026-09-25 13:06:30] [INFO] Detected Source CRS: EPSG:4326 | Res: 0.0083333333
+[2026-09-25 13:06:30] [INFO] Computing safe fetch envelope (EPSG:4326 -> EPSG:4326)...
+[2026-09-25 13:06:30] [INFO] 
+Processing Level: 'bioclim' | Variable: 'bio01'...
+[2026-09-25 13:07:55] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 13:07:55] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'chelsacube' ===
+[2026-09-25 13:07:55] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 13:07:55] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\chelsacube
+[2026-09-25 13:07:55] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_chelsacube.log
+[2026-09-25 13:07:56] [INFO] Initial catalog rows loaded: 339225
+[2026-09-25 13:07:56] [INFO] Rows surviving Category filter: 1123
+[2026-09-25 13:07:56] [INFO] Rows surviving Auxiliary filter: 1049
+[2026-09-25 13:07:56] [INFO] Rows surviving Spatial filter: 1049
+[2026-09-25 13:07:56] [INFO] Rows surviving Temporal filter: 42
+[2026-09-25 13:07:56] [INFO] Resolving target grid base for CHELSA data cube generation...
+[2026-09-25 13:07:56] [INFO] Successfully mapped CHELSA processing to registry grid 'Global_WGS84_30sec'.
+[2026-09-25 13:07:56] [INFO] Pinging '/vsicurl/https://os.unil.cloud.switch.ch/chelsa02/chelsa/global/bioclim/bio01/1981-2010/CHELSA_bio01_1981-2010_V.2.1.tif' to detect spatial metadata...
+[2026-09-25 13:07:57] [INFO] Detected Source CRS: EPSG:4326 | Res: 0.0083333333
+[2026-09-25 13:07:57] [INFO] Computing safe fetch envelope (EPSG:4326 -> EPSG:4326)...
+[2026-09-25 13:07:57] [INFO] 
+Processing Level: 'bioclim' | Variable: 'bio01'...
+[2026-09-25 13:07:57] [INFO] Initiating network fetch for 9 asset(s) using 3 worker(s) (Sub-linear sqrt(9) thread allocation)...
+[2026-09-25 13:08:04] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 13:10:16] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 13:10:16] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'chelsacube' ===
+[2026-09-25 13:10:16] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 13:10:16] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\chelsacube
+[2026-09-25 13:10:16] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_chelsacube.log
+[2026-09-25 13:10:17] [INFO] Initial catalog rows loaded: 339225
+[2026-09-25 13:10:17] [INFO] Rows surviving Category filter: 1123
+[2026-09-25 13:10:17] [INFO] Rows surviving Auxiliary filter: 1049
+[2026-09-25 13:10:17] [INFO] Rows surviving Spatial filter: 1049
+[2026-09-25 13:10:17] [INFO] Rows surviving Temporal filter: 42
+[2026-09-25 13:10:17] [INFO] Resolving target grid base for CHELSA data cube generation...
+[2026-09-25 13:10:17] [INFO] Successfully mapped CHELSA processing to registry grid 'Global_WGS84_30sec'.
+[2026-09-25 13:10:17] [INFO] Pinging '/vsicurl/https://os.unil.cloud.switch.ch/chelsa02/chelsa/global/bioclim/bio01/1981-2010/CHELSA_bio01_1981-2010_V.2.1.tif' to detect spatial metadata...
+[2026-09-25 13:10:17] [INFO] Detected Source CRS: EPSG:4326 | Res: 0.0083333333
+[2026-09-25 13:10:17] [INFO] Computing safe fetch envelope (EPSG:4326 -> EPSG:4326)...
+[2026-09-25 13:10:17] [INFO] 
+Processing Level: 'bioclim' | Variable: 'bio01'...
+[2026-09-25 13:10:18] [INFO] Initiating network fetch for 9 asset(s) using 3 worker(s) (Sub-linear sqrt(9) thread allocation)...
+[2026-09-25 13:10:25] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 13:10:57] [INFO] 
+Processing Level: 'bioclim' | Variable: 'bio12'...
+[2026-09-25 13:10:57] [INFO] Initiating network fetch for 9 asset(s) using 3 worker(s) (Sub-linear sqrt(9) thread allocation)...
+[2026-09-25 13:11:04] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 13:11:35] [INFO] 
+Processing Level: 'monthly' | Variable: 'pr'...
+[2026-09-25 13:11:35] [INFO] Initiating network fetch for 12 asset(s) using 3 worker(s) (Sub-linear sqrt(12) thread allocation)...
+[2026-09-25 13:11:47] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 13:12:18] [INFO] 
+Processing Level: 'monthly' | Variable: 'tas'...
+[2026-09-25 13:12:18] [INFO] Initiating network fetch for 12 asset(s) using 3 worker(s) (Sub-linear sqrt(12) thread allocation)...
+[2026-09-25 13:12:28] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 13:12:59] [INFO] === Assembling STAC Item for CHELSACUBE (Raster) ===
+[2026-09-25 13:12:59] [INFO] Resolving target grid base for CHELSA data cube generation...
+[2026-09-25 13:12:59] [INFO] Successfully mapped CHELSA processing to registry grid 'Global_WGS84_30sec'.
+[2026-09-25 13:13:00] [INFO] === STAC Item Assembly Complete: combined_test_cube_wgs84_netcdf_chelsacube_20260925131300 ===
+[2026-09-25 13:16:14] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 13:16:14] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'chelsacube' ===
+[2026-09-25 13:16:14] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 13:16:14] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\chelsacube
+[2026-09-25 13:16:14] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_chelsacube.log
+[2026-09-25 13:16:15] [INFO] Initial catalog rows loaded: 339225
+[2026-09-25 13:16:15] [INFO] Rows surviving Category filter: 1123
+[2026-09-25 13:16:15] [INFO] Rows surviving Auxiliary filter: 1049
+[2026-09-25 13:16:15] [INFO] Rows surviving Spatial filter: 1049
+[2026-09-25 13:16:15] [INFO] Rows surviving Temporal filter: 42
+[2026-09-25 13:16:15] [INFO] Resolving target grid base for CHELSA data cube generation...
+[2026-09-25 13:16:15] [INFO] Successfully mapped CHELSA processing to registry grid 'Global_WGS84_30sec'.
+[2026-09-25 13:16:15] [INFO] Pinging '/vsicurl/https://os.unil.cloud.switch.ch/chelsa02/chelsa/global/bioclim/bio01/1981-2010/CHELSA_bio01_1981-2010_V.2.1.tif' to detect spatial metadata...
+[2026-09-25 13:16:15] [INFO] Detected Source CRS: EPSG:4326 | Res: 0.0083333333
+[2026-09-25 13:16:15] [INFO] Computing safe fetch envelope (EPSG:4326 -> EPSG:4326)...
+[2026-09-25 13:16:15] [INFO] 
+Processing Level: 'bioclim' | Variable: 'bio01'...
+[2026-09-25 13:16:16] [INFO] Initiating network fetch for 9 asset(s) using 3 worker(s) (Sub-linear sqrt(9) thread allocation)...
+[2026-09-25 13:16:23] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 13:16:54] [INFO] 
+Processing Level: 'bioclim' | Variable: 'bio12'...
+[2026-09-25 13:16:54] [INFO] Initiating network fetch for 9 asset(s) using 3 worker(s) (Sub-linear sqrt(9) thread allocation)...
+[2026-09-25 13:17:01] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 13:17:32] [INFO] 
+Processing Level: 'monthly' | Variable: 'pr'...
+[2026-09-25 13:17:32] [INFO] Initiating network fetch for 12 asset(s) using 3 worker(s) (Sub-linear sqrt(12) thread allocation)...
+[2026-09-25 13:17:43] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 13:18:14] [INFO] 
+Processing Level: 'monthly' | Variable: 'tas'...
+[2026-09-25 13:18:15] [INFO] Initiating network fetch for 12 asset(s) using 3 worker(s) (Sub-linear sqrt(12) thread allocation)...
+[2026-09-25 13:18:24] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 13:18:56] [INFO] === Assembling STAC Item for CHELSACUBE (Raster) ===
+[2026-09-25 13:18:56] [INFO] Resolving target grid base for CHELSA data cube generation...
+[2026-09-25 13:18:56] [INFO] Successfully mapped CHELSA processing to registry grid 'Global_WGS84_30sec'.
+[2026-09-25 13:18:56] [INFO] === STAC Item Assembly Complete: combined_test_cube_wgs84_netcdf_chelsacube_20260925131856 ===
+[2026-09-25 13:44:57] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 13:44:57] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'chelsacube' ===
+[2026-09-25 13:44:57] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 13:44:57] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\chelsacube
+[2026-09-25 13:44:57] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_chelsacube.log
+[2026-09-25 13:44:58] [INFO] Initial catalog rows loaded: 339225
+[2026-09-25 13:44:58] [INFO] Resolving target grid base for CHELSA data cube generation...
+[2026-09-25 13:44:58] [INFO] Successfully mapped CHELSA processing to registry grid 'Global_WGS84_30sec'.
+[2026-09-25 13:44:58] [INFO] Pinging '/vsicurl/https://os.unil.cloud.switch.ch/chelsa02/chelsa/global/monthly/pr/2018/CHELSA_pr_01_2018_V.2.1.tif' to detect spatial metadata...
+[2026-09-25 13:44:59] [INFO] Detected Source CRS: EPSG:4326 | Res: 0.0083333333
+[2026-09-25 13:44:59] [INFO] Computing safe fetch envelope (EPSG:4326 -> EPSG:4326)...
+[2026-09-25 13:44:59] [INFO] 
+Processing Level: 'bioclim' | Variable: 'bio01'...
+[2026-09-25 13:44:59] [INFO] Initiating network fetch for 9 asset(s) using 3 worker(s) (Sub-linear sqrt(9) thread allocation)...
+[2026-09-25 13:45:05] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 13:45:36] [INFO] 
+Processing Level: 'bioclim' | Variable: 'bio12'...
+[2026-09-25 13:45:37] [INFO] Initiating network fetch for 9 asset(s) using 3 worker(s) (Sub-linear sqrt(9) thread allocation)...
+[2026-09-25 13:45:43] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 13:46:14] [INFO] 
+Processing Level: 'monthly' | Variable: 'pr'...
+[2026-09-25 13:46:14] [INFO] Initiating network fetch for 12 asset(s) using 3 worker(s) (Sub-linear sqrt(12) thread allocation)...
+[2026-09-25 13:46:24] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 13:49:21] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 13:49:21] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'chelsacube' ===
+[2026-09-25 13:49:21] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 13:49:21] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\chelsacube
+[2026-09-25 13:49:21] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_chelsacube.log
+[2026-09-25 13:49:22] [INFO] Initial catalog rows loaded: 339225
+[2026-09-25 13:49:22] [INFO] Resolving target grid base for CHELSA data cube generation...
+[2026-09-25 13:49:22] [INFO] Successfully mapped CHELSA processing to registry grid 'Global_WGS84_30sec'.
+[2026-09-25 13:49:22] [INFO] Pinging '/vsicurl/https://os.unil.cloud.switch.ch/chelsa02/chelsa/global/monthly/pr/2018/CHELSA_pr_01_2018_V.2.1.tif' to detect spatial metadata...
+[2026-09-25 13:49:22] [INFO] Detected Source CRS: EPSG:4326 | Res: 0.0083333333
+[2026-09-25 13:49:22] [INFO] Computing safe fetch envelope (EPSG:4326 -> EPSG:4326)...
+[2026-09-25 13:49:22] [INFO] 
+Processing Level: 'bioclim' | Variable: 'bio01'...
+[2026-09-25 13:49:22] [INFO] Initiating network fetch for 9 asset(s) using 3 worker(s) (Sub-linear sqrt(9) thread allocation)...
+[2026-09-25 13:49:29] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 13:50:00] [INFO] 
+Processing Level: 'bioclim' | Variable: 'bio12'...
+[2026-09-25 13:50:00] [INFO] Initiating network fetch for 9 asset(s) using 3 worker(s) (Sub-linear sqrt(9) thread allocation)...
+[2026-09-25 13:50:08] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 13:50:40] [INFO] 
+Processing Level: 'monthly' | Variable: 'pr'...
+[2026-09-25 13:50:40] [INFO] Initiating network fetch for 12 asset(s) using 3 worker(s) (Sub-linear sqrt(12) thread allocation)...
+[2026-09-25 13:50:49] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 13:51:20] [INFO] 
+Processing Level: 'monthly' | Variable: 'tas'...
+[2026-09-25 13:51:20] [INFO] Initiating network fetch for 12 asset(s) using 3 worker(s) (Sub-linear sqrt(12) thread allocation)...
+[2026-09-25 13:51:28] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 13:52:00] [INFO] === Assembling STAC Item for CHELSACUBE (Raster) ===
+[2026-09-25 13:52:00] [INFO] Resolving target grid base for CHELSA data cube generation...
+[2026-09-25 13:52:00] [INFO] Successfully mapped CHELSA processing to registry grid 'Global_WGS84_30sec'.
+[2026-09-25 13:52:00] [INFO] === STAC Item Assembly Complete: combined_test_cube_wgs84_netcdf_chelsacube_20260925135200 ===
+[2026-09-25 14:14:07] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-25 14:14:07] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_wgs84_netcdf' | Dataset: 'chelsacube' ===
+[2026-09-25 14:14:07] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf
+[2026-09-25 14:14:07] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\chelsacube
+[2026-09-25 14:14:07] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_test_cube_wgs84_netcdf\logs\combined_test_cube_wgs84_netcdf_chelsacube.log
+[2026-09-25 14:14:08] [INFO] Initial catalog rows loaded: 339225
+[2026-09-25 14:14:08] [INFO] Resolving target grid base for CHELSA data cube generation...
+[2026-09-25 14:14:08] [INFO] Successfully mapped CHELSA processing to registry grid 'Global_WGS84_30sec'.
+[2026-09-25 14:14:08] [INFO] Pinging '/vsicurl/https://os.unil.cloud.switch.ch/chelsa02/chelsa/global/monthly/pr/2018/CHELSA_pr_01_2018_V.2.1.tif' to detect spatial metadata...
+[2026-09-25 14:14:09] [INFO] Detected Source CRS: EPSG:4326 | Res: 0.0083333333
+[2026-09-25 14:14:09] [INFO] Computing safe fetch envelope (EPSG:4326 -> EPSG:4326)...
+[2026-09-25 14:14:09] [INFO] 
+Processing Level: 'bioclim' | Variable: 'bio01'...
+[2026-09-25 14:14:09] [INFO] Initiating network fetch for 9 asset(s) using 3 worker(s) (Sub-linear sqrt(9) thread allocation)...
+[2026-09-25 14:14:16] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 14:14:49] [INFO] 
+Processing Level: 'bioclim' | Variable: 'bio12'...
+[2026-09-25 14:14:50] [INFO] Initiating network fetch for 9 asset(s) using 3 worker(s) (Sub-linear sqrt(9) thread allocation)...
+[2026-09-25 14:14:55] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 14:15:27] [INFO] 
+Processing Level: 'monthly' | Variable: 'pr'...
+[2026-09-25 14:15:27] [INFO] Initiating network fetch for 12 asset(s) using 3 worker(s) (Sub-linear sqrt(12) thread allocation)...
+[2026-09-25 14:15:38] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 14:16:11] [INFO] 
+Processing Level: 'monthly' | Variable: 'tas'...
+[2026-09-25 14:16:11] [INFO] Initiating network fetch for 12 asset(s) using 3 worker(s) (Sub-linear sqrt(12) thread allocation)...
+[2026-09-25 14:16:22] [INFO] Processing data through chunked timeseries pipeline
+[2026-09-25 14:16:54] [INFO] === Assembling STAC Item for CHELSACUBE (Raster) ===
+[2026-09-25 14:16:54] [INFO] Resolving target grid base for CHELSA data cube generation...
+[2026-09-25 14:16:54] [INFO] Successfully mapped CHELSA processing to registry grid 'Global_WGS84_30sec'.
+[2026-09-25 14:16:54] [INFO] === STAC Item Assembly Complete: combined_test_cube_wgs84_netcdf_chelsacube_20260925141654 ===

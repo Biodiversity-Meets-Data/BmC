@@ -17,3 +17,29 @@ The module is organized around a parent blueprint that branches into specialized
 ## Developer Guide: How to Extend these Bases
 
 The cube base classes provide a template to integrating new data cubes for new data sources into the cubing engine functionality. For a more in depth discussion as to how the implement a new instance of both we refer to the tutorial section in this repository, particulary tutorial 2a and 2b.
+
+# Catalog Schema Requirements (`generate_execution_plan`)
+
+The pipeline strictly requires catalogs to be formatted as flat, columnar GeoParquet files. This ensures high-performance vectorized spatial and temporal querying.
+
+## 1. Mandatory Core Columns
+If any of these columns are missing, the execution plan generator will throw an error and terminate the pipeline.
+
+| Column Name | Data Type | Engine Function |
+| :--- | :--- | :--- |
+| **`geometry`** | `geometry` (Shapely) | Evaluated using `.intersects()` to filter data matching the recipe's spatial bounding box. |
+| **`datetime`** | `datetime64[ns, UTC]`| Timezone-aware timestamp queried against the recipe's start and end dates. |
+| **`level`** | `str` | Categorical parameter grouping the temporal frequency or sub-collection (e.g., "daily", "monthly"). |
+| **`variable`** | `str` | Categorical parameter identifying the environmental variable (e.g., "tas", "pr"). |
+| **`vsi_path`** | `str` | The direct URI string to the physical file (e.g., `s3://...` or `/vsicurl/...`). Extracted and flattened from STAC assets. |
+
+## 2. Standard Metadata Columns
+Highly recommended. If present, the engine automatically extracts these for robust VRT generation and STAC Item rebuilding.
+
+| Column Name | Data Type | Engine Function |
+| :--- | :--- | :--- |
+| **`proj:epsg`** | `int` | Validates that source tiles share the same projection before executing GDAL merges. |
+| **`nodata`** | `float` | Used to enforce consistent missing-value representations during out-of-core warping. |
+
+## 3. Dynamic Auxiliary Columns (Dataset-Specific)
+Child classes can define custom dimensions via the `get_auxiliary_dimensions()` method. Any key returned by this method must perfectly match a flat column in the GeoParquet file.

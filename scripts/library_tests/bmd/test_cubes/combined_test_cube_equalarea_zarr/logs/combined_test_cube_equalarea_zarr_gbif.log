@@ -47,3 +47,53 @@
 [2026-08-10 14:00:43] [INFO] Spatial Dimension Table saved to: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr\gbif\gbif_Global_EqualArea_1km_dimension_table.parquet
 [2026-08-10 14:00:43] [INFO] === STAC Item Assembly Complete: combined_test_cube_equalarea_zarr_gbif_20260810140043 ===
 [2026-08-10 14:00:43] [INFO] Exported STAC item to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr\meta\STAC_assets\gbif_stac.json
+[2026-09-10 11:41:20] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_equalarea_zarr' | Dataset: 'gbif' ===
+[2026-09-10 11:41:20] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr
+[2026-09-10 11:41:20] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr\gbif
+[2026-09-10 11:41:20] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr\logs\combined_test_cube_equalarea_zarr_gbif.log
+[2026-09-10 11:41:20] [INFO] Processing Mode: VECTOR
+[2026-09-10 11:41:20] [INFO] Loading GBIF data from C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/test_cubes/downloads/0016977-260721160103020.zip...
+[2026-09-10 11:41:20] [INFO] Constructed and resolved master grid key: Global_EqualArea_1km
+[2026-09-10 11:41:20] [INFO] Extracting padded global bounding box from recipe...
+[2026-09-10 11:41:20] [INFO] CRS mismatch detected. Reprojecting from WGS 84 to WGS 84 / NSIDC EASE-Grid 2.0 Global...
+[2026-09-10 11:41:20] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-09-10 11:41:20] [INFO] Validation report saved to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-09-10 11:41:20] [INFO] Exporting source geometries to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr\gbif\gbif_source_geometries.parquet...
+[2026-09-10 11:41:20] [INFO] Exporting unaggregated relational table to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr\gbif\gbif_unaggregated.parquet...
+[2026-09-10 11:41:20] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-09-10 11:41:20] [INFO] Fractional geometries detected. Spatial multiplier: 'fraction'.
+[2026-09-10 11:41:20] [INFO] Aggregating 'fraction' -> 'expected_occurrences' (Method: sum, Weighted: False)
+[2026-09-10 11:41:20] [INFO] Vector aggregation complete. Yielded 213 final cells.
+[2026-09-10 11:41:20] [INFO] Exporting final aggregated spatial dataset to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr\gbif\gbif_aggregated.parquet...
+[2026-09-10 11:41:20] [INFO] === GBIF Generation Complete ===
+[2026-09-10 11:41:20] [INFO] === Assembling STAC Item for GBIF ===
+[2026-09-10 11:41:20] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-09-10 11:41:20] [INFO] Spatial Dimension Table saved to: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr\gbif\gbif_Global_EqualArea_1km_dimension_table.parquet
+[2026-09-10 11:41:20] [INFO] === STAC Item Assembly Complete: combined_test_cube_equalarea_zarr_gbif_20260910114120 ===
+[2026-09-10 11:41:20] [INFO] Exported STAC item to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr\meta\STAC_assets\gbif_stac.json
+[2026-09-10 12:07:05] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_test_cube_equalarea_zarr' | Dataset: 'gbif' ===
+[2026-09-10 12:07:05] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr
+[2026-09-10 12:07:05] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr\gbif
+[2026-09-10 12:07:05] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr\logs\combined_test_cube_equalarea_zarr_gbif.log
+[2026-09-10 12:07:05] [INFO] Processing Mode: VECTOR
+[2026-09-10 12:07:05] [INFO] Loading GBIF data from C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/test_cubes/downloads/0016977-260721160103020.zip...
+[2026-09-10 12:07:05] [INFO] Constructed and resolved master grid key: Global_EqualArea_1km
+[2026-09-10 12:07:05] [INFO] Extracting padded global bounding box from recipe...
+[2026-09-10 12:07:05] [INFO] CRS mismatch detected. Reprojecting from WGS 84 to WGS 84 / NSIDC EASE-Grid 2.0 Global...
+[2026-09-10 12:07:05] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-09-10 12:07:05] [INFO] Validation report saved to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-09-10 12:07:05] [INFO] Exporting source geometries to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr\gbif\gbif_source_geometries.parquet...
+[2026-09-10 12:07:05] [INFO] Exporting unaggregated relational table to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr\gbif\gbif_unaggregated.parquet...
+[2026-09-10 12:07:05] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-09-10 12:07:05] [INFO] Fractional geometries detected. Spatial multiplier: 'fraction'.
+[2026-09-10 12:07:05] [INFO] Aggregating 'fraction' -> 'expected_occurrences' (Method: sum, Weighted: False)
+[2026-09-10 12:07:05] [INFO] Vector aggregation complete. Yielded 215 final cells.
+[2026-09-10 12:07:05] [INFO] Exporting final aggregated spatial dataset to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr\gbif\gbif_aggregated.parquet...
+[2026-09-10 12:07:05] [INFO] === GBIF Generation Complete ===
+[2026-09-10 12:07:05] [INFO] === Assembling STAC Item for GBIF ===
+[2026-09-10 12:07:05] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-09-10 12:07:05] [INFO] Spatial Dimension Table saved to: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr\gbif\gbif_Global_EqualArea_1km_dimension_table.parquet
+[2026-09-10 12:07:05] [INFO] === STAC Item Assembly Complete: combined_test_cube_equalarea_zarr_gbif_20260910120705 ===
+[2026-09-10 12:07:05] [INFO] Exported STAC item to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\test_cubes\combined_test_cube_equalarea_zarr\meta\STAC_assets\gbif_stac.json

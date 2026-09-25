@@ -17,6 +17,40 @@ class dataCube():
     initialize_pipeline(recipe, dataset_name=None, logger=None)
         Parses initial recipe metadata, provisions output directories, and boots logging/profiling.
     """
+    def __init__(self):
+        # Standard execution configuration stored directly in the base class
+        self.execution_config = {
+            "min_slices_for_parallel": 16,
+            "max_safe_threadpool_workers": 8,
+            "large_slice_threshold_mb": 50.0,
+            "gdal_warp_block_size": 2048,
+            "warp_cache_cleanup_delay_sec": 30
+        }
+
+    def update_config_from_recipe(self, recipe: Dict[str, Any], logger: logging.Logger):
+        """
+        Scans the recipe for an execution component. Updates class options if found,
+        otherwise logs the standard configuration being used.
+        """
+        exec_block = recipe.get("execution", {})
+        
+        # Filter for recognized execution keys to avoid polluting the config dictionary
+        overrides = {k: v for k, v in exec_block.items() if k in self.execution_config}
+        
+        if overrides:
+            self.execution_config.update(overrides)
+            log_execution(
+                logger, 
+                f"Alternative execution component detected. Updated configuration with: {overrides}", 
+                logging.INFO
+            )
+        else:
+            log_execution(
+                logger, 
+                f"No alternative execution component present in recipe. Utilizing standard execution configuration: {self.execution_config}", 
+                logging.INFO
+            )
+
     def _setup_pipeline_logger(
         self, 
         logger_name: str, 
@@ -116,7 +150,10 @@ class dataCube():
         self.logger = logger
         tracker = ResourceProfiler(log_dir=log_dir)
 
-        # 5. Standardized context block generation for downstream consumption
+        # 5. Scan and Update Execution Configurations
+        self.update_config_from_recipe(recipe, logger)
+
+        # 6. Standardized context block generation for downstream consumption
         ctx = {
             "base_dir": base_dir,
             "cube_name": cube_name,

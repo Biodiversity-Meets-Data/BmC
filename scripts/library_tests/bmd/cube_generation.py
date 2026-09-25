@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 
 # Dynamically resolve paths based on this script's location
 script_dir = os.path.dirname(os.path.abspath(__file__))
-catalog_path = os.path.abspath(os.path.join(script_dir, "../../../meta/chelsa_gp_stac/chelsa_master.parquet"))
-output_dir = os.path.abspath(os.path.join(script_dir, "test_cubes/"))
+#catalog_path = os.path.abspath(os.path.join(script_dir, "../../../meta/chelsa_gp_stac/chelsa_catalog.parquet"))
+output_dir = os.path.abspath(os.path.join(script_dir, "tiling_branch/"))
 os.makedirs(output_dir, exist_ok=True)
 local_zip_path = "test_cubes/downloads"
 # =======================================================================
@@ -55,7 +55,6 @@ temporal:
 sources:
   chelsa:
     enabled: true
-    catalog_path: {catalog_path}
     levels:
       monthly:
         include: true
@@ -146,7 +145,6 @@ temporal:
 sources:
   chelsa:
       enabled: true
-      catalog_path: {catalog_path}
       levels:
         monthly:
           include: true
@@ -224,7 +222,6 @@ temporal:
 sources:
   chelsa:
       enabled: true
-      catalog_path: {catalog_path}
       levels:
         monthly:
           include: true
