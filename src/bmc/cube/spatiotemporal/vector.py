@@ -450,6 +450,19 @@ class vectorCube(vectorEngine, dataCube, ABC):
             log_execution(logger, f"Exporting source geometries to {source_geom_path}...", logging.INFO)
             source_export = sanitized_gdf.copy()
             source_export["src_uid"] = source_export.index 
+
+            # --- ADDITION START ---
+            # Map grid_idx from transformed_data back to source_export via src_uid/index
+            if "grid_idx" in transformed_data.columns:
+                if "src_uid" in transformed_data.columns:
+                    grid_mapping = transformed_data.groupby("src_uid")["grid_idx"].unique()
+                    source_export["grid_idx"] = source_export["src_uid"].map(grid_mapping)
+                elif "grid_idx" in transformed_data.index:
+                    source_export["grid_idx"] = transformed_data["grid_idx"]
+                else:
+                    # Fallback direct positional/index mapping
+                    source_export["grid_idx"] = transformed_data["grid_idx"].values
+            # --- ADDITION END ---
             
             extra_geom_cols = [
                 c for c in source_export.columns 
@@ -461,7 +474,7 @@ class vectorCube(vectorEngine, dataCube, ABC):
             source_export = self._apply_cf_temporal_standards(source_export, time_cols)
             source_export.to_parquet(source_geom_path)
         else:
-            source_geom_path = None 
+            source_geom_path = None
 
         final_unaggregated_path = None
         final_aggregated_path = None

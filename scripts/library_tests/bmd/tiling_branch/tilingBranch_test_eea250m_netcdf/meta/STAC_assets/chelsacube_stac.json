@@ -1,0 +1,134 @@
+{
+    "type": "Feature",
+    "stac_version": "1.1.0",
+    "stac_extensions": [],
+    "id": "tilingBranch_test_eea250m_netcdf_chelsacube_20261027105347",
+    "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [
+                    4.59503,
+                    50.71863
+                ],
+                [
+                    4.59503,
+                    50.9139
+                ],
+                [
+                    4.26888,
+                    50.9139
+                ],
+                [
+                    4.26888,
+                    50.71863
+                ],
+                [
+                    4.59503,
+                    50.71863
+                ]
+            ]
+        ]
+    },
+    "bbox": [
+        4.26888,
+        50.71863,
+        4.59503,
+        50.9139
+    ],
+    "properties": {
+        "cube:dataset": "chelsacube",
+        "cube:grid_registry_key": "EEA_1km",
+        "cube:crs": "EPSG:3035",
+        "cube:resolution": 1000,
+        "cube:export_format": "netcdf",
+        "start_datetime": "2018-01-01T00:00:00+00:00",
+        "end_datetime": "2018-12-31T23:59:59+00:00",
+        "cube:monthly_time": [
+            "2018-01-01T00:00:00",
+            "2018-02-01T00:00:00",
+            "2018-03-01T00:00:00",
+            "2018-04-01T00:00:00",
+            "2018-05-01T00:00:00",
+            "2018-06-01T00:00:00",
+            "2018-07-01T00:00:00",
+            "2018-08-01T00:00:00",
+            "2018-09-01T00:00:00",
+            "2018-10-01T00:00:00",
+            "2018-11-01T00:00:00",
+            "2018-12-01T00:00:00"
+        ],
+        "cube:annual_time": [
+            "2018-01-01T00:00:00"
+        ],
+        "datetime": "2018-01-01T00:00:00Z"
+    },
+    "links": [],
+    "assets": {
+        "monthly_pr": {
+            "href": "C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/tiling_branch/tilingBranch_test_eea250m_netcdf/chelsacube/monthly/pr.nc",
+            "type": "application/x-netcdf",
+            "title": "PR (Monthly)",
+            "description": "Spatially reprojected raster array warped using 'average' resampling.",
+            "processing:level": "monthly",
+            "processing:variable": "pr",
+            "processing:resample_rule": "average",
+            "roles": [
+                "data",
+                "datacube"
+            ]
+        },
+        "monthly_spei12": {
+            "href": "C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/tiling_branch/tilingBranch_test_eea250m_netcdf/chelsacube/monthly/spei12.nc",
+            "type": "application/x-netcdf",
+            "title": "SPEI12 (Monthly)",
+            "description": "Spatially reprojected raster array warped using 'bilinear' resampling.",
+            "processing:level": "monthly",
+            "processing:variable": "spei12",
+            "processing:resample_rule": "bilinear",
+            "roles": [
+                "data",
+                "datacube"
+            ]
+        },
+        "monthly_spi12": {
+            "href": "C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/tiling_branch/tilingBranch_test_eea250m_netcdf/chelsacube/monthly/spi12.nc",
+            "type": "application/x-netcdf",
+            "title": "SPI12 (Monthly)",
+            "description": "Spatially reprojected raster array warped using 'bilinear' resampling.",
+            "processing:level": "monthly",
+            "processing:variable": "spi12",
+            "processing:resample_rule": "bilinear",
+            "roles": [
+                "data",
+                "datacube"
+            ]
+        },
+        "monthly_tas": {
+            "href": "C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/tiling_branch/tilingBranch_test_eea250m_netcdf/chelsacube/monthly/tas.nc",
+            "type": "application/x-netcdf",
+            "title": "TAS (Monthly)",
+            "description": "Spatially reprojected raster array warped using 'bilinear' resampling.",
+            "processing:level": "monthly",
+            "processing:variable": "tas",
+            "processing:resample_rule": "bilinear",
+            "roles": [
+                "data",
+                "datacube"
+            ]
+        },
+        "annual_qkndvi": {
+            "href": "C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/tiling_branch/tilingBranch_test_eea250m_netcdf/chelsacube/annual/qkndvi.nc",
+            "type": "application/x-netcdf",
+            "title": "QKNDVI (Annual)",
+            "description": "Spatially reprojected raster array warped using 'bilinear' resampling.",
+            "processing:level": "annual",
+            "processing:variable": "qkndvi",
+            "processing:resample_rule": "bilinear",
+            "roles": [
+                "data",
+                "datacube"
+            ]
+        }
+    }
+}

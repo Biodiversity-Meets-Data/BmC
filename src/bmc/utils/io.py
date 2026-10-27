@@ -11,6 +11,8 @@ import pandas as pd
 from shapely.geometry import box
 import dask
 import rasterio
+from rasterio.session import Session
+from rasterio.session import AWSSession
 import rioxarray
 import xarray as xr
 
@@ -18,116 +20,79 @@ from bmc.utils.logger import log_execution
 
 logger = logging.getLogger(__name__)
 
-# Highly optimized default environment for streaming Cloud Optimized GeoTIFFs (COGs) via HTTP/S3
-DEFAULT_GDAL_ENV = {
-    # 1. Prevents GDAL from scanning the entire remote bucket directory for matching file layouts.
-    #    Treating the folder as an 'EMPTY_DIR' avoids massive directory parsing latency penalties.
+# Base settings safe for ALL remote HTTP/VSI datasets (CHELSA, CDSE, STAC, etc.)
+BASE_GDAL_ENV = {
     "GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR",
-
-    # 2. Restricts network probes strictly to .tif assets. Prevents GDAL from hunting for 
-    #    non-existent sidecar files (like .tfw, .aux.xml, or .ovr) which wastes valuable network roundtrips.
     "CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".tif",
-
-    # 3. Disables GDAL's internal global RAM caching mechanism for virtual files. Since our thread pool 
-    #    immediately processes, clips, and frees arrays, turning this off prevents creeping RAM bloat.
-    "VSI_CACHE": "FALSE",                    
-
-    # 4. Sets the maximum connection retry threshold. If the host server experiences a transient spike 
-    #    or issues a 429/503 rate limit throttle, the thread will attempt to re-connect up to 10 times.
-    "GDAL_HTTP_MAX_RETRY": "10", 
-
-    # 5. The backoff rest interval (in seconds) between retry attempts, giving remote servers space 
-    #    to recover before the thread aggressively polls the resource endpoint again.
+    "GDAL_HTTP_MERGE_CONSECUTIVE_RANGES": "YES",  # Restore: Reduces network round-trips
+    "GDAL_HTTP_TIMEOUT": "30",                    # Restore: Prevents hung threads
+    "GDAL_HTTP_MAX_RETRY": "5",                   # Restore: Fast C-level retries
     "GDAL_HTTP_RETRY_DELAY": "3",
-
-    # 6. Slashes the maximum connection timeout window to 30 seconds. Prevents an un-responsive 
-    #    network socket or dead server from permanently hanging an execution thread indefinitely.
-    "GDAL_HTTP_TIMEOUT": "30",
-
-    # 7. Instructs GDAL to look ahead at byte-range requests. If the script requests blocks that 
-    #    are close together, it merges them into one larger sequential stream request, bypassing 
-    #    individual HTTP header handshake latencies.
-    "GDAL_HTTP_MERGE_CONSECUTIVE_RANGES": "YES"
+    "VSI_CACHE": "FALSE",                         # Restore: Prevents RAM bloat
 }
 
+# CDSE / S3-specific overrides
+CDSE_GDAL_ENV = {
+    **BASE_GDAL_ENV,
+    "AWS_VIRTUAL_HOSTING": "FALSE",  # Required specifically for CDSE path-style routing
+}
 
 def _fetch_single_raster(
     path: str, 
     geom: Union[Tuple[float, float, float, float], Any], 
-    gdal_env: Dict[str, str],
+    gdal_env: Optional[Dict[str, str]] = None,
     geom_crs: Optional[str] = None,
-    max_retries = 3
+    max_retries: int = 3,
+    cloud_session: Optional[Session] = None,
+    logger: Optional[logging.Logger] = None
 ) -> Tuple[str, Optional[xr.DataArray]]:
     """
-    Low-level thread worker to stream and clip a single remote or local raster asset.
-
-    Parameters
-    ----------
-    path : str
-        The absolute path or virtual file system URI (e.g., '/vsicurl/...', '/vsis3/...') 
-        pointing to the target raster asset.
-    geom : tuple of float or Any (Shapely geometry, GeoJSON dict)
-        The spatial geometry used to clip the raster. If a 4-element tuple is provided, 
-        it is treated as a bounding box (min_x, min_y, max_x, max_y). Otherwise, it is 
-        treated as a polygon mask.
-    gdal_env : dict
-        A dictionary of GDAL environment variables used to configure 
-        the `rasterio.Env` context for optimized streaming.
-    geom_crs : str, optional
-        The coordinate reference system of the provided polygon geometry 
-        (e.g., "EPSG:4326"). Required if passing a polygon that differs from 
-        the source raster's CRS. Default is None.
-
-    Returns
-    -------
-    tuple
-        A 2-element tuple containing:
-        - path (str): The original file path, passed back for downstream matching.
-        - clipped (xarray.DataArray or None): The clipped spatiotemporal array in memory. 
-          Returns None if a network or I/O failure occurs.
+    Thread-safe worker to fetch and clip a remote raster (CDSE S3 or CHELSA VSI/HTTP).
     """
-    # Clean fallback: use the module-level constant if no specific override is passed down
-    gdal_env = gdal_env or DEFAULT_GDAL_ENV
-    # --- Network Jitter ---
-    # Sleep for a random fraction of a second to prevent the overloading the server
-    # of 32 threads hitting the server at the exact same millisecond.
-    time.sleep(random.uniform(0.5, 3.0))
+    gdal_env = gdal_env or BASE_GDAL_ENV
+
+    # --- Path Normalization ---
+    # Convert /vsis3/ paths to s3:// when AWSSession is present
+    target_path = path
+    if cloud_session and isinstance(cloud_session, AWSSession):
+        if target_path.startswith("/vsis3/"):
+            target_path = target_path.replace("/vsis3/", "s3://")
+
+    # Network jitter to prevent thread stampedes
+    time.sleep(random.uniform(0.1, 1.0))
+
+    # Build environmental context
+    env_context = rasterio.Env(session=cloud_session, **gdal_env) if cloud_session else rasterio.Env(**gdal_env)
 
     for attempt in range(1, max_retries + 1):
         try:
-            with rasterio.Env(**gdal_env):
-                # Enforce single-threaded Dask computation within this specific worker
+            with env_context:
                 with dask.config.set(scheduler='single-threaded'):
-                    da = rioxarray.open_rasterio(path, chunks=True, masked=True)
-                    
-                    # Route based on geometry type
-                    if isinstance(geom, tuple) and len(geom) == 4:
-                        clipped = da.rio.clip_box(*geom).compute()
-                    else:
-                        geometries = geom if isinstance(geom, (list, tuple)) else [geom]
-                        clipped = da.rio.clip(geometries, crs=geom_crs, drop=True).compute()
+                    with rioxarray.open_rasterio(target_path, chunks=True, masked=True) as src:
                         
-                    # ==========================================
-                    # INTEGRITY ARMOR (Segfault Prevention)
-                    # ==========================================
-                    # Structural Check: Did the timeout result in a 0-pixel array?
-                    if clipped.size == 0:
-                        raise ValueError(f"Array returned 0 pixels. File header is corrupted or truncated.")
-                    
-                    # Ghost Data Check: Did the timeout silently fill the array with NaNs?
-                    if clipped.isnull().all():
-                        raise ValueError(f"Array contains 100% missing data (Silent connection drop).")
+                        # Route clipping based on geometry type
+                        if isinstance(geom, tuple) and len(geom) == 4:
+                            # Pass geom_crs if provided and different from raster CRS
+                            if geom_crs and src.rio.crs and geom_crs != src.rio.crs.to_string():
+                                clipped_lazy = src.rio.clip_box(*geom, crs=geom_crs)
+                            else:
+                                clipped_lazy = src.rio.clip_box(*geom)
+                        else:
+                            geometries = geom if isinstance(geom, (list, tuple)) else [geom]
+                            clipped_lazy = src.rio.clip(geometries, crs=geom_crs, drop=True)
 
-                    # If it passes the gauntlet, return the healthy array and exit the loop
-                    return path, clipped
-                    
+                        # Download the clipped region into memory
+                        clipped = clipped_lazy.compute()
+
+                        # Structural Integrity Check
+                        if clipped.size == 0:
+                            raise ValueError(f"Clipping resulted in 0 pixels for bounds {geom}.")
+
+                        return path, clipped
+
         except Exception as e:
             if attempt < max_retries:
-                # --- 3. The 10-Second Base Wait + Jitter ---
-                # 10 second strict wait to let the firewall cool down, plus 
-                # up to 5 seconds of random jitter to stagger the retry requests.
-                backoff_time = 10.0 + random.uniform(0.0, 5.0)  
-                
+                backoff_time = 5.0 + random.uniform(0.0, 3.0)
                 log_execution(
                     logger, 
                     f"Network anomaly on '{path}'. Retrying in {backoff_time:.1f}s (Attempt {attempt}/{max_retries}). Error: {e}", 
@@ -137,7 +102,7 @@ def _fetch_single_raster(
             else:
                 log_execution(
                     logger, 
-                    f"FATAL: Failed to fetch asset '{path}' after {max_retries} attempts. Server is unreachable. Reason: {e}", 
+                    f"FATAL: Failed to fetch asset '{path}' after {max_retries} attempts. Reason: {e}", 
                     logging.ERROR
                 )
                 return path, None
@@ -147,8 +112,9 @@ def parallel_fetch_rasters(
     paths: Union[str, List[str]],
     geom: Union[Tuple[float, float, float, float], Any],
     max_workers: int = 10,
-    credentials: Optional[Dict[str, Any]] = None,
+    cloud_session: Optional[Session] = None,
     gdal_config: Optional[Dict[str, str]] = None,
+    max_retries: int = 3,
     geom_crs: Optional[str] = None
 ) -> Dict[str, xr.DataArray]:
     """
@@ -168,11 +134,9 @@ def parallel_fetch_rasters(
     max_workers : int, optional
         The maximum number of concurrent threads to spawn for network I/O. 
         Default is 10.
-    credentials : dict, optional
-        A dictionary containing S3 authentication keys. Expected keys are 
-        's3_access_key' (or 'aws_access_key_id'), 's3_secret_key' 
-        (or 'aws_secret_access_key'), and 's3_endpoint'. If None or missing 
-        keys, the environment configures for anonymous public bucket access.
+    cloud_session : rasterio.session.Session, optional
+        An authenticated cloud session (e.g., AWSSession, GSSession) to use for fetching.
+        If None, the environment configures for anonymous public bucket access.
     gdal_config : dict, optional
         Overrides for the GDAL environment configuration. If None, a highly 
         optimized default configuration for Cloud Optimized GeoTIFF (COG) 
@@ -189,34 +153,15 @@ def parallel_fetch_rasters(
         in-memory `xarray.DataArray`.
     """
     # Start with the base GDAL configuration or the optimized default
-    gdal_env = (gdal_config or DEFAULT_GDAL_ENV).copy()
+    gdal_env = (gdal_config or BASE_GDAL_ENV).copy()
 
-    # Apply dynamic S3 Credential Resolution
-    if credentials:
-        access_key = credentials.get("s3_access_key") or credentials.get("aws_access_key_id")
-        secret_key = credentials.get("s3_secret_key") or credentials.get("aws_secret_access_key")
-        endpoint = credentials.get("s3_endpoint") or credentials.get("endpoint")
-        
-        if endpoint:
-            gdal_env["AWS_S3_ENDPOINT"] = endpoint
-
-        if access_key and secret_key:
-            gdal_env["AWS_ACCESS_KEY_ID"] = access_key
-            gdal_env["AWS_SECRET_ACCESS_KEY"] = secret_key
-            
-            # Allow the credentials dictionary to optionally override kwargs
-            is_virtual = credentials.get("virtual_hosting", False)
-            is_https = credentials.get("use_https", True)
-            
-            gdal_env["AWS_VIRTUAL_HOSTING"] = "TRUE" if is_virtual else "FALSE"
-            gdal_env["AWS_HTTPS"] = "YES" if is_https else "NO"
-            
-            # Ensure no sign request isn't accidentally active for private buckets
-            gdal_env.pop("AWS_NO_SIGN_REQUEST", None)
-        else:
-            gdal_env["AWS_NO_SIGN_REQUEST"] = "YES"
-    elif not any(k.startswith("AWS_") for k in gdal_env):
-        # Fallback to anonymous requests if no credentials or AWS overrides exist
+    # Apply dynamic Configuration based on active Session
+    if cloud_session:
+        if "AWS_VIRTUAL_HOSTING" not in gdal_env:
+            gdal_env["AWS_VIRTUAL_HOSTING"] = "FALSE"
+        if "AWS_HTTPS" not in gdal_env:
+            gdal_env["AWS_HTTPS"] = "YES"
+    else:
         gdal_env["AWS_NO_SIGN_REQUEST"] = "YES"
 
     if isinstance(paths, str):
@@ -226,16 +171,28 @@ def parallel_fetch_rasters(
     log_execution(
         logger, 
         f"Initiating parallel raster fetch across {len(paths)} assets using {max_workers} workers (Geometry: {geom_type})...", 
-        logging.INFO)
+        logging.INFO
+    )
 
     fetched_arrays: Dict[str, xr.DataArray] = {}
     failed_fetches = 0
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {
-            # Pass the dynamically resolved gdal_env to each worker
-            executor.submit(_fetch_single_raster, path, geom, gdal_env, geom_crs): path
-            for path in paths}     
+            # Explicitly pass all keyword/positional arguments safely, including logger and max_retries
+            executor.submit(
+                _fetch_single_raster, 
+                path=path, 
+                geom=geom, 
+                gdal_env=gdal_env, 
+                geom_crs=geom_crs, 
+                max_retries=max_retries, 
+                cloud_session=cloud_session, 
+                logger=logger
+            ): path
+            for path in paths
+        }    
+        
         for future in as_completed(futures):
             path, data = future.result()
             if data is not None:
@@ -349,25 +306,33 @@ def filter_and_group_catalog(catalog_path, bbox, start_date, end_date, group_col
     # If no grouping was requested, return a flat Python list of all matching hrefs
     return filtered_gdf['s3_href'].tolist()
 
+
+from typing import Optional
+from osgeo import gdal
+import os
+import rasterio
+from rasterio.session import Session
+
 def s3_to_vrt(
     s3_hrefs, 
     vrt_path, 
-    credentials: Optional[Dict[str, Any]] = None,
+    cloud_session=None,
     export_tif_path=None, 
     resample_alg="near",
-    virtual_hosting=False,
-    use_https=True,
-    creation_options=None
+    creation_options=None,
+    output_srs=None,
+    output_bounds=None,
+    env_kwargs=None
 ):
     """
     Constructs a GDAL Virtual Raster (VRT) from a list of S3 raster URIs, 
     enabling lightweight, virtual mosaicking and optional local GeoTIFF export.
 
     This function configures GDAL's Virtual File System (`/vsis3/`) to stream 
-    remote cloud raster assets dynamically[cite: 2]. By creating a VRT, GDAL maps the 
-    spatial footprints of input rasters without downloading pixel data upfront[cite: 2]. 
+    remote cloud raster assets dynamically. By creating a VRT, GDAL maps the 
+    spatial footprints of input rasters without downloading pixel data upfront. 
     If an `export_tif_path` is specified, it streams and compresses the mosaic 
-    into a local GeoTIFF file[cite: 2].
+    into a local GeoTIFF file.
 
     Parameters
     ----------
@@ -377,120 +342,136 @@ def s3_to_vrt(
     vrt_path : str
         The output target path for the VRT file. Can be a physical file path 
         (e.g., `./mosaic.vrt`) or an in-memory virtual file (e.g., `/vsimem/mosaic.vrt`).
-    credentials : dict, optional
-        A dictionary containing S3 authentication keys. Expected keys are 
-        's3_access_key' (or 'aws_access_key_id'), 's3_secret_key' 
-        (or 'aws_secret_access_key'), and 's3_endpoint'. If None or missing 
-        keys, GDAL configures for anonymous public bucket access.
+    cloud_session : rasterio.session.Session, optional
+        An authenticated cloud session (e.g., AWSSession) to use for fetching.
+        If None, GDAL configures for anonymous public bucket access.
     export_tif_path : str, optional
         An optional local file path to write a compiled GeoTIFF raster. If 
         None, only the VRT is constructed. Defaults to None.
     resample_alg : str, optional
         The resampling algorithm used when pixel interpolation or reprojection 
         occurs (e.g., `'near'`, `'bilinear'`, `'cubic'`). Defaults to `'near'`, 
-        which preserves discrete categorical class values[cite: 2].
-    virtual_hosting : bool, optional
-        Toggles whether GDAL uses bucket-virtual hosting (True) or path-style 
-        addressing (False). Defaults to False.
-    use_https : bool, optional
-        Toggles whether GDAL uses HTTPS (True) or HTTP (False) protocol for 
-        fetching S3 objects. Defaults to True.
+        which preserves discrete categorical class values.
     creation_options : list of str, optional
         Custom driver creation options passed to `gdal.TranslateOptions` if 
         exporting a GeoTIFF. Defaults to `["COMPRESS=DEFLATE", "TILED=YES", 
-        "BIGTIFF=IF_SAFER"]`[cite: 2].
+        "BIGTIFF=IF_SAFER"]`.
+    output_srs : str, optional
+        The target spatial reference system (e.g., "EPSG:3035"). Overrides GDAL's 
+        strict metadata matching to prevent heterogeneous projection errors.
+    output_bounds : tuple, optional
+        The bounding box for the output VRT in (minX, minY, maxX, maxY) format.
+    env_kwargs : dict, optional
+        Explicit GDAL configuration variables (e.g., AWS_S3_ENDPOINT).
 
     Returns
     -------
     bool
         Returns True if the VRT (and optional GeoTIFF) was generated successfully; 
-        returns False if the input list is empty or GDAL fails to build the VRT[cite: 2].
+        returns False if the input list is empty or GDAL fails to build the VRT.
     """
     if not s3_hrefs:
         print("No S3 URIs provided. Skipping VRT construction.")
         return False
 
-    # --- 1. Global GDAL Configuration ---
-    # Disable directory listing on open to avoid latency/timeouts on vast S3 object stores[cite: 2]
-    gdal.SetConfigOption('GDAL_DISABLE_READDIR_ON_OPEN', 'EMPTY_DIR')
-    
-    # Reset any previous authentication state in the global GDAL configuration
-    gdal.SetConfigOption('AWS_NO_SIGN_REQUEST', 'NO')
-    gdal.SetConfigOption('AWS_ACCESS_KEY_ID', '')
-    gdal.SetConfigOption('AWS_SECRET_ACCESS_KEY', '')
-    gdal.SetConfigOption('AWS_S3_ENDPOINT', '')
-
-    if credentials:
-        access_key = credentials.get("s3_access_key") or credentials.get("aws_access_key_id")
-        secret_key = credentials.get("s3_secret_key") or credentials.get("aws_secret_access_key")
-        endpoint = credentials.get("s3_endpoint") or credentials.get("endpoint")
-        
-        if endpoint:
-            gdal.SetConfigOption('AWS_S3_ENDPOINT', endpoint)
-            
-        if access_key and secret_key:
-            gdal.SetConfigOption('AWS_ACCESS_KEY_ID', access_key)
-            gdal.SetConfigOption('AWS_SECRET_ACCESS_KEY', secret_key)
-            
-            # Allow the credentials dictionary to optionally override kwargs
-            is_virtual = credentials.get("virtual_hosting", virtual_hosting)
-            is_https = credentials.get("use_https", use_https)
-            
-            gdal.SetConfigOption('AWS_VIRTUAL_HOSTING', 'TRUE' if is_virtual else 'FALSE')
-            gdal.SetConfigOption('AWS_HTTPS', 'YES' if is_https else 'NO')
-        else:
-            gdal.SetConfigOption('AWS_NO_SIGN_REQUEST', 'YES')
-    else:
-        # Public/Anonymous access
-        gdal.SetConfigOption('AWS_NO_SIGN_REQUEST', 'YES')
-
-    # --- 2. Standardize Prefixes ---
-    # Convert 's3://' paths into GDAL '/vsis3/' virtual filesystem paths[cite: 2]
+    # --- 1. Standardize Prefixes ---
+    # Convert 's3://' paths into GDAL '/vsis3/' virtual filesystem paths
     vsi_paths = [p.replace("s3://", "/vsis3/") for p in s3_hrefs]
 
-    # --- 3. Construct Virtual Raster (VRT) ---
     print(f"Constructing VRT from {len(vsi_paths)} remote raster source(s)...")
-    
-    vrt_options = gdal.BuildVRTOptions(
-        resampleAlg=resample_alg,
-        addAlpha=False
-    )
-    
-    vrt_ds = gdal.BuildVRT(vrt_path, vsi_paths, options=vrt_options)
-    
-    if vrt_ds is None:
-        print("Failed to construct GDAL VRT dataset.")
-        return False
 
-    # --- 4. Optional GeoTIFF Export ---
-    if export_tif_path:
-        print(f"Translating virtual mosaic to physical raster: {export_tif_path}")
+    # --- 2. Build the GDAL Environment Context ---
+    env_kwargs = env_kwargs or {}
+    gdal_env = {
+        'GDAL_DISABLE_READDIR_ON_OPEN': 'EMPTY_DIR',
+        'AWS_VIRTUAL_HOSTING': 'FALSE' if cloud_session else 'TRUE'
+    }
+    
+    # Merge custom routing (like AWS_S3_ENDPOINT for Copernicus)
+    gdal_env.update(env_kwargs)
+    
+    if not cloud_session:
+        gdal_env['AWS_NO_SIGN_REQUEST'] = 'YES'
+    else:
+        # Extract credentials natively from Rasterio's AWSSession to bridge the gap 
+        # to osgeo.gdal C++ bindings, which execute independently of rasterio.Env
+        try:
+            creds = cloud_session._creds
+            if creds:
+                gdal_env['AWS_ACCESS_KEY_ID'] = creds.access_key
+                gdal_env['AWS_SECRET_ACCESS_KEY'] = creds.secret_key
+                if hasattr(creds, 'token') and creds.token:
+                    gdal_env['AWS_SESSION_TOKEN'] = creds.token
+        except Exception as e:
+            print(f"Warning: Failed to extract credentials from AWSSession: {e}")
+
+    # --- 3. Enforce Configuration across GDAL & Rasterio ---
+    # Explicitly set the C++ configuration for the osgeo.gdal native module
+    for k, v in gdal_env.items():
+        gdal.SetConfigOption(k, str(v))
+
+    try:
+        # Scrub restricted credential keys before passing to Rasterio
+        # Rasterio will extract them natively from the cloud_session object
+        rasterio_safe_env = {
+            k: v for k, v in gdal_env.items() 
+            if k not in ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN']
+        }
         
-        target_dir = os.path.dirname(os.path.abspath(export_tif_path))
-        os.makedirs(target_dir, exist_ok=True)
-        
-        if creation_options is None:
-            creation_options = [
-                "COMPRESS=DEFLATE",
-                "TILED=YES",
-                "BIGTIFF=IF_SAFER"
-            ]
+        # Secure the VRT generation step inside an active session context for rioxarray
+        env_context = rasterio.Env(session=cloud_session, **rasterio_safe_env) if cloud_session else rasterio.Env(**rasterio_safe_env)
+
+        with env_context:
+            # --- 4. Construct Virtual Raster (VRT) ---
+            vrt_options = gdal.BuildVRTOptions(
+                resampleAlg=resample_alg,
+                addAlpha=False,
+                outputSRS=output_srs,
+                outputBounds=output_bounds,
+                resolution='highest',
+                options=["-allow_projection_difference"]
+            )
             
-        translate_options = gdal.TranslateOptions(
-            format="GTiff",
-            creationOptions=creation_options
-        )
-        
-        gdal.Translate(export_tif_path, vrt_ds, options=translate_options)
-        
-        file_size_mb = os.path.getsize(export_tif_path) / (1024 * 1024)
-        print(f"Export complete. File Size: {file_size_mb:.2f} MB")
+            vrt_ds = gdal.BuildVRT(vrt_path, vsi_paths, options=vrt_options)
+            
+            if vrt_ds is None:
+                print("Failed to construct GDAL VRT dataset.")
+                return False
 
-    # --- 5. Memory Management & Cleanup ---
-    vrt_ds = None 
-    
-    # Automatically unlink /vsimem/ virtual memory files upon completion to prevent memory leaks[cite: 2]
-    if vrt_path.startswith("/vsimem/"):
-        gdal.Unlink(vrt_path)
+            # --- 5. Optional GeoTIFF Export ---
+            if export_tif_path:
+                print(f"Translating virtual mosaic to physical raster: {export_tif_path}")
+                
+                target_dir = os.path.dirname(os.path.abspath(export_tif_path))
+                os.makedirs(target_dir, exist_ok=True)
+                
+                if creation_options is None:
+                    creation_options = [
+                        "COMPRESS=DEFLATE",
+                        "TILED=YES",
+                        "BIGTIFF=IF_SAFER"
+                    ]
+                    
+                translate_options = gdal.TranslateOptions(
+                    format="GTiff",
+                    creationOptions=creation_options
+                )
+                
+                gdal.Translate(export_tif_path, vrt_ds, options=translate_options)
+                
+                file_size_mb = os.path.getsize(export_tif_path) / (1024 * 1024)
+                print(f"Export complete. File Size: {file_size_mb:.2f} MB")
+
+    finally:
+        # --- 6. Memory Management & Cleanup ---
+        vrt_ds = None 
         
+        # Wipe global GDAL variables to prevent credential contamination between datasets
+        for k in gdal_env.keys():
+            gdal.SetConfigOption(k, None)
+        
+        # Automatically unlink /vsimem/ virtual memory files upon completion to prevent memory leaks
+        if vrt_path.startswith("/vsimem/"):
+            gdal.Unlink(vrt_path)
+            
     return True

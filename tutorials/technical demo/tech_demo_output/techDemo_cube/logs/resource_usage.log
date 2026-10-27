@@ -1,0 +1,102 @@
+20:28:31 | PID: 51320 | [START Processing bio01] - CPU Load: 31.4% (22 Cores) | Active Threads: 111 | Script RAM: 0.09 GB | Server RAM: 90.9%
+20:28:41 | PID: 51320 | [STRAIN] Network Fetch (bio01) | Duration: 9.6s | Avg CPU: 26.0% | RAM Shift: +0.21 GB | Final RAM: 0.31 GB
+20:31:52 | PID: 56424 | [START Processing bio01] - CPU Load: 13.9% (22 Cores) | Active Threads: 112 | Script RAM: 0.39 GB | Server RAM: 95.7%
+20:31:59 | PID: 56424 | [STRAIN] Network Fetch (bio01) | Duration: 7.2s | Avg CPU: 20.7% | RAM Shift: +0.02 GB | Final RAM: 0.41 GB
+20:32:00 | PID: 56424 | [STRAIN] Main-Thread Sequential Warp (bio01) | Duration: 1.1s | Avg CPU: 29.9% | RAM Shift: -0.00 GB | Final RAM: 0.41 GB
+20:32:01 | PID: 56424 | [STRAIN] Dask Materialization (bio01) | Duration: 0.0s | Avg CPU: 34.8% | RAM Shift: +0.00 GB | Final RAM: 0.41 GB
+20:32:31 | PID: 56424 | [END Processing bio01] - CPU Load: 22.1% (22 Cores) | Active Threads: 108 | Script RAM: 0.41 GB | Server RAM: 94.6%
+20:32:31 | PID: 56424 | [START Processing bio12] - CPU Load: 20.7% (22 Cores) | Active Threads: 108 | Script RAM: 0.41 GB | Server RAM: 94.6%
+20:32:38 | PID: 56424 | [STRAIN] Network Fetch (bio12) | Duration: 6.7s | Avg CPU: 18.0% | RAM Shift: +0.02 GB | Final RAM: 0.42 GB
+20:32:39 | PID: 56424 | [STRAIN] Main-Thread Sequential Warp (bio12) | Duration: 1.0s | Avg CPU: 26.2% | RAM Shift: -0.01 GB | Final RAM: 0.41 GB
+20:32:39 | PID: 56424 | [STRAIN] Dask Materialization (bio12) | Duration: 0.0s | Avg CPU: 13.6% | RAM Shift: +0.00 GB | Final RAM: 0.41 GB
+20:33:10 | PID: 56424 | [END Processing bio12] - CPU Load: 16.0% (22 Cores) | Active Threads: 108 | Script RAM: 0.42 GB | Server RAM: 94.9%
+20:33:10 | PID: 56424 | [START Processing pr] - CPU Load: 27.0% (22 Cores) | Active Threads: 108 | Script RAM: 0.42 GB | Server RAM: 95.0%
+20:33:21 | PID: 56424 | [STRAIN] Network Fetch (pr) | Duration: 10.5s | Avg CPU: 18.1% | RAM Shift: +0.01 GB | Final RAM: 0.43 GB
+20:33:22 | PID: 56424 | [STRAIN] Main-Thread Sequential Warp (pr) | Duration: 1.4s | Avg CPU: 24.0% | RAM Shift: +0.00 GB | Final RAM: 0.42 GB
+20:33:22 | PID: 56424 | [STRAIN] Dask Materialization (pr) | Duration: 0.0s | Avg CPU: 3.4% | RAM Shift: +0.00 GB | Final RAM: 0.42 GB
+20:33:53 | PID: 56424 | [END Processing pr] - CPU Load: 25.0% (22 Cores) | Active Threads: 106 | Script RAM: 0.42 GB | Server RAM: 95.9%
+20:33:53 | PID: 56424 | [START Processing tas] - CPU Load: 26.1% (22 Cores) | Active Threads: 106 | Script RAM: 0.42 GB | Server RAM: 95.8%
+20:34:02 | PID: 56424 | [STRAIN] Network Fetch (tas) | Duration: 8.8s | Avg CPU: 24.9% | RAM Shift: +0.01 GB | Final RAM: 0.43 GB
+20:34:03 | PID: 56424 | [STRAIN] Main-Thread Sequential Warp (tas) | Duration: 1.3s | Avg CPU: 23.9% | RAM Shift: +0.00 GB | Final RAM: 0.42 GB
+20:34:04 | PID: 56424 | [STRAIN] Dask Materialization (tas) | Duration: 0.0s | Avg CPU: 21.7% | RAM Shift: +0.00 GB | Final RAM: 0.42 GB
+20:34:34 | PID: 56424 | [END Processing tas] - CPU Load: 14.5% (22 Cores) | Active Threads: 107 | Script RAM: 0.42 GB | Server RAM: 89.2%
+20:49:13 | PID: 56424 | [START Processing bio01] - CPU Load: 21.6% (22 Cores) | Active Threads: 107 | Script RAM: 0.12 GB | Server RAM: 95.4%
+20:49:21 | PID: 56424 | [STRAIN] Network Fetch (bio01) | Duration: 7.4s | Avg CPU: 20.7% | RAM Shift: +0.03 GB | Final RAM: 0.15 GB
+20:49:23 | PID: 56424 | [STRAIN] Main-Thread Sequential Warp (bio01) | Duration: 1.7s | Avg CPU: 26.7% | RAM Shift: -0.00 GB | Final RAM: 0.15 GB
+20:49:23 | PID: 56424 | [STRAIN] Dask Materialization (bio01) | Duration: 0.0s | Avg CPU: 24.6% | RAM Shift: +0.01 GB | Final RAM: 0.16 GB
+20:49:54 | PID: 56424 | [END Processing bio01] - CPU Load: 12.9% (22 Cores) | Active Threads: 107 | Script RAM: 0.33 GB | Server RAM: 96.9%
+20:49:54 | PID: 56424 | [START Processing bio12] - CPU Load: 23.0% (22 Cores) | Active Threads: 107 | Script RAM: 0.33 GB | Server RAM: 97.0%
+20:50:00 | PID: 56424 | [STRAIN] Network Fetch (bio12) | Duration: 5.7s | Avg CPU: 22.1% | RAM Shift: +0.02 GB | Final RAM: 0.35 GB
+20:50:02 | PID: 56424 | [STRAIN] Main-Thread Sequential Warp (bio12) | Duration: 1.6s | Avg CPU: 25.7% | RAM Shift: -0.01 GB | Final RAM: 0.34 GB
+20:50:02 | PID: 56424 | [STRAIN] Dask Materialization (bio12) | Duration: 0.0s | Avg CPU: 7.9% | RAM Shift: +0.01 GB | Final RAM: 0.36 GB
+20:50:33 | PID: 56424 | [END Processing bio12] - CPU Load: 18.6% (22 Cores) | Active Threads: 107 | Script RAM: 0.34 GB | Server RAM: 96.7%
+20:50:33 | PID: 56424 | [START Processing pr] - CPU Load: 26.7% (22 Cores) | Active Threads: 107 | Script RAM: 0.34 GB | Server RAM: 96.7%
+20:51:40 | PID: 56424 | [STRAIN] Network Fetch (pr) | Duration: 67.7s | Avg CPU: 17.8% | RAM Shift: +0.30 GB | Final RAM: 0.63 GB
+20:51:58 | PID: 56424 | [STRAIN] Parallel ThreadPool Warp (pr) | Duration: 17.2s | Avg CPU: 27.9% | RAM Shift: -0.01 GB | Final RAM: 0.62 GB
+20:52:09 | PID: 56424 | [STRAIN] Dask Materialization (pr) | Duration: 2.5s | Avg CPU: 25.4% | RAM Shift: +0.15 GB | Final RAM: 0.68 GB
+20:52:39 | PID: 56424 | [END Processing pr] - CPU Load: 23.8% (22 Cores) | Active Threads: 106 | Script RAM: 0.48 GB | Server RAM: 95.4%
+20:52:40 | PID: 56424 | [START Processing tas] - CPU Load: 26.2% (22 Cores) | Active Threads: 106 | Script RAM: 0.48 GB | Server RAM: 95.5%
+20:53:50 | PID: 56424 | [STRAIN] Network Fetch (tas) | Duration: 70.3s | Avg CPU: 21.7% | RAM Shift: +0.17 GB | Final RAM: 0.65 GB
+20:54:08 | PID: 56424 | [STRAIN] Parallel ThreadPool Warp (tas) | Duration: 17.0s | Avg CPU: 29.8% | RAM Shift: -0.08 GB | Final RAM: 0.57 GB
+20:54:17 | PID: 56424 | [STRAIN] Dask Materialization (tas) | Duration: 2.1s | Avg CPU: 21.6% | RAM Shift: +0.19 GB | Final RAM: 0.71 GB
+20:54:48 | PID: 56424 | [END Processing tas] - CPU Load: 12.7% (22 Cores) | Active Threads: 107 | Script RAM: 0.48 GB | Server RAM: 85.6%
+21:23:03 | PID: 56424 | [START Processing bio01] - CPU Load: 11.5% (22 Cores) | Active Threads: 110 | Script RAM: 0.60 GB | Server RAM: 94.9%
+21:23:10 | PID: 56424 | [STRAIN] Network Fetch (bio01) | Duration: 7.2s | Avg CPU: 19.6% | RAM Shift: +0.02 GB | Final RAM: 0.62 GB
+21:23:12 | PID: 56424 | [STRAIN] Main-Thread Sequential Warp (bio01) | Duration: 1.8s | Avg CPU: 20.9% | RAM Shift: +0.01 GB | Final RAM: 0.63 GB
+21:23:12 | PID: 56424 | [STRAIN] Dask Materialization (bio01) | Duration: 0.0s | Avg CPU: 16.2% | RAM Shift: +0.01 GB | Final RAM: 0.64 GB
+21:23:43 | PID: 56424 | [END Processing bio01] - CPU Load: 17.3% (22 Cores) | Active Threads: 110 | Script RAM: 0.64 GB | Server RAM: 96.4%
+21:23:43 | PID: 56424 | [START Processing bio12] - CPU Load: 19.7% (22 Cores) | Active Threads: 110 | Script RAM: 0.64 GB | Server RAM: 96.5%
+21:23:49 | PID: 56424 | [STRAIN] Network Fetch (bio12) | Duration: 6.4s | Avg CPU: 29.4% | RAM Shift: +0.01 GB | Final RAM: 0.65 GB
+21:23:51 | PID: 56424 | [STRAIN] Main-Thread Sequential Warp (bio12) | Duration: 1.7s | Avg CPU: 30.3% | RAM Shift: +0.00 GB | Final RAM: 0.65 GB
+21:23:51 | PID: 56424 | [STRAIN] Dask Materialization (bio12) | Duration: 0.0s | Avg CPU: 30.8% | RAM Shift: +0.00 GB | Final RAM: 0.65 GB
+21:24:22 | PID: 56424 | [END Processing bio12] - CPU Load: 16.4% (22 Cores) | Active Threads: 110 | Script RAM: 0.56 GB | Server RAM: 90.2%
+21:24:22 | PID: 56424 | [START Processing pr] - CPU Load: 48.3% (22 Cores) | Active Threads: 110 | Script RAM: 0.56 GB | Server RAM: 90.3%
+21:25:24 | PID: 56424 | [STRAIN] Network Fetch (pr) | Duration: 61.4s | Avg CPU: 18.2% | RAM Shift: +0.24 GB | Final RAM: 0.80 GB
+21:25:42 | PID: 56424 | [STRAIN] Parallel ThreadPool Warp (pr) | Duration: 17.6s | Avg CPU: 27.8% | RAM Shift: -0.09 GB | Final RAM: 0.71 GB
+21:25:52 | PID: 56424 | [STRAIN] Dask Materialization (pr) | Duration: 2.2s | Avg CPU: 26.3% | RAM Shift: +0.27 GB | Final RAM: 0.95 GB
+21:26:22 | PID: 56424 | [END Processing pr] - CPU Load: 16.5% (22 Cores) | Active Threads: 109 | Script RAM: 0.64 GB | Server RAM: 93.7%
+21:26:23 | PID: 56424 | [START Processing tas] - CPU Load: 28.4% (22 Cores) | Active Threads: 109 | Script RAM: 0.64 GB | Server RAM: 93.8%
+21:27:24 | PID: 56424 | [STRAIN] Network Fetch (tas) | Duration: 61.2s | Avg CPU: 20.1% | RAM Shift: +0.17 GB | Final RAM: 0.81 GB
+21:27:52 | PID: 56424 | [STRAIN] Parallel ThreadPool Warp (tas) | Duration: 26.9s | Avg CPU: 30.3% | RAM Shift: -0.01 GB | Final RAM: 0.77 GB
+21:28:06 | PID: 56424 | [STRAIN] Dask Materialization (tas) | Duration: 3.0s | Avg CPU: 20.4% | RAM Shift: +0.25 GB | Final RAM: 0.95 GB
+21:28:37 | PID: 56424 | [END Processing tas] - CPU Load: 18.9% (22 Cores) | Active Threads: 109 | Script RAM: 0.65 GB | Server RAM: 94.4%
+21:41:45 | PID: 56424 | [START Processing bio01] - CPU Load: 14.1% (22 Cores) | Active Threads: 110 | Script RAM: 0.23 GB | Server RAM: 93.1%
+21:41:52 | PID: 56424 | [STRAIN] Network Fetch (bio01) | Duration: 7.7s | Avg CPU: 26.8% | RAM Shift: +0.03 GB | Final RAM: 0.26 GB
+21:41:54 | PID: 56424 | [STRAIN] Main-Thread Sequential Warp (bio01) | Duration: 1.9s | Avg CPU: 25.6% | RAM Shift: +0.01 GB | Final RAM: 0.27 GB
+21:41:55 | PID: 56424 | [STRAIN] Dask Materialization (bio01) | Duration: 0.1s | Avg CPU: 19.4% | RAM Shift: +0.01 GB | Final RAM: 0.28 GB
+21:42:27 | PID: 56424 | [END Processing bio01] - CPU Load: 15.9% (22 Cores) | Active Threads: 110 | Script RAM: 0.49 GB | Server RAM: 94.8%
+21:42:27 | PID: 56424 | [START Processing bio12] - CPU Load: 20.8% (22 Cores) | Active Threads: 110 | Script RAM: 0.49 GB | Server RAM: 94.9%
+21:42:33 | PID: 56424 | [STRAIN] Network Fetch (bio12) | Duration: 6.2s | Avg CPU: 17.7% | RAM Shift: +0.01 GB | Final RAM: 0.49 GB
+21:42:35 | PID: 56424 | [STRAIN] Main-Thread Sequential Warp (bio12) | Duration: 1.7s | Avg CPU: 22.3% | RAM Shift: +0.00 GB | Final RAM: 0.49 GB
+21:42:36 | PID: 56424 | [STRAIN] Dask Materialization (bio12) | Duration: 0.1s | Avg CPU: 26.0% | RAM Shift: +0.00 GB | Final RAM: 0.50 GB
+21:43:06 | PID: 56424 | [END Processing bio12] - CPU Load: 13.6% (22 Cores) | Active Threads: 110 | Script RAM: 0.49 GB | Server RAM: 95.4%
+21:43:06 | PID: 56424 | [START Processing pr] - CPU Load: 34.2% (22 Cores) | Active Threads: 110 | Script RAM: 0.49 GB | Server RAM: 95.5%
+21:44:07 | PID: 56424 | [STRAIN] Network Fetch (pr) | Duration: 60.9s | Avg CPU: 19.4% | RAM Shift: +0.26 GB | Final RAM: 0.76 GB
+21:44:26 | PID: 56424 | [STRAIN] Parallel ThreadPool Warp (pr) | Duration: 17.7s | Avg CPU: 27.6% | RAM Shift: -0.13 GB | Final RAM: 0.63 GB
+21:44:36 | PID: 56424 | [STRAIN] Dask Materialization (pr) | Duration: 2.3s | Avg CPU: 18.9% | RAM Shift: +0.28 GB | Final RAM: 0.83 GB
+21:45:07 | PID: 56424 | [END Processing pr] - CPU Load: 23.9% (22 Cores) | Active Threads: 109 | Script RAM: 0.53 GB | Server RAM: 82.9%
+21:45:07 | PID: 56424 | [START Processing tas] - CPU Load: 24.2% (22 Cores) | Active Threads: 109 | Script RAM: 0.53 GB | Server RAM: 82.9%
+21:46:08 | PID: 56424 | [STRAIN] Network Fetch (tas) | Duration: 61.3s | Avg CPU: 17.4% | RAM Shift: +0.16 GB | Final RAM: 0.70 GB
+21:46:26 | PID: 56424 | [STRAIN] Parallel ThreadPool Warp (tas) | Duration: 17.6s | Avg CPU: 27.8% | RAM Shift: -0.00 GB | Final RAM: 0.70 GB
+21:46:37 | PID: 56424 | [STRAIN] Dask Materialization (tas) | Duration: 2.2s | Avg CPU: 22.5% | RAM Shift: +0.26 GB | Final RAM: 0.85 GB
+21:47:07 | PID: 56424 | [END Processing tas] - CPU Load: 17.7% (22 Cores) | Active Threads: 111 | Script RAM: 0.54 GB | Server RAM: 88.1%
+22:11:38 | PID: 55372 | [START Processing bio01] - CPU Load: 15.2% (22 Cores) | Active Threads: 112 | Script RAM: 0.39 GB | Server RAM: 97.2%
+22:11:47 | PID: 55372 | [STRAIN] Network Fetch (bio01) | Duration: 8.9s | Avg CPU: 18.7% | RAM Shift: +0.02 GB | Final RAM: 0.40 GB
+22:11:49 | PID: 55372 | [STRAIN] Main-Thread Sequential Warp (bio01) | Duration: 1.7s | Avg CPU: 24.4% | RAM Shift: +0.00 GB | Final RAM: 0.41 GB
+22:11:49 | PID: 55372 | [STRAIN] Dask Materialization (bio01) | Duration: 0.0s | Avg CPU: 9.1% | RAM Shift: +0.01 GB | Final RAM: 0.42 GB
+22:12:20 | PID: 55372 | [END Processing bio01] - CPU Load: 11.7% (22 Cores) | Active Threads: 108 | Script RAM: 0.41 GB | Server RAM: 96.9%
+22:12:20 | PID: 55372 | [START Processing bio12] - CPU Load: 25.2% (22 Cores) | Active Threads: 108 | Script RAM: 0.41 GB | Server RAM: 97.1%
+22:12:29 | PID: 55372 | [STRAIN] Network Fetch (bio12) | Duration: 9.1s | Avg CPU: 15.6% | RAM Shift: +0.02 GB | Final RAM: 0.43 GB
+22:12:31 | PID: 55372 | [STRAIN] Main-Thread Sequential Warp (bio12) | Duration: 1.6s | Avg CPU: 19.7% | RAM Shift: -0.01 GB | Final RAM: 0.42 GB
+22:12:31 | PID: 55372 | [STRAIN] Dask Materialization (bio12) | Duration: 0.0s | Avg CPU: 12.7% | RAM Shift: +0.01 GB | Final RAM: 0.43 GB
+22:13:01 | PID: 55372 | [END Processing bio12] - CPU Load: 20.6% (22 Cores) | Active Threads: 108 | Script RAM: 0.42 GB | Server RAM: 95.0%
+22:13:02 | PID: 55372 | [START Processing pr] - CPU Load: 50.3% (22 Cores) | Active Threads: 108 | Script RAM: 0.42 GB | Server RAM: 95.1%
+22:14:08 | PID: 55372 | [STRAIN] Network Fetch (pr) | Duration: 66.6s | Avg CPU: 18.2% | RAM Shift: +0.30 GB | Final RAM: 0.71 GB
+22:14:26 | PID: 55372 | [STRAIN] Parallel ThreadPool Warp (pr) | Duration: 17.1s | Avg CPU: 27.2% | RAM Shift: -0.08 GB | Final RAM: 0.63 GB
+22:14:36 | PID: 55372 | [STRAIN] Dask Materialization (pr) | Duration: 2.6s | Avg CPU: 18.3% | RAM Shift: +0.16 GB | Final RAM: 0.77 GB
+22:15:07 | PID: 55372 | [END Processing pr] - CPU Load: 21.3% (22 Cores) | Active Threads: 107 | Script RAM: 0.53 GB | Server RAM: 87.8%
+22:15:07 | PID: 55372 | [START Processing tas] - CPU Load: 23.5% (22 Cores) | Active Threads: 107 | Script RAM: 0.53 GB | Server RAM: 87.9%
+22:16:16 | PID: 55372 | [STRAIN] Network Fetch (tas) | Duration: 68.9s | Avg CPU: 19.8% | RAM Shift: +0.15 GB | Final RAM: 0.69 GB
+22:16:34 | PID: 55372 | [STRAIN] Parallel ThreadPool Warp (tas) | Duration: 17.5s | Avg CPU: 29.2% | RAM Shift: -0.01 GB | Final RAM: 0.66 GB
+22:16:44 | PID: 55372 | [STRAIN] Dask Materialization (tas) | Duration: 2.3s | Avg CPU: 20.8% | RAM Shift: +0.21 GB | Final RAM: 0.80 GB
+22:17:15 | PID: 55372 | [END Processing tas] - CPU Load: 12.8% (22 Cores) | Active Threads: 107 | Script RAM: 0.54 GB | Server RAM: 87.9%

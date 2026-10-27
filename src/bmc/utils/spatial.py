@@ -1,12 +1,13 @@
 import numpy as np
 import rasterio
+from rasterio.session import Session
 from pyproj import CRS, Transformer
 from typing import Tuple, Optional
 import logging
 from bmc.utils.logger import log_execution
 
 
-def detect_remote_crs_and_res(file_path: str) -> Tuple[str, float]:
+def detect_remote_crs_and_res(file_path: str, cloud_session: Optional[Session] = None) -> Tuple[str, float]:
     """
     Extracts the Coordinate Reference System (CRS) and spatial resolution from 
     a local or remote GeoTIFF without loading pixel arrays into memory.
@@ -22,6 +23,9 @@ def detect_remote_crs_and_res(file_path: str) -> Tuple[str, float]:
         The absolute local file path or remote virtual file system URL 
         (e.g., 's3://bucket/file.tif', '/vsicurl/http://...', or local 'data.tif') 
         pointing to the target raster.
+    cloud_session : rasterio.session.Session, optional
+        An authenticated cloud session (e.g., AWSSession) to use for fetching.
+        If None, relies on the default unauthenticated environment.
 
     Returns
     -------
@@ -38,10 +42,21 @@ def detect_remote_crs_and_res(file_path: str) -> Tuple[str, float]:
     >>> print(crs, res)
     'EPSG:4326', 0.0083333333
     """
-    with rasterio.open(file_path) as src:
-        crs_str = src.crs.to_string() if src.crs else "EPSG:4326"
-        res_x = src.res[0]  # Grab the X-axis pixel resolution
-        return crs_str, res_x
+    env_kwargs = {}
+    
+    if cloud_session:
+        # Only disable virtual hosting. Do NOT set AWS_HTTPS="YES".
+        # The session automatically injects the full 'https://...' endpoint_url.
+        env_kwargs["AWS_VIRTUAL_HOSTING"] = "FALSE"
+
+    env_context = rasterio.Env(session=cloud_session, **env_kwargs) if cloud_session else rasterio.Env()
+    
+    with env_context:
+        with rasterio.open(file_path) as src:
+            crs_str = src.crs.to_string() if src.crs else "EPSG:4326"
+            res_x = src.res[0]  
+            
+    return crs_str, res_x
 
 
 def build_safe_fetch_envelope(
@@ -173,7 +188,8 @@ def build_envelope_from_file(
     target_bounds: Tuple[float, float, float, float],
     source_file_path: str,
     pixel_buffer: int = 5,
-    logger: Optional[logging.Logger] = None
+    logger: Optional[logging.Logger] = None,
+    cloud_session: Optional[Session] = None
 ) -> Tuple[float, float, float, float]:
     """
     Convenience wrapper that automatically pings a remote or local file to detect 
@@ -194,6 +210,8 @@ def build_envelope_from_file(
         The number of native source pixels to add as an outer safety margin. Default is 5.
     logger : logging.Logger, optional
         Logger instance. Default is None.
+    cloud_session : rasterio.session.Session, optional
+        An authenticated cloud session (e.g., AWSSession) to use for fetching.
 
     Returns
     -------
@@ -202,8 +220,8 @@ def build_envelope_from_file(
     """
     log_execution(logger, f"Pinging '{source_file_path}' to detect spatial metadata...", logging.INFO)
     
-    # 1. Execute the network/disk I/O step
-    detected_crs, detected_res = detect_remote_crs_and_res(source_file_path)
+    # 1. Execute the network/disk I/O step using the secure session
+    detected_crs, detected_res = detect_remote_crs_and_res(source_file_path, cloud_session=cloud_session)
     
     log_execution(logger, f"Detected Source CRS: {detected_crs} | Res: {detected_res}", logging.INFO)
 

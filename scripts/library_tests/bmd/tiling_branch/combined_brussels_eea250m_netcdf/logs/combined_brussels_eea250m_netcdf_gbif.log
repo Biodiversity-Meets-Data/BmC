@@ -1,0 +1,25 @@
+[2026-10-26 15:52:05] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-10-26 15:52:05] [INFO] 
+=== Initiating Data Cube Pipeline: 'combined_brussels_eea250m_netcdf' | Dataset: 'gbif' ===
+[2026-10-26 15:52:05] [INFO]   Cube Directory   : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_brussels_eea250m_netcdf
+[2026-10-26 15:52:05] [INFO]   Output Directory : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_brussels_eea250m_netcdf\gbif
+[2026-10-26 15:52:05] [INFO]   Log File         : C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_brussels_eea250m_netcdf\logs\combined_brussels_eea250m_netcdf_gbif.log
+[2026-10-26 15:52:05] [INFO] Processing Mode: VECTOR
+[2026-10-26 15:52:05] [INFO] Loading GBIF data from C:/Users/niels/Documents/Repositories/BmC/scripts/library_tests/bmd/test_cubes/downloads/0016977-260721160103020.zip...
+[2026-10-26 15:52:07] [INFO] Constructed and resolved master grid key: EEA_250m
+[2026-10-26 15:52:07] [INFO] Extracting padded global bounding box from recipe...
+[2026-10-26 15:52:07] [INFO] CRS mismatch detected. Reprojecting from WGS 84 to ETRS89-extended / LAEA Europe...
+[2026-10-26 15:52:07] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-10-26 15:52:07] [INFO] Validation report saved to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_brussels_eea250m_netcdf\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-10-26 15:52:07] [INFO] Exporting source geometries to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_brussels_eea250m_netcdf\gbif\gbif_source_geometries.parquet...
+[2026-10-26 15:52:07] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-10-26 15:52:07] [INFO] Fractional geometries detected. Spatial multiplier: 'fraction'.
+[2026-10-26 15:52:07] [INFO] Aggregating 'fraction' -> 'expected_occurrences' (Method: sum, Weighted: False)
+[2026-10-26 15:52:07] [INFO] Vector aggregation complete. Yielded 92 final cells.
+[2026-10-26 15:52:07] [INFO] Exporting final aggregated spatial dataset to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_brussels_eea250m_netcdf\gbif\gbif_aggregated.parquet...
+[2026-10-26 15:52:07] [INFO] === GBIF Generation Complete ===
+[2026-10-26 15:52:07] [INFO] === Assembling STAC Item for GBIF ===
+[2026-10-26 15:52:07] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-10-26 15:52:07] [INFO] Spatial Dimension Table saved to: C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_brussels_eea250m_netcdf\gbif\gbif_EEA_250m_dimension_table.parquet
+[2026-10-26 15:52:07] [INFO] === STAC Item Assembly Complete: combined_brussels_eea250m_netcdf_gbif_20261026155207 ===
+[2026-10-26 15:52:07] [INFO] Exported STAC item to C:\Users\niels\Documents\Repositories\BmC\scripts\library_tests\bmd\tiling_branch\combined_brussels_eea250m_netcdf\meta\STAC_assets\gbif_stac.json

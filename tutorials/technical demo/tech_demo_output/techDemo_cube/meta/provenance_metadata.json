@@ -1,0 +1,289 @@
+{
+    "cube_name": "techDemo_cube",
+    "execution_timestamp_utc": "2026-09-28T20:11:34.959436+00:00",
+    "code_provenance": {
+        "pipeline_package": "bmc",
+        "pipeline_version": "0.1.0",
+        "git_branch": "tiled_raster",
+        "git_commit_sha": "606c02d48efe54209f2242e32bf3998b527c2aa4"
+    },
+    "system_environment": {
+        "os": "Windows",
+        "os_release": "11",
+        "os_version": "10.0.26200",
+        "architecture": "AMD64",
+        "python_version": "3.12.13",
+        "tracked_variables": {
+            "GDAL_DATA": "C:\\Users\\niels\\anaconda3\\envs\\BmC\\Library\\share\\gdal",
+            "PROJ_LIB": "Not Set",
+            "PROJ_NETWORK": "ON",
+            "OMP_NUM_THREADS": "Not Set",
+            "NUMBA_NUM_THREADS": "Not Set",
+            "OPENBLAS_NUM_THREADS": "Not Set",
+            "MKL_NUM_THREADS": "Not Set",
+            "CURL_CA_BUNDLE": "Not Set",
+            "REQUESTS_CA_BUNDLE": "Not Set",
+            "CONDA_DEFAULT_ENV": "BmC"
+        }
+    },
+    "hardware_environment": {
+        "cpu_cores": 22,
+        "total_ram_gb": 15.46,
+        "c_level_threadpools": [
+            {
+                "user_api": "openmp",
+                "internal_api": "openmp",
+                "num_threads": 22,
+                "prefix": "vcomp",
+                "filepath": "C:\\Users\\niels\\anaconda3\\envs\\BmC\\vcomp140.dll",
+                "version": null
+            }
+        ]
+    },
+    "software_environment": {
+        "wheel": "0.47.0",
+        "certifi": "2026.7.22",
+        "PySocks": "1.7.1",
+        "unicodedata2": "15.1.0",
+        "joblib": "1.4.2",
+        "pip": "26.1.2",
+        "cattrs": "24.1.2",
+        "platformdirs": "4.3.7",
+        "libpysal": "4.15.0",
+        "esda": "2.10.0",
+        "rasterio": "1.4.3",
+        "scipy": "1.18.0",
+        "xyzservices": "2022.9.0",
+        "pyyaml": "6.0.2",
+        "branca": "0.6.0",
+        "psutil": "7.0.0",
+        "hyperframe": "Not Installed",
+        "partd": "1.4.2",
+        "Brotli": "1.0.9",
+        "idna": "3.7",
+        "zipp": "Not Installed",
+        "rioxarray": "0.22.0",
+        "tqdm": "4.67.1",
+        "kiwisolver": "1.4.8",
+        "mpi4py": "Not Installed",
+        "mapclassify": "2.10.0",
+        "snuggs": "Not Installed",
+        "pygbif": "0.6.6",
+        "attrs": "24.3.0",
+        "numba": "0.65.1",
+        "python-dateutil": "2.9.0.post0",
+        "pillow": "11.1.0",
+        "dask": "2026.1.2",
+        "PyYAML": "6.0.2",
+        "pooch": "1.9.0",
+        "geocube": "0.7.1",
+        "pot": "0.9.6.post1",
+        "python-duckdb": "Not Installed",
+        "cachetools": "7.0.1",
+        "requests-cache": "1.2.0",
+        "narwhals": "2.7.0",
+        "toolz": "1.1.0",
+        "Deprecated": "1.2.13",
+        "fsspec": "2026.2.0",
+        "gdal": "3.6.2",
+        "cloudpickle": "3.1.2",
+        "xarray": "2025.12.0",
+        "h5py": "Not Installed",
+        "appdirs": "1.4.4",
+        "cligj": "0.7.2",
+        "pyogrio": "0.10.0",
+        "contourpy": "1.3.1",
+        "cftime": "1.6.4.post1",
+        "networkx": "3.4.2",
+        "Jinja2": "3.1.6",
+        "threadpoolctl": "3.5.0",
+        "fonttools": "4.55.3",
+        "regionmask": "0.13.0",
+        "shapely": "2.1.2",
+        "GDAL": "3.6.2",
+        "typing_extensions": "4.12.2",
+        "beautifulsoup4": "4.15.0",
+        "pystac": "1.14.3",
+        "packaging": "26.2",
+        "folium": "0.19.6",
+        "requests": "2.32.3",
+        "hpack": "Not Installed",
+        "geomet": "1.1.0",
+        "odc-geo": "0.5.0",
+        "pyproj": "3.6.1",
+        "numcodecs": "0.15.1",
+        "wrapt": "1.17.0",
+        "affine": "2.3.0",
+        "llvmlite": "0.47.0",
+        "google-crc32c": "Not Installed",
+        "geojson-rewind": "1.1.0",
+        "matplotlib": "3.10.0",
+        "cycler": "0.11.0",
+        "numpy": "2.4.6",
+        "soupsieve": "2.5",
+        "click": "8.1.8",
+        "netcdf4": "1.7.2",
+        "munkres": "Not Installed",
+        "importlib_metadata": "Not Installed",
+        "POT": "0.9.6.post1",
+        "pyarrow": "19.0.0",
+        "charset-normalizer": "3.3.2",
+        "netCDF4": "1.7.2",
+        "h2": "Not Installed",
+        "openeo": "0.43.0",
+        "six": "1.17.0",
+        "urllib3": "2.3.0",
+        "locket": "1.0.0",
+        "pandas": "3.0.3",
+        "tzdata": "2026.2",
+        "setuptools": "82.0.1",
+        "url-normalize": "1.4.3",
+        "dask-geopandas": "0.5.0",
+        "backports.zstd": "Not Installed",
+        "MarkupSafe": "3.0.2",
+        "click-plugins": "1.1.1",
+        "scikit-learn": "1.6.1",
+        "colorama": "0.4.6",
+        "win_inet_pton": "1.1.0",
+        "donfig": "0.8.1.post1",
+        "geopandas": "1.1.4",
+        "sparse": "0.15.4",
+        "zarr": "2.18.7",
+        "hda": "2.34",
+        "pyparsing": "3.2.0",
+        "duckdb": "1.5.4",
+        "bmc": "0.1.0",
+        "gdal_cpp_backend": "3.6.2"
+    },
+    "input_data_hashes": {
+        "gbif_local_file_path": {
+            "path": "gbif_data/0013304-260721160103020.zip",
+            "sha256": "4a211159b5280173600ca29d5bd1ab07e815d0ffa9df1450152c78667f583774"
+        }
+    },
+    "execution_recipe": {
+        "base_dir": "./tech_demo_output/",
+        "cube_name": "techDemo_cube",
+        "export_as": {
+            "format": "netcdf"
+        },
+        "spatial": {
+            "target_grid": "EEA",
+            "target_resolution": "1km",
+            "use_bbox": true,
+            "bbox": {
+                "long_min": 2.3413303628097433,
+                "long_max": 6.038920099374836,
+                "lat_min": 50.475604768288925,
+                "lat_max": 52.16588307249603
+            }
+        },
+        "temporal": {
+            "start_year": 2004,
+            "start_month": 1,
+            "end_year": 2025,
+            "end_month": 12
+        },
+        "sources": {
+            "chelsa": {
+                "enabled": true,
+                "levels": {
+                    "monthly": {
+                        "include": true,
+                        "variables": {
+                            "pr": true,
+                            "tas": true
+                        }
+                    },
+                    "bioclim": {
+                        "include": true,
+                        "time_ranges": {
+                            "1981-2010": true,
+                            "2011-2040": true,
+                            "2041-2070": true
+                        },
+                        "ensembles": {
+                            "historical": true,
+                            "GFDL-ESM4": true,
+                            "MPI-ESM1-2-HR": true
+                        },
+                        "scenarios": {
+                            "historical": true,
+                            "ssp126": true,
+                            "ssp585": true
+                        },
+                        "variables": {
+                            "bio01": true,
+                            "bio12": true
+                        }
+                    }
+                }
+            },
+            "gbif": {
+                "enabled": true,
+                "local_file_path": "gbif_data/0013304-260721160103020.zip",
+                "query_filters": {
+                    "taxon_keys": [
+                        "4HPXM",
+                        "5B9T3",
+                        "G59D",
+                        "4F6YZ",
+                        "3Y9W2"
+                    ],
+                    "record_type": "presence",
+                    "default_Uncertainty": 1000,
+                    "max_uncertainty": 1000,
+                    "exclude_issues": [
+                        "ZERO_COORDINATE",
+                        "COORDINATE_OUT_OF_RANGE",
+                        "COUNTRY_COORDINATE_MISMATCH"
+                    ]
+                },
+                "taxonomy": {
+                    "col_backbone": true
+                },
+                "columns": [
+                    "year",
+                    "month",
+                    "recordedby"
+                ],
+                "time_cols": [
+                    "year",
+                    "month"
+                ],
+                "processing_mode": "vector",
+                "vector_processing": {
+                    "topology": "point_cloud",
+                    "mapping_mode": "classify",
+                    "spatial_method": "intersect",
+                    "topology_config": {
+                        "point_cloud": {
+                            "n_passes": 100,
+                            "distribution": "gaussian",
+                            "random_seed": 42
+                        }
+                    }
+                },
+                "aggregate": {
+                    "export_unaggregated": false,
+                    "group_by_columns": [
+                        "specieskey",
+                        "year",
+                        "month"
+                    ],
+                    "metrics": [
+                        {
+                            "column": "gbifid",
+                            "method": "nunique",
+                            "weighted": false,
+                            "rename": "observation_count"
+                        }
+                    ]
+                }
+            }
+        },
+        "paths": {
+            "base_dir": "./tech_demo_output/techDemo_cube\\meta"
+        }
+    }
+}

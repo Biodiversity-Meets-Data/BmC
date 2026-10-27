@@ -1,0 +1,18 @@
+{
+  "type": "Catalog",
+  "id": "techDemo_cube_catalog",
+  "stac_version": "1.1.0",
+  "description": "Unified STAC catalog aggregating all sub-cube STAC items for 'techDemo_cube'.",
+  "links": [
+    {
+      "rel": "root",
+      "href": "./catalog.json",
+      "type": "application/json"
+    },
+    {
+      "rel": "item",
+      "href": "./techDemo_cube_gbif_20260928221833/techDemo_cube_gbif_20260928221833.json",
+      "type": "application/geo+json"
+    }
+  ]
+}

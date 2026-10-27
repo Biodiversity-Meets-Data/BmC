@@ -1,0 +1,22 @@
+<VRTDataset rasterXSize="2555" rasterYSize="2442">
+  <SRS dataAxisToSRSAxisMapping="1,2">PROJCS["ETRS89-extended / LAEA Europe",GEOGCS["ETRS89",DATUM["European_Terrestrial_Reference_System_1989",SPHEROID["GRS 1980",6378137,298.257222101004,AUTHORITY["EPSG","7019"]],AUTHORITY["EPSG","6258"]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4258"]],PROJECTION["Lambert_Azimuthal_Equal_Area"],PARAMETER["latitude_of_center",52],PARAMETER["longitude_of_center",10],PARAMETER["false_easting",4321000],PARAMETER["false_northing",3210000],UNIT["metre",1],AXIS["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","3035"]]</SRS>
+  <GeoTransform>  3.9162213966029114e+06,  1.0000000000000000e+01,  0.0000000000000000e+00,  3.1054446326499865e+06,  0.0000000000000000e+00, -1.0000000000000000e+01</GeoTransform>
+  <VRTRasterBand dataType="Byte" band="1">
+    <ColorInterp>Gray</ColorInterp>
+    <SimpleSource resampling="near">
+      <SourceFilename relativeToVRT="0">/vsis3/eodata/CLMS/landcover_landuse/forest_type/clms_vlcc_forest-additional-support-layer_europe_10m_3yearly_v1/2018/01/01/CLMS_HRLVLCC_FADSL_S2018_R10m_E39N30_03035_V01_R00/CLMS_HRLVLCC_FADSL_S2018_R10m_E39N30_03035_V01_R00.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="10000" RasterYSize="10000" DataType="Byte" BlockXSize="512" BlockYSize="512" />
+      <SrcRect xOff="1622.13966029114" yOff="0" xSize="2555" ySize="1897.53673500135" />
+      <DstRect xOff="0" yOff="544.463264998654" xSize="2555" ySize="1897.53673500135" />
+    </SimpleSource>
+    <SimpleSource resampling="near">
+      <SourceFilename relativeToVRT="0">/vsis3/eodata/CLMS/landcover_landuse/forest_type/clms_vlcc_forest-additional-support-layer_europe_10m_3yearly_v1/2018/01/01/CLMS_HRLVLCC_FADSL_S2018_R10m_E39N31_03035_V01_R00/CLMS_HRLVLCC_FADSL_S2018_R10m_E39N31_03035_V01_R00.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="10000" RasterYSize="10000" DataType="Byte" BlockXSize="512" BlockYSize="512" />
+      <SrcRect xOff="1622.13966029114" yOff="9455.53673500135" xSize="2555" ySize="544.463264998654" />
+      <DstRect xOff="0" yOff="0" xSize="2555" ySize="544.463264998654" />
+    </SimpleSource>
+  </VRTRasterBand>
+  <OverviewList resampling="near">2 4 8 16 32</OverviewList>
+</VRTDataset>

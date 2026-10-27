@@ -78,7 +78,7 @@ class chelsaCube(rasterCube):
         # parents[2]   = BmC (The actual repository root)
         repo_root = Path(bmc.__file__).parents[2]
         
-        self.catalog_path = os.path.join(
+        self.catalog = os.path.join(
             repo_root, 
             "meta", 
             self.dataset_name, 

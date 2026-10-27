@@ -316,183 +316,212 @@ class rasterCube(rasterEngine, dataCube, ABC):
         # converting to a set and back to a list ensures unique elements for the processing queue.
         self.variables = list(set(self.variables))
 
-    def generate_execution_plan(self, recipe: Dict[str, Any], logger: logging.Logger) -> pd.DataFrame:
+    def generate_execution_plan(
+        self, recipe: Dict[str, Any], logger: logging.Logger
+    ) -> pd.DataFrame:
         """
-        Filters and groups a standardized GeoParquet catalog to generate a pipeline-ready execution manifest.
+        Constructs a tabular execution manifest outlining the required spatial assets.
 
-        This method queries a local or remote GeoParquet catalog based on spatial, temporal, 
-        and categorical constraints defined in the execution recipe. It processes the catalog 
-        level-by-level to ensure that auxiliary dimensions (e.g., specific sensor bands or 
-        quality flags) are tightly scoped to their relevant datasets without creating NaN 
-        conflicts across the broader manifest. The output is a highly structured DataFrame 
-        that dictates exactly which files to fetch and how they should be routed through 
-        the processing pipeline (e.g., as individual slices or mosaicked tiles).
+        This method parses the user-provided YAML recipe and filters the underlying 
+        spatial catalog (e.g., Parquet file) based on requested variables, spatial 
+        bounding boxes, temporal ranges, and auxiliary dimensions. It acts as the 
+        query planner for the orchestrator.
 
         Parameters
         ----------
         recipe : Dict[str, Any]
-            The parsed YAML configuration dictionary containing execution directives, 
-            including spatial bounding boxes, temporal ranges, and active variables.
+            The master pipeline configuration dictionary parsed from YAML.
         logger : logging.Logger
-            The execution logger used to record inventory fetching progress, schema 
-            validation results, and potential missing data errors.
+            The logger instance for tracking telemetry and pipeline warnings.
 
         Returns
         -------
         pd.DataFrame
-            A standardized execution manifest detailing the processing queue. 
-            Returns an empty DataFrame if the catalog is missing, invalid, or yields no results.
-            Expected columns include:
-            - 'level' (str): Processing family grouping (e.g., 'climatologies').
-            - 'variable' (str): Physical variable name (e.g., 'temperature').
-            - 'vsi_path' (list of str): GDAL-compatible data URIs for the targeted assets.
-            - 'time' (datetime): The temporal coordinate for the data chunk.
-            - 'asset_type' (str): Pipeline routing flag ('slice' for single files, 'tile' for multi-file mosaics).
-            - 'path_type' (str): Storage indicator (hardcoded to 'remote' for S3 streams).
-            - [Auxiliary Columns]: Any dynamically injected dimensions (e.g., 'band', 'orbit').
+            A fully filtered and grouped Pandas DataFrame containing the required 
+            asset URIs (`vsi_path`), their types (`tile` vs `slice`), and temporal/spatial 
+            metadata necessary for GDAL retrieval. Returns an empty DataFrame if no 
+            assets match the query constraints.
         """
         # --- 0. Initialize Dynamic Attributes ---
-        # Hydrate the class instance with dataset-specific parameters from the recipe
-        # (e.g., extracting active levels, variables, and potentially a custom catalog path).
+        # Binds metadata variables and custom arguments specified in the recipe to the class instance
         self._apply_recipe_attributes(recipe)
 
         # --- 1. Extract Config from Recipe ---
-        # Safely extract spatial constraints, defaulting to a global bounding box if absent.
+        # Default to a global bounding box if none is explicitly provided in the spatial block
         bbox_cfg = recipe.get("spatial", {}).get("bbox", {})
         bbox = (
-            bbox_cfg.get("long_min", -180), 
-            bbox_cfg.get("lat_min", -90), 
-            bbox_cfg.get("long_max", 180), 
-            bbox_cfg.get("lat_max", 90)
+            bbox_cfg.get("long_min", -180),
+            bbox_cfg.get("lat_min", -90),
+            bbox_cfg.get("long_max", 180),
+            bbox_cfg.get("lat_max", 90),
         )
-        
-        # Safely extract temporal constraints, defaulting to a broad historical/future range.
+
+        # Default temporal bounds to a broad range if absent
         temp_cfg = recipe.get("temporal", {})
         start_date = f"{temp_cfg.get('start_year', 1900)}-01-01"
         end_date = f"{temp_cfg.get('end_year', 2100)}-12-31"
 
-        # --- 2. Load Catalog ---
-        catalog_path = getattr(self, 'catalog_path', None)
-        if not catalog_path:
-            log_execution(logger, "Fatal: 'catalog_path' attribute not set.", logging.ERROR)
-            return pd.DataFrame()
-
-        try:
-            # GeoPandas natively handles reading partitioned parquet directories or single files.
-            gdf = gpd.read_parquet(catalog_path)
-        except Exception as e:
-            log_execution(logger, f"Failed to load catalog: {e}", logging.ERROR)
-            return pd.DataFrame()
-
-        # --- 3. Strict Schema Validation ---
-        # Ensure the catalog contains the absolute minimum required metadata to build a pipeline queue.
-        required_cols = ['geometry', 'datetime', 'level', 'variable', 'vsi_path']
-        missing = [c for c in required_cols if c not in gdf.columns]
-        if missing:
-            log_execution(logger, f"Catalog missing mandatory columns: {missing}. Aborting.", logging.ERROR)
-            return pd.DataFrame()
-
-        log_execution(logger, f"Initial catalog rows loaded: {len(gdf)}", logging.INFO)
-
-        # Pre-fetch and parse configurations to avoid redundant overhead inside the level loop.
+        # Construct exact Shapely geometry for spatial intersection queries
         search_geom = shapely.geometry.box(*bbox)
         start = pd.to_datetime(start_date, utc=True)
         end = pd.to_datetime(end_date, utc=True)
-        
-        # Identify levels that do not have a temporal component (e.g., static digital elevation models).
-        static_levels = getattr(self, 'temporally_static_levels', [])
+
+        static_levels = getattr(self, "temporally_static_levels", [])
         aux_dims = self.get_auxiliary_dimensions(recipe)
-        
-        # Ensure levels and variables are iterable lists, even if defined as single strings.
+
         levels = self.levels if isinstance(self.levels, list) else [self.levels]
-        variables = self.variables if isinstance(self.variables, list) else [self.variables]
-        
+        variables = (
+            self.variables if isinstance(self.variables, list) else [self.variables]
+        )
+
         manifest_chunks = []
 
         # --- Process Level-by-Level ---
-        # We iterate by level because auxiliary dimensions (like 'band' or 'polarization') 
-        # might apply to one level but not another. Processing them together would cause NaN conflicts.
+        # Catalogs are often partitioned by temporal resolution (e.g., 'annual' vs 'monthly')
         for level in levels:
-            
-            # --- 4. Core Categorical Filter (Isolated per level) ---
-            # Isolate the data for the current level and only keep the requested variables.
-            level_gdf = gdf[(gdf['level'] == level) & (gdf['variable'].isin(variables))].copy()
+
+            # --- 2. Load ONLY the catalog file for the current level ---
+            catalog_dict = getattr(self, "catalogs", {})
+            unified_catalog = getattr(self, "catalog", "")
+
+            # Resolve the physical filepath of the Parquet catalog
+            if isinstance(catalog_dict, dict) and level in catalog_dict:
+                # Target found in dictionary mapping (e.g., CLMS modular datasets)
+                level_catalog_path = catalog_dict[level]
+            elif isinstance(unified_catalog, str) and unified_catalog.endswith('.parquet'):
+                # Target is a single, unified master catalog file (e.g., CHELSA)
+                level_catalog_path = unified_catalog
+            else:
+                # Fallback to standard directory structure if self.catalog is a directory path
+                base_path = getattr(self, "catalog_path", unified_catalog)
+                level_catalog_path = f"{base_path}/{level}_catalog.parquet"
+
+            try:
+                level_gdf = gpd.read_parquet(level_catalog_path)
+                log_execution(
+                    logger,
+                    f"Loaded catalog for level '{level}' ({len(level_gdf)} rows) from {level_catalog_path}",
+                    logging.INFO,
+                )
+            except Exception as e:
+                log_execution(
+                    logger,
+                    f"Failed to load catalog for level '{level}' ({level_catalog_path}): {e}",
+                    logging.WARNING,
+                )
+                continue
+
+            # Schema Validation: Ensure the catalog adheres to the required strict SpatioTemporal schema
+            required_cols = [
+                "geometry",
+                "datetime",
+                "level",
+                "variable",
+                "vsi_path",
+            ]
+            missing = [c for c in required_cols if c not in level_gdf.columns]
+            if missing:
+                log_execution(
+                    logger,
+                    f"Catalog '{level}' missing columns: {missing}. Skipping.",
+                    logging.ERROR,
+                )
+                continue
+
+            # --- 3. Filter Variables ---
+            # Drop all records that are not explicitly requested in the YAML recipe
+            level_gdf = level_gdf[
+                (level_gdf["level"] == level)
+                & (level_gdf["variable"].isin(variables))
+            ].copy()
             if level_gdf.empty:
                 continue
 
-            # --- 5. Auxiliary Dimension Filter & Grouping Injection (Scoped) ---
-            # Define the base grouping keys required to assemble a unique processing unit.
-            grouping_cols = ['level', 'variable', 'datetime']
-            
+            # --- 4. Auxiliary Dimension Filter & Grouping Injection ---
+            # Defines how records should be grouped together into a single time-slice
+            grouping_cols = ["level", "variable", "datetime"]
+
             if aux_dims:
                 for dim_col, values in aux_dims.items():
                     if dim_col in level_gdf.columns:
                         if not isinstance(values, list):
                             values = [values]
-                        
-                        # Prevent filtering if the auxiliary column exists but is entirely NaN for this specific level.
+                        # Retain records matching requested dimensions or explicitly marked as NaN (applies everywhere)
                         if not level_gdf[dim_col].isna().all():
-                            # Keep rows matching the requested aux values, OR rows that don't use this dimension (NaN).
-                            level_gdf = level_gdf[level_gdf[dim_col].isin(values) | level_gdf[dim_col].isna()]
-                            
-                            # Dynamically inject the auxiliary dimension into the groupby clause so slices aren't conflated.
+                            level_gdf = level_gdf[
+                                level_gdf[dim_col].isin(values)
+                                | level_gdf[dim_col].isna()
+                            ]
                             if dim_col not in grouping_cols:
                                 grouping_cols.append(dim_col)
-            
+
             if level_gdf.empty:
                 continue
 
-            # --- 6. Spatial Filter ---
-            # Retain only items whose bounding boxes intersect the requested spatial region.
+            # --- 5. Spatial Filter ---
+            # Perform bounding box intersection using the GeoPandas STRTree index
             level_gdf = level_gdf[level_gdf.intersects(search_geom)].copy()
             if level_gdf.empty:
                 continue
 
-            # --- 7. Temporal Filter ---
-            level_gdf['datetime'] = pd.to_datetime(level_gdf['datetime'], utc=True)
-            
-            # Skip time filtering for datasets known to be temporally static.
+            # --- 6. Temporal Filter ---
+            # Discard records outside the requested timeframe (unless the data is strictly temporally static)
+            level_gdf["datetime"] = pd.to_datetime(level_gdf["datetime"], utc=True)
             if level not in static_levels:
-                level_gdf = level_gdf[(level_gdf['datetime'] >= start) & (level_gdf['datetime'] <= end)]
-            
+                level_gdf = level_gdf[
+                    (level_gdf["datetime"] >= start)
+                    & (level_gdf["datetime"] <= end)
+                ]
+
             if level_gdf.empty:
                 continue
 
-            # --- 8. Grouping & Manifest Construction (Per Level) ---
-            # Define how to aggregate rows that belong to the same processing unit (same variable, time, aux dims).
-            agg_rules = {'vsi_path': list}  # Collapse all individual tile paths into a single list for VRT processing.
-            
-            if 'proj:epsg' in level_gdf.columns:
-                agg_rules['proj:epsg'] = lambda x: list(set(x))
-            if 'nodata' in level_gdf.columns:
-                # Safely extract the primary NoData value, if one exists.
-                agg_rules['nodata'] = lambda x: list(set(x))[0] if len(set(x)) > 0 else None
+            # --- 7. Grouping & Manifest Construction ---
+            # Condense identical temporal/spatial slices into a single row. 
+            # If multiple spatial tiles exist for the same timestamp, their URLs are bundled into a list.
+            agg_rules = {"vsi_path": list}
 
-            # Group the data. dropna=True is safe here because we explicitly excluded 
-            # completely NaN auxiliary columns from `grouping_cols` in Step 5.
-            level_manifest = level_gdf.groupby(grouping_cols, dropna=True).agg(agg_rules).reset_index()
+            if "proj:epsg" in level_gdf.columns:
+                agg_rules["proj:epsg"] = lambda x: list(
+                    set([int(v) for v in x if pd.notna(v)])
+                )
+            if "nodata" in level_gdf.columns:
+                agg_rules["nodata"] = (
+                    lambda x: list(set(x))[0] if len(set(x)) > 0 else None
+                )
+
+            level_manifest = (
+                level_gdf.groupby(grouping_cols, dropna=True)
+                .agg(agg_rules)
+                .reset_index()
+            )
             manifest_chunks.append(level_manifest)
 
-        # --- 9. Reassemble the Final Manifest ---
+        # --- 8. Assemble Final Manifest ---
         if not manifest_chunks:
             return pd.DataFrame()
 
-        # Stitch the isolated level manifests back into a single unified queue.
         manifest = pd.concat(manifest_chunks, ignore_index=True)
 
-        # Map internal STAC/GeoParquet nomenclature to the pipeline's expected naming conventions.
-        rename_map = {'datetime': 'time', 'proj:epsg': 'epsg_codes'}
-        manifest = manifest.rename(columns={k: v for k, v in rename_map.items() if k in manifest.columns})
+        rename_map = {"datetime": "time", "proj:epsg": "epsg_codes"}
+        manifest = manifest.rename(
+            columns={k: v for k, v in rename_map.items() if k in manifest.columns}
+        )
 
         # Dynamically determine the pipeline routing strategy.
-        # If a grouping resulted in multiple VSI paths, it spans multiple spatial tiles and requires a VRT ('tile').
-        # If it contains only a single path, it can be processed directly as a standalone array ('slice').
+        # 'tile': Distributed multi-file spatial blocks requiring GDAL VRT mosaicking.
+        # 'slice': Single global/regional files requiring straightforward GDAL windowing.
         manifest['asset_type'] = manifest['vsi_path'].apply(
             lambda paths: 'tile' if len(paths) > 1 else 'slice'
         )
-        
-        # Explicitly flag these assets as remote to trigger the appropriate GDAL virtual file system configs downstream.
         manifest['path_type'] = 'remote'
+        
+        # --- Safely execute the dataset-specific provider resolver ---
+        # Used downstream to apply specific S3 / Cloud authentication headers
+        if hasattr(self, 'resolve_provider'):
+            manifest['provider_id'] = manifest['vsi_path'].apply(self.resolve_provider)
+        else:
+            manifest['provider_id'] = None
 
         return manifest
 
@@ -761,15 +790,34 @@ class rasterCube(rasterEngine, dataCube, ABC):
     ) -> Dict[str, Dict[str, str]]:
         """
         The universal out-of-core spatial processing switchboard.
-        Routes execution to either chunked Dask materialization or VRT-based streaming 
-        based on the detected structure of the incoming data assets.
+
+        This acts as the main entry point for data generation. It reads the execution plan, 
+        initiates asynchronous network fetches to cloud buckets, routes execution to either 
+        chunked Dask materialization (slices) or VRT-based mosaicking (tiles) based on the 
+        data's detected spatial architecture, and finally serializes a PySTAC item.
+
+        Parameters
+        ----------
+        recipe : Dict[str, Any]
+            The master pipeline configuration dictionary parsed from YAML.
+        max_workers : int, optional
+            The maximum number of concurrent threads/processes allowed for network 
+            I/O and GDAL C++ warping, by default 10.
+        logger : Optional[logging.Logger], optional
+            The logger instance for tracking telemetry.
+
+        Returns
+        -------
+        Dict[str, Dict[str, str]]
+            A nested dictionary mapping hierarchical levels and variable names to their 
+            final materialized NetCDF/Zarr filepaths on disk (e.g., `{'monthly': {'tas': '.../tas.nc'}}`).
         """
         import math
 
+        # Unpack execution context and base directory structures
         ctx, logger, tracker = self.initialize_pipeline(recipe, logger=logger)
         base_dir, cube_name, dataset_name = ctx["base_dir"], ctx["cube_name"], ctx["dataset_name"]
         spatial_cfg = ctx["spatial_cfg"]
-
 
         execution_plan = self.generate_execution_plan(recipe, logger)
         if execution_plan.empty:
@@ -780,6 +828,7 @@ class rasterCube(rasterEngine, dataCube, ABC):
         grid_info = self.GRID_REGISTRY[target_grid_key]
         target_crs, target_res = grid_info["crs"], grid_info["resolution"]
         
+        # Resolve target bounding coordinates
         bbox_cfg = spatial_cfg.get('bbox', {})
         wgs84_bounds = (
             min(bbox_cfg.get('long_min', 0), bbox_cfg.get('long_max', 0)),
@@ -789,22 +838,62 @@ class rasterCube(rasterEngine, dataCube, ABC):
         )
         target_bounds = transform_bounds("EPSG:4326", target_crs, *wgs84_bounds)
         
-        # Safely extract the first scalar URI string from the grouped list
-        sample_file_path = execution_plan.iloc[0]['vsi_path'][0]
-        source_bbox = build_envelope_from_file(target_crs, target_bounds, sample_file_path, 5, logger)
+        # --- 1. Dynamic Session & Kwargs for the Initial Ping ---
+        # Ping the remote server with the first file to establish bounds and connection
+        sample_row = execution_plan.iloc[0]
+        sample_file_path = sample_row['vsi_path'][0] if isinstance(sample_row['vsi_path'], list) else sample_row['vsi_path']
+        
+        provider_id = sample_row.get('provider_id')
+        if isinstance(provider_id, pd.Series):
+            provider_id = provider_id.iloc[0]
+
+        active_session = None
+        env_kwargs = {}
+        
+        # Unpack the tuple to extract the AWSSession AND the GDAL environment kwargs
+        if hasattr(self, 'get_cloud_session') and provider_id:
+            session_result = self.get_cloud_session(provider_id)
+            if isinstance(session_result, tuple):
+                active_session, env_kwargs = session_result
+            else:
+                active_session = session_result
+        
+        # Inject the custom CDSE kwargs (like AWS_S3_ENDPOINT) into GDAL explicitly 
+        with rasterio.Env(**env_kwargs):
+            source_bbox = build_envelope_from_file(
+                target_crs, 
+                target_bounds, 
+                sample_file_path, 
+                5, 
+                logger,
+                cloud_session=active_session
+            )
 
         level_reprojected_paths: Dict[str, Dict[str, str]] = {lvl: {} for lvl in execution_plan['level'].unique()}
         grouped_plan = execution_plan.groupby(['level', 'variable'])
         
+        # Process the plan iteratively per variable to avoid memory saturation
         for (level, var_name), group_df in grouped_plan:
             log_execution(logger, f"\nProcessing Level: '{level}' | Variable: '{var_name}'...", logging.INFO)
             tracker.log_usage(f"START Processing {var_name}")
             
             target_paths = group_df['vsi_path'].explode().unique().tolist()
+
+            # --- 2. Dynamic Session & Kwargs for the Worker Threads ---
+            group_provider_id = group_df['provider_id'].iloc[0] if 'provider_id' in group_df.columns else None
             
-            # --- Inline Network Fetch Phase ---
+            active_session = None
+            env_kwargs = {}
+            if hasattr(self, 'get_cloud_session') and group_provider_id:
+                session_result = self.get_cloud_session(group_provider_id)
+                if isinstance(session_result, tuple):
+                    active_session, env_kwargs = session_result
+                else:
+                    active_session = session_result
+            
             num_files = len(target_paths)
             if num_files > 0:
+                # Sub-linear thread allocation prevents network saturation and DDOS-like behavior against HTTP stores
                 calc_workers = int(math.sqrt(num_files))
                 dynamic_workers = max(1, min(calc_workers, num_files, max_workers))
             else:
@@ -818,29 +907,43 @@ class rasterCube(rasterEngine, dataCube, ABC):
             )
             
             with tracker.track_strain(f"Network Fetch ({var_name})"):
-                with rasterio.Env(GTIFF_SRS_SOURCE="EPSG"):
-                    raw_fetched_data = parallel_fetch_rasters(target_paths, source_bbox, dynamic_workers)
+                # Apply explicit kwargs like AWS_VIRTUAL_HOSTING="FALSE" to the network fetchers
+                with rasterio.Env(**env_kwargs):
+                    raw_fetched_data = parallel_fetch_rasters(
+                        paths=target_paths, 
+                        geom=source_bbox, 
+                        max_workers=dynamic_workers,
+                        cloud_session=active_session 
+                    )
 
-            # --- Pipeline Routing Switchboard ---
-            is_tiled = any(str(p).endswith('.zip') for p in target_paths)
+            # Check internal routing flag computed during plan generation
+            is_tiled = (group_df['asset_type'] == 'tile').any()
 
             if is_tiled:
+                # Route tiled data (multiple spatial chunks per timestep) through VRT builder
                 log_execution(logger, "Processing data through tiled mosaic pipeline", logging.INFO)
-                output_paths = self._process_tiled_mosaic(
+                output_path = self._process_tiled_mosaic(
                     group_df=group_df,
                     var_name=var_name,
                     level=level,
                     ctx=ctx,
+                    target_bounds=target_bounds,     
                     target_grid_key=target_grid_key,
-                    logger=logger
+                    target_crs=target_crs,            
+                    target_res=target_res,            
+                    max_workers=max_workers,          
+                    tracker=tracker,                  
+                    logger=logger,
+                    cloud_session=active_session,
+                    source_bbox=source_bbox,
+                    env_kwargs=env_kwargs  # Pass kwargs downstream
                 )
-                if isinstance(output_paths, list):
-                    for i, p in enumerate(output_paths):
-                        level_reprojected_paths[level][f"{var_name}_{i}"] = p
-                elif output_paths:
-                    level_reprojected_paths[level][var_name] = output_paths
+                
+                if output_path:
+                    level_reprojected_paths[level][var_name] = output_path
                     
             else:
+                # Route single global slices directly to chunked windowing
                 log_execution(logger, "Processing data through chunked timeseries pipeline", logging.INFO)
                 output_path = self._process_chunked_timeseries(
                     group_df=group_df,
@@ -854,7 +957,9 @@ class rasterCube(rasterEngine, dataCube, ABC):
                     raw_fetched_data=raw_fetched_data,
                     max_workers=max_workers,
                     tracker=tracker,
-                    logger=logger
+                    logger=logger,
+                    cloud_session=active_session,
+                    env_kwargs=env_kwargs  # Pass kwargs downstream
                 )
                 if output_path:
                     level_reprojected_paths[level][var_name] = output_path
@@ -862,6 +967,7 @@ class rasterCube(rasterEngine, dataCube, ABC):
             tracker.log_usage(f"END Processing {var_name}")
             
         # --- STAC Finalization ---
+        # Generate PySTAC item describing the successfully materialized cube structure
         stac_assets_dir = os.path.join(base_dir, cube_name, "meta", "STAC_assets")
         os.makedirs(stac_assets_dir, exist_ok=True)
         stac_item = self.generate_raster_stac_item(level_reprojected_paths, recipe, dataset_name, stac_assets_dir, logger=logger)
@@ -872,249 +978,75 @@ class rasterCube(rasterEngine, dataCube, ABC):
             
         return level_reprojected_paths
 
-
-    def _process_tiled_mosaic(
-        self, group_df, var_name, level, ctx, target_bounds, target_grid_key, 
-        target_crs, target_res, max_workers, tracker, logger):
+    def _execute_standard_warp(
+        self, snapped_list, rule: str, cache_dir: str, target_grid_key: str, 
+        max_workers: int, cfg: dict, tracker, logger, cloud_session=None, env_kwargs=None
+    ) -> List[str]:
         """
-        Executes the spatial VRT pipeline for multi-file spatial grids (tiles).
-        Builds a Virtual Raster per N-dimensional slice, injects auxiliary coordinates, 
-        and routes to the universal warping engine.
+        Executes standard coordinate reprojection and interpolation (warping) on continuous data.
+
+        Dynamically chooses between native C++ GDAL multi-threading (for large dense matrices) 
+        and Python ThreadPool execution (for rapid, small parallel slices) based on matrix size.
+
+        Parameters
+        ----------
+        snapped_list : List[xr.DataArray]
+            List of 2D Xarray spatial matrices to be reprojected.
+        rule : str
+            GDAL interpolation rule (e.g., 'bilinear', 'nearest', 'average').
+        cache_dir : str
+            Filesystem location to store the interim warped TIF shards.
+        target_grid_key : str
+            The internal registry ID representing the CRS and physical layout parameters.
+        max_workers : int
+            The maximum permitted concurrent threads.
+        cfg : dict
+            Performance configuration dictionary (e.g., slice thresholds).
+        tracker : Any
+            Memory and CPU usage telemetry tracker.
+        logger : logging.Logger
+            Execution logger.
+        cloud_session : AWSSession, optional
+            Active authenticated Boto3/Rasterio cloud session.
+        env_kwargs : dict, optional
+            Additional GDAL environment variables (e.g., HTTP retry settings).
+
+        Returns
+        -------
+        List[str]
+            A list of physical disk paths pointing to the successfully warped interim TIF slices.
         """
         import os
-        from osgeo import gdal
-        import rioxarray
+        import math
+        import numpy as np
+        import rasterio
+        from concurrent.futures import ThreadPoolExecutor
 
-        base_dir = ctx["base_dir"]
-        cache_dir = os.path.join(base_dir, "warp_cache", level, var_name)
-        os.makedirs(cache_dir, exist_ok=True)
-        
-        da_list = []
-        
-        # 1. Assemble VRTs per multidimensional slice
-        for idx, row in group_df.iterrows():
-            tile_paths = row['vsi_path']
-            if not isinstance(tile_paths, list):
-                tile_paths = [tile_paths]
-                
-            if not tile_paths:
-                continue
-                
-            vrt_path = os.path.join(cache_dir, f"slice_mosaic_{idx}.vrt")
-            
-            with tracker.track_strain(f"VRT Construction ({var_name} slice {idx})"):
-                # Dynamically mosaic the tiles belonging to this specific datetime/dimension
-                gdal.BuildVRT(vrt_path, tile_paths)
-                
-            # Lazy load the VRT blueprint
-            vrt_da = rioxarray.open_rasterio(vrt_path, chunks=True)
-            
-            # Inject auxiliary coordinates (time, model, scenario, etc.)
-            _, structured_da = self.parse_metadata(row, vrt_da)
-            da_list.append(structured_da)
-            
-        # 2. Delegate to the unified alignment, warping, and materialization engine
-        return self._align_warp_and_export(
-            da_list=da_list,
-            var_name=var_name,
-            level=level,
-            ctx=ctx,
-            target_bounds=target_bounds,
-            target_grid_key=target_grid_key,
-            target_crs=target_crs,
-            target_res=target_res,
-            max_workers=max_workers,
-            tracker=tracker,
-            logger=logger
-        )
-
-    def _process_chunked_timeseries(
-        self, group_df: pd.DataFrame, var_name: str, level: str, ctx: Dict[str, Any], 
-        target_bounds: Tuple[float, float, float, float], target_grid_key: str, 
-        target_crs: Any, target_res: float, raw_fetched_data: Dict[str, xr.DataArray], 
-        max_workers: int, tracker: Any, logger: logging.Logger
-    ) -> Optional[str]:
-        """
-        Processes standalone 2D slice data by injecting dimensional metadata and 
-        routing the structured arrays to the universal warping engine.
-
-        This method acts as a bridge between raw, unstructured 2D rasters (like 
-        individual GeoTIFFs downloaded from an API) and the N-dimensional data cube. 
-        It iterates through the execution manifest, pulls the corresponding raw array 
-        from memory, assigns contextual coordinates (like time or depth), and 
-        delegates the heavy lifting of spatial alignment to the warping engine.
-
-        Parameters
-        ----------
-        group_df : pd.DataFrame
-            The execution manifest partition containing metadata for the specific 
-            variable and level being processed.
-        var_name : str
-            The physical variable name (e.g., 'precipitation', 'temperature').
-        level : str
-            The pipeline processing level or categorical family.
-        ctx : Dict[str, Any]
-            Global execution context containing paths, configurations, and state variables.
-        target_bounds : Tuple[float, float, float, float]
-            The spatial bounding box (min_x, min_y, max_x, max_y) for the final output.
-        target_grid_key : str
-            The identifier for the target spatial grid to which the data will be warped.
-        target_crs : Any
-            The target Coordinate Reference System (typically a pyproj.CRS or EPSG string).
-        target_res : float
-            The spatial resolution in the target CRS units.
-        raw_fetched_data : Dict[str, xr.DataArray]
-            An in-memory dictionary mapping VSI paths to their raw rioxarray DataArrays.
-        max_workers : int
-            The maximum number of concurrent threads permitted for spatial processing.
-        tracker : Any
-            The performance/resource tracker instance for logging CPU and memory strain.
-        logger : logging.Logger
-            The execution logger.
-
-        Returns
-        -------
-        Optional[str]
-            The absolute filepath to the finalized, materialized Zarr or NetCDF4 cube, 
-            or None if processing fails or returns empty data.
-        """
-        da_list = []
-        
-        # --- 1. Inject auxiliary coordinates into raw memory-loaded DataArrays ---
-        for _, row in group_df.iterrows():
-            # The execution plan groups paths into lists; for chunked timeseries, 
-            # we extract the singular path string representing this specific slice.
-            path_key = row['vsi_path'][0] if isinstance(row['vsi_path'], list) else row['vsi_path']
-            
-            # Retrieve the pre-loaded 2D array from the fetcher's dictionary
-            raw_da = raw_fetched_data.get(path_key)
-            
-            if raw_da is not None:
-                # Promote the 2D array to an N-dimensional array using the row's metadata
-                _, structured_da = self.parse_metadata(row, raw_da)
-                da_list.append(structured_da)
-                
-        # Fast exit if upstream fetchers failed or returned empty subsets
-        if not da_list:
-            log_execution(logger, f"No valid data returned for {var_name}. Skipping.", logging.WARNING)
-            return None
-            
-        # --- 2. Delegate to the unified alignment, warping, and materialization engine ---
-        # The list of temporally/structurally labeled 2D arrays is now handed off 
-        # to be physically aligned to the target projection and spatial grid.
-        return self._align_warp_and_export(
-            da_list=da_list,
-            var_name=var_name,
-            level=level,
-            ctx=ctx,
-            target_bounds=target_bounds,
-            target_grid_key=target_grid_key,
-            target_crs=target_crs,
-            target_res=target_res,
-            max_workers=max_workers,
-            tracker=tracker,
-            logger=logger
-        )
-    
-def _align_warp_and_export(
-        self, 
-        da_list: List[xr.DataArray], 
-        var_name: str, 
-        level: str, 
-        ctx: Dict[str, Any], 
-        target_bounds: Tuple[float, float, float, float], 
-        target_grid_key: str, 
-        target_crs: Any, 
-        target_res: float, 
-        max_workers: int, 
-        tracker: Any, 
-        logger: logging.Logger
-    ) -> Optional[str]:
-        """
-        Universal spatial alignment, parallel warping, and cube materialization engine.
-
-        This engine standardizes a list of disparate 2D DataArrays by reprojecting 
-        them to a common grid, assembling them into an N-dimensional structure, 
-        clipping them to the target bounds, and serializing them to disk. It employs 
-        dynamic routing to choose between native GDAL multi-threading or Python-level 
-        ThreadPool executors based on hardware constraints and slice sizes to optimize 
-        throughput without causing out-of-memory (OOM) crashes.
-
-        Parameters
-        ----------
-        da_list : List[xr.DataArray]
-            A list of structural 2D DataArrays, each containing Z-axis coordinates (e.g., time).
-        var_name : str
-            The physical variable name (e.g., 'temperature').
-        level : str
-            The pipeline processing level or categorical family.
-        ctx : Dict[str, Any]
-            Global execution context containing paths, configurations, and state variables.
-        target_bounds : Tuple[float, float, float, float]
-            The spatial bounding box (min_x, min_y, max_x, max_y) for the final output.
-        target_grid_key : str
-            The identifier for the target spatial grid.
-        target_crs : Any
-            The target Coordinate Reference System.
-        target_res : float
-            The spatial resolution in the target CRS units.
-        max_workers : int
-            The maximum number of concurrent threads permitted for spatial processing.
-        tracker : Any
-            The performance/resource tracker instance.
-        logger : logging.Logger
-            The execution logger.
-
-        Returns
-        -------
-        Optional[str]
-            The absolute filepath to the finalized Zarr or NetCDF4 cube, or None if failed.
-        """
-        if not da_list:
-            log_execution(logger, f"No valid data returned for {var_name}. Skipping.", logging.WARNING)
-            return None
-
-        base_dir, cube_name, dataset_name = ctx["base_dir"], ctx["cube_name"], ctx["dataset_name"]
-        export_format = ctx["export_format"]
-        cfg = ctx.get("execution_config", {})
-
-        # --- 1. Z-Axis Alignment & Coordinate Extraction ---
-        # Ensure all incoming slices share exactly the same base X/Y coordinate instances
-        # to prevent xarray from attempting dense outer joins during concatenation.
-        base_x, base_y = da_list[0].coords['x'], da_list[0].coords['y']
-        snapped_list = [d.assign_coords(x=base_x, y=base_y) for d in da_list]
-        
-        # Identify the primary Z-dimension (anything that isn't spatial)
-        z_dim = [dim for dim in snapped_list[0].dims if dim not in ['x', 'y']][0]
-        
-        # Sort chronologically or sequentially by the Z-dimension to ensure data integrity
-        snapped_list.sort(key=lambda da: da.coords[z_dim].values[0])
-        
-        # Extract all primary and auxiliary coordinates to reapply post-warp
-        z_vals = np.array([da[z_dim].values for da in snapped_list]).flatten()
-        full_meta_coords = {z_dim: z_vals}
-        
-        for k in snapped_list[0].coords.keys():
-            if k not in ['x', 'y', 'spatial_ref', z_dim]:
-                meta_vector = np.array([da[k].values for da in snapped_list]).flatten()
-                full_meta_coords[k] = (z_dim, meta_vector)
-        
-        # Determine mathematical resampling rule (e.g., 'nearest' for classes, 'bilinear' for continuous)
-        rule = self.get_resample_rule(var_name)
-        
-        # Establish a temporary disk cache for warped 2D slices to keep RAM usage low
-        cache_dir = os.path.join(base_dir, "warp_cache", level, var_name)
-        os.makedirs(cache_dir, exist_ok=True)
-
-        # --- 2. Parallel 2D Warping Setup ---
+        # Calculate uncompressed memory footprint to decide on execution backend
         slice_size_mb = snapped_list[0].nbytes / (1024 * 1024)
+        env_kwargs = env_kwargs or {}
 
         def _warp_worker(da_2d: xr.DataArray, index: int, gdal_threads: str) -> str:
             """Internal worker for serializing, sanitizing, and reprojecting a single slice."""
-            # VSI_CACHE="FALSE" prevents thread locks during concurrent I/O
-            with rasterio.Env(GDAL_NUM_THREADS=gdal_threads, VSI_CACHE="FALSE", GTIFF_SRS_SOURCE="EPSG"):
+            worker_kwargs = {
+                "GDAL_NUM_THREADS": gdal_threads,
+                "VSI_CACHE": "FALSE", 
+                "GTIFF_SRS_SOURCE": "EPSG",
+                "GDAL_HTTP_MAX_RETRY": "5",          # Increase from default 3 to mitigate remote disconnects
+                "GDAL_HTTP_RETRY_DELAY": "3",        # Wait 3 seconds between retries
+                "GDAL_HTTP_TIMEOUT": "30"            # Allow 30 seconds for a response
+            }
+            
+            # Safely merge custom endpoints while keeping raw credentials out of rasterio.Env 
+            # to prevent accidental leakage into GDAL internal logs
+            safe_env = {k: v for k, v in env_kwargs.items() if k not in ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]}
+            worker_kwargs.update(safe_env)
+            
+            env_context = rasterio.Env(session=cloud_session, **worker_kwargs) if cloud_session else rasterio.Env(**worker_kwargs)
+
+            with env_context:
                 try:
-                    # Sanitize NoData Values to prevent GDAL casting errors (e.g., float NaNs in Int8 arrays)
+                    # Sanitize nodata values to prevent integer overflow issues during float scaling
                     nodata_val = da_2d.rio.nodata
                     if nodata_val is not None:
                         if np.issubdtype(da_2d.dtype, np.integer):
@@ -1123,15 +1055,13 @@ def _align_warp_and_export(
                                 da_2d = da_2d.astype('float32')
                         da_2d.rio.write_nodata(nodata_val, inplace=True)
 
-                    # Remove conflicting NetCDF FillValue attributes before GDAL processing
+                    # Remove conflicting legacy NetCDF fill values which cause rioxarray export crashes
                     if '_FillValue' in da_2d.attrs:
                         del da_2d.attrs['_FillValue']
 
-                    # Ensure standard grid configurations and spatial references exist
                     da_2d = self._sanitize_spatial_geometry(da_2d, default_crs="EPSG:4326", logger=None)
                     out_filepath = os.path.join(cache_dir, f"slice_{index:04d}.tif")
                     
-                    # Delegate the physical pixel transformation to the core warping method
                     self.affine_reproject(
                         input_data=da_2d, 
                         output_filepath=out_filepath, 
@@ -1148,85 +1078,538 @@ def _align_warp_and_export(
         warped_tif_paths = []
         num_slices = len(snapped_list)
 
-        # --- 3. Warp Execution Routing ---
-        # Heuristic engine: determines the safest concurrent strategy based on file sizes and limits.
+        # Route to ThreadPoolExecutor if slices are small enough to be rapidly processed in pure Python threads
         if slice_size_mb < cfg.get("large_slice_threshold_mb", 50.0):
-            # If there are very few files, threading overhead exceeds processing time. Run sequentially.
             if num_slices < cfg.get("min_slices_for_parallel", 16):
-                with tracker.track_strain(f"Main-Thread Sequential Warp ({var_name})"):
+                with tracker.track_strain(f"Main-Thread Sequential Warp ({snapped_list[0].name})"):
                     for i, da in enumerate(snapped_list):
                         result = _warp_worker(da, i, "1")
                         if result != "": warped_tif_paths.append(result)
             else:
-                # Modest-sized files benefit significantly from Python-level ThreadPools
                 calc_workers = int(math.sqrt(num_slices))
                 dynamic_workers = max(1, min(calc_workers, max_workers, cfg.get("max_safe_threadpool_workers", 8)))
-                with tracker.track_strain(f"Parallel ThreadPool Warp ({var_name})"):
+                with tracker.track_strain(f"Parallel ThreadPool Warp ({snapped_list[0].name})"):
                     with ThreadPoolExecutor(max_workers=dynamic_workers) as executor:
                         futures = [executor.submit(_warp_worker, da, i, "1") for i, da in enumerate(snapped_list)]
                         for f in futures:
                             res = f.result()
                             if res != "": warped_tif_paths.append(res)
         else:
-            # For massive individual grids (e.g., >50MB per slice), Python threading risks OOM.
-            # Instead, run slices sequentially in Python, but allow GDAL to use C++ multi-threading underneath.
+            # For massive matrices, delegate concurrency entirely to the internal C++ GDAL multi-threading engine
             num_gdal_threads = str(min(os.cpu_count() or 4, max_workers))
-            with tracker.track_strain(f"C++ Multi-Core Native Warp ({var_name})"):
+            with tracker.track_strain(f"C++ Multi-Core Native Warp ({snapped_list[0].name})"):
                 for i, da in enumerate(snapped_list):
                     result_path = _warp_worker(da, i, num_gdal_threads)
                     if result_path != "": warped_tif_paths.append(result_path)
 
-        # --- 4. 3D Reassembly & Dask Materialization ---
-        aligned_slices = []
-        block_size = cfg.get("gdal_warp_block_size", 2048)
-        
-        # Load the physical warped files back into memory as chunked dask arrays
-        for tif_path in warped_tif_paths:
-            warped_2d = rioxarray.open_rasterio(
-                tif_path, 
-                chunks={'x': block_size, 'y': block_size}
-            )
-            # Purge rioxarray's default 1-sized band dimension
-            if 'band' in warped_2d.dims:
-                warped_2d = warped_2d.squeeze('band', drop=True)
-            aligned_slices.append(warped_2d)
+        return warped_tif_paths
 
-        if not aligned_slices:
-            log_execution(logger, f"No warped slices produced for {var_name}.", logging.ERROR)
+    def _execute_fractional_warp(
+        self, snapped_list: list, target_classes: dict, cache_dir: str, 
+        target_grid_key: str, tracker, logger, cloud_session=None, env_kwargs=None
+    ) -> dict:
+        """
+        Executes highly specialized fractional warping for categorical/classification datasets.
+
+        Unlike standard interpolation (which destroys categorical integrity), this extracts 
+        each valid classification integer as an isolated boolean layer, spatially warps it, 
+        and computes exact areal representation percentages in the target resolution pixel.
+
+        Parameters
+        ----------
+        snapped_list : list of xr.DataArray
+            List of 2D Xarray categorical matrices.
+        target_classes : dict
+            Dictionary mapping raw integer values to their semantic string classes.
+        cache_dir : str
+            Directory to store interim single-class TIF output shards.
+        target_grid_key : str
+            Target CRS and dimension parameters string key.
+        tracker : Any
+            Memory and CPU usage telemetry tracker.
+        logger : logging.Logger
+            Execution logger.
+        cloud_session : AWSSession, optional
+            Authenticated cloud session for remote data reads.
+        env_kwargs : dict, optional
+            Additional environment arguments to pass to GDAL.
+
+        Returns
+        -------
+        dict
+            A dictionary mapping each class integer to a list of its warped 
+            fractional TIF filepath locations.
+        """
+        import rasterio
+        
+        class_paths = {class_int: [] for class_int in target_classes.keys()}
+        worker_kwargs = {
+            "GDAL_NUM_THREADS": "ALL_CPUS",      # Utilize all cores for heavy fractional map-reduce
+            "VSI_CACHE": "FALSE", 
+            "GTIFF_SRS_SOURCE": "EPSG",
+            "GDAL_HTTP_MAX_RETRY": "5",          
+            "GDAL_HTTP_RETRY_DELAY": "3",        # Wait 3 seconds between retries
+            "GDAL_HTTP_TIMEOUT": "30"            # Allow 30 seconds for a response
+        }
+        if env_kwargs:
+            safe_env = {k: v for k, v in env_kwargs.items() if k not in ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]}
+            worker_kwargs.update(safe_env)
+            
+        if not cloud_session:
+            worker_kwargs["AWS_NO_SIGN_REQUEST"] = "YES"
+
+        env_context = rasterio.Env(session=cloud_session, **worker_kwargs) if cloud_session else rasterio.Env(**worker_kwargs)
+
+        with tracker.track_strain(f"Fractional Warping ({len(target_classes)} classes)"):
+            with env_context: 
+                for i, da_2d in enumerate(snapped_list):
+                    for class_int, class_name in target_classes.items():
+                        out_filepath = os.path.join(cache_dir, f"slice_{i:04d}_cls{class_int}.tif")
+                        
+                        # Defers computation to the child class implementation (e.g. clms.py)
+                        result_path = self.compute_class_fraction(
+                            source_data=da_2d, class_value=class_int, grid_name=target_grid_key,
+                            output_filepath=out_filepath, logger=logger
+                        )
+                        class_paths[class_int].append(result_path)
+                    
+        return class_paths
+    
+    def _process_tiled_mosaic(
+        self, group_df, var_name, level, ctx, target_bounds, target_grid_key, 
+        target_crs, target_res, max_workers, tracker, logger, cloud_session=None, source_bbox=None, env_kwargs=None
+    ):
+        """
+        Processes distributed spatial tiles by virtually grouping them into an actionable mosaic.
+
+        Uses GDAL Virtual Rasters (VRTs) to wrap multiple individual spatial files (e.g. Eurostat grids) 
+        into a single logical monolithic array representation prior to feeding it into the alignment pipeline.
+
+        Parameters
+        ----------
+        group_df : pd.DataFrame
+            The DataFrame partition containing all URLs for a specific temporal timestep.
+        var_name : str
+            The name of the variable being mosaicked (e.g., 'TCD', 'landcover').
+        level : str
+            The temporal hierarchy grouping (e.g., 'monthly', 'clc').
+        ctx : dict
+            Master context dictionary containing structural directory locations.
+        target_bounds : tuple
+            Projected destination bounding box (minx, miny, maxx, maxy).
+        target_grid_key : str
+            Target resolution and CRS identifier.
+        target_crs : Any
+            The specific coordinate reference system to project into.
+        target_res : float
+            The pixel size of the target space.
+        max_workers : int
+            Allowed concurrent processes.
+        tracker : Any
+            Telemetry and usage tracking module.
+        logger : logging.Logger
+            Execution logging output module.
+        cloud_session : AWSSession, optional
+            Authenticated cloud session for S3 queries.
+        source_bbox : tuple, optional
+            Bounding box in the source projection for safe VRT clipping.
+        env_kwargs : dict, optional
+            Safe dictionary of GDAL HTTP environment variables.
+
+        Returns
+        -------
+        Optional[str]
+            Path to the final assembled multidimensional output format (Zarr/NetCDF), or None on failure.
+        """
+        import os
+        import rioxarray
+        import rasterio
+        from bmc.utils.io import s3_to_vrt
+
+        env_kwargs = env_kwargs or {}
+        base_dir = ctx["base_dir"]
+        cache_dir = os.path.join(base_dir, "warp_cache", level, var_name)
+        os.makedirs(cache_dir, exist_ok=True)
+        
+        da_list = []
+        
+        for idx, row in group_df.iterrows():
+            tile_paths = row['vsi_path']
+            if not isinstance(tile_paths, list):
+                tile_paths = [tile_paths]
+                
+            if not tile_paths:
+                continue
+                
+            vrt_path = os.path.join(cache_dir, f"slice_mosaic_{idx}.vrt")
+            
+            with tracker.track_strain(f"VRT Construction ({var_name} slice {idx})"):
+                # Clean the env_kwargs to ensure rasterio.Env accepts them cleanly
+                safe_env = {k: v for k, v in env_kwargs.items() if k not in ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]}
+                with rasterio.Env(session=cloud_session, **safe_env) if cloud_session else rasterio.Env(**safe_env):
+                    # Construct a virtual raster locally bridging the remote distributed tiles
+                    success = s3_to_vrt(
+                        s3_hrefs=tile_paths, vrt_path=vrt_path, cloud_session=cloud_session,
+                        resample_alg="near", output_bounds=source_bbox, env_kwargs=env_kwargs
+                    )
+                if not success:
+                    log_execution(logger, f"Failed to build VRT at {vrt_path}.", logging.ERROR)
+                    continue
+            
+            # Keep the context open so rioxarray can safely query the remote tiles referenced by the VRT
+            env_context = rasterio.Env(session=cloud_session, **safe_env) if cloud_session else rasterio.Env(**safe_env)
+            with env_context:
+                vrt_da = rioxarray.open_rasterio(vrt_path, chunks=True)
+                _, structured_da = self.parse_metadata(row, vrt_da)
+                da_list.append(structured_da)
+            
+        return self._align_warp_and_export(
+            da_list=da_list, var_name=var_name, level=level, ctx=ctx, target_bounds=target_bounds,
+            target_grid_key=target_grid_key, target_crs=target_crs, target_res=target_res,
+            max_workers=max_workers, tracker=tracker, logger=logger, cloud_session=cloud_session, env_kwargs=env_kwargs
+        )
+
+    def _process_chunked_timeseries(
+        self, group_df, var_name: str, level: str, ctx: dict, 
+        target_bounds: tuple, target_grid_key: str, 
+        target_crs, target_res: float, raw_fetched_data: dict, 
+        max_workers: int, tracker, logger, cloud_session=None, env_kwargs=None
+    ):
+        """
+        Processes standard monolithic files representing entire regional/global slices.
+
+        Unlike the mosaicking pathway, these source assets cover the full geographic 
+        extent requested and thus are immediately funneled into Xarray metadata assignment 
+        prior to parallel alignment.
+
+        Parameters
+        ----------
+        group_df : pd.DataFrame
+            DataFrame of slice paths mapped by timestamp.
+        var_name : str
+            Variable name identifier (e.g. 'tas', 'qkndvi').
+        level : str
+            Temporal resolution (e.g. 'monthly', 'annual').
+        ctx : dict
+            Master directory and configuration context block.
+        target_bounds : tuple
+            Bounding envelope coordinates.
+        target_grid_key : str
+            Destination configuration registry key.
+        target_crs : Any
+            EPSG output projection space.
+        target_res : float
+            Pixel size mapping target.
+        raw_fetched_data : dict
+            Dictionary mapping remote filepaths to their lazily opened Xarray DataArrays.
+        max_workers : int
+            Thread limitation allocation.
+        tracker : Any
+            Telemetry usage logger.
+        logger : logging.Logger
+            Logging stream destination.
+        cloud_session : AWSSession, optional
+            Injected cloud authentication environment.
+        env_kwargs : dict, optional
+            Custom GDAL HTTP argument dictionary.
+
+        Returns
+        -------
+        Optional[str]
+            Output path for the serialized Zarr/NetCDF array, or None if extraction failed.
+        """
+        import rasterio
+        
+        env_kwargs = env_kwargs or {}
+        safe_env = {k: v for k, v in env_kwargs.items() if k not in ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]}
+        
+        da_list = []
+        
+        # Determine the environment context dynamically to protect lazy Dask evaluations when triggered
+        env_context = rasterio.Env(session=cloud_session, **safe_env) if cloud_session else rasterio.Env(**safe_env)
+        
+        with env_context:
+            for _, row in group_df.iterrows():
+                path_key = row['vsi_path'][0] if isinstance(row['vsi_path'], list) else row['vsi_path']
+                raw_da = raw_fetched_data.get(path_key)
+                
+                if raw_da is not None:
+                    _, structured_da = self.parse_metadata(row, raw_da)
+                    da_list.append(structured_da)
+                    
+            if not da_list:
+                log_execution(logger, f"No valid data returned for {var_name}. Skipping.", logging.WARNING)
+                return None
+                
+            return self._align_warp_and_export(
+                da_list=da_list,
+                var_name=var_name,
+                level=level,
+                ctx=ctx,
+                target_bounds=target_bounds,
+                target_grid_key=target_grid_key,
+                target_crs=target_crs,
+                target_res=target_res,
+                max_workers=max_workers,
+                tracker=tracker,
+                logger=logger,
+                cloud_session=cloud_session,
+                env_kwargs=env_kwargs
+            )
+
+    def _align_warp_and_export(
+        self, da_list: List[xr.DataArray], var_name: str, level: str, ctx: Dict[str, Any], 
+        target_bounds: Tuple[float, float, float, float], target_grid_key: str, 
+        target_crs: Any, target_res: float, max_workers: int, tracker: Any, 
+        logger: logging.Logger, cloud_session=None, env_kwargs=None
+    ) -> Optional[str]:
+        """
+        Acts as the central coordination hub bridging raw opened data arrays to the final GDAL warp calls.
+
+        Ensures all DataArrays are dimensionally conformal (Z-axis sorting and coordinate stacking), 
+        determines categorical vs standard pipeline routing, coordinates the warp phase, and triggers 
+        the ultimate file assembly and export function.
+
+        Parameters
+        ----------
+        da_list : List[xr.DataArray]
+            List of raw opened Xarray slices lacking final structural alignments.
+        var_name : str
+            Variable name being processed.
+        level : str
+            Hierarchical level descriptor (e.g. 'annual').
+        ctx : dict
+            Master output directory context.
+        target_bounds : Tuple[float, float, float, float]
+            Desired spatial projection boundaries.
+        target_grid_key : str
+            Master grid ID mapping.
+        target_crs : Any
+            Target EPSG coordinate reference object.
+        target_res : float
+            Pixel size parameter.
+        max_workers : int
+            Total maximum allowed threads for underlying C++/Python pools.
+        tracker : Any
+            Memory tracking diagnostic payload handler.
+        logger : logging.Logger
+            Logging stream destination.
+        cloud_session : AWSSession, optional
+            Authenticated cloud hook for S3.
+        env_kwargs : dict, optional
+            Additional GDAL HTTP runtime attributes.
+
+        Returns
+        -------
+        Optional[str]
+            Path to the completed output file, or None if the sequence failed.
+        """
+        
+        if not da_list:
+            log_execution(logger, f"No valid data returned for {var_name}. Skipping.", logging.WARNING)
             return None
 
-        # Assemble the N-dimensional cube
-        combined_da = xr.concat(aligned_slices, dim=z_dim)
+        base_dir = ctx["base_dir"]
+        
+        # --- 1. Z-Axis Alignment & Coordinate Extraction ---
+        # Ensure perfect planar conformance by broadcasting the x/y basis of the first 
+        # slice across the stack before extracting the primary temporal 'Z' tracking dimension.
+        base_x, base_y = da_list[0].coords['x'], da_list[0].coords['y']
+        snapped_list = [d.assign_coords(x=base_x, y=base_y) for d in da_list]
+        z_dim = [dim for dim in snapped_list[0].dims if dim not in ['x', 'y']][0]
+        
+        # Chronological / sequential sorting ensures identical output parity
+        snapped_list.sort(key=lambda da: da.coords[z_dim].values[0])
+        
+        z_vals = np.array([da[z_dim].values for da in snapped_list]).flatten()
+        full_meta_coords = {z_dim: z_vals}
+        
+        # Extract arbitrary supplemental coordinates (like EPSG tracking or source flags)
+        for k in snapped_list[0].coords.keys():
+            if k not in ['x', 'y', 'spatial_ref', z_dim]:
+                meta_vector = np.array([da[k].values for da in snapped_list]).flatten()
+                full_meta_coords[k] = (z_dim, meta_vector)
+        
+        rule = self.get_resample_rule(var_name)
+        cache_dir = os.path.join(base_dir, "warp_cache", level, var_name)
+        os.makedirs(cache_dir, exist_ok=True)
+
+        # --- 2. Pipeline Routing ---
+        if rule == "class_fraction":
+            # Extract categorical integers natively provided by the child class
+            target_classes = getattr(self, "class_mapping", {}).get(var_name, {})
+            if not target_classes:
+                log_execution(logger, f"No class mapping found for {var_name}. Aborting fraction warp.", logging.ERROR)
+                return None
+                
+            warped_tif_paths = self._execute_fractional_warp(
+                snapped_list, target_classes, cache_dir, target_grid_key, tracker, logger,
+                cloud_session=cloud_session, env_kwargs=env_kwargs
+            )
+        else:
+            warped_tif_paths = self._execute_standard_warp(
+                snapped_list, rule, cache_dir, target_grid_key, max_workers, 
+                ctx.get("execution_config", {}), tracker, logger, cloud_session, env_kwargs=env_kwargs
+            )
+
+        # --- 3. Materialization & Export ---
+        return self._assemble_and_export_cube(
+            warped_tif_paths, var_name, level, ctx, z_dim, full_meta_coords, 
+            target_bounds, target_crs, target_res, rule, target_classes if rule == "class_fraction" else None, 
+            tracker, logger
+        )
+
+    def _assemble_and_export_cube(
+        self, warped_paths: Union[List[str], Dict[int, List[str]]], var_name: str, level: str, 
+        ctx: Dict[str, Any], z_dim: str, full_meta_coords: dict, target_bounds: Tuple[float, float, float, float], 
+        target_crs: Any, target_res: float, rule: str, target_classes: Optional[Dict[int, str]], 
+        tracker: Any, logger: logging.Logger
+    ) -> Optional[str]:
+        """
+        Stacks intermediate warped shards into a monolithic multidimensional array and exports to disk.
+
+        This function reads the serialized interim TIF files, concatenates them structurally along 
+        the temporal 'Z' axis, enforces CF-Compliant (Climate and Forecast) metadata schemas 
+        (particularly critical for fractional class dictionaries), materializes the lazy Dask 
+        graph into RAM, and orchestrates the final disk write (NetCDF/Zarr).
+
+        Notes
+        -----
+        NetCDF Export Concurrency Warning:
+        NetCDF (backed by HDF5) heavily relies on POSIX file locking mechanisms. If `max_workers` 
+        is set aggressively high (>1) when exporting to `netcdf` format, silent write-collisions 
+        and race conditions may occur when chunks attempt to write simultaneously. This is 
+        frequently visualized as perfectly square nodata "voids" or white holes dropped entirely 
+        from the output cube. To guarantee robust writes without dropping chunks, use Zarr formatting, 
+        or lower the orchestrator's concurrency limit (`max_workers=1`).
+
+        Parameters
+        ----------
+        warped_paths : Union[List[str], Dict[int, List[str]]]
+            Flat list of shard paths (for continuous data) or a nested mapping linking 
+            categorical integer keys to their respective list of shard paths (fractional data).
+        var_name : str
+            The active variable name.
+        level : str
+            Pipeline hierarchy string grouping (e.g. 'annual').
+        ctx : dict
+            Orchestration execution parameters and configuration.
+        z_dim : str
+            The name assigned to the temporal z-axis stack (e.g. 'time').
+        full_meta_coords : dict
+            Supplemental dimension coordinates to be appended prior to export.
+        target_bounds : Tuple[float, float, float, float]
+            Precise clipping boundaries strictly enforced on the assembled array.
+        target_crs : Any
+            The EPSG Coordinate system embedded in the CF metadata.
+        target_res : float
+            Resolution cell size assigned to CF metadata tracking.
+        rule : str
+            The logical resample rule previously used to shape the data ('class_fraction' forces categorical schema logic).
+        target_classes : Optional[Dict[int, str]]
+            The integer-to-string mapping used for annotating CF categorical flag_values.
+        tracker : Any
+            System memory telemetry monitor.
+        logger : logging.Logger
+            Logging output destination.
+
+        Returns
+        -------
+        Optional[str]
+            Path to the completed NetCDF/Zarr file payload, or None on critical error.
+        """
+        import os
+        import gc
+        import time
+        import json
+        import xarray as xr
+        import rioxarray
+        from rioxarray.enum import Convention
+
+        base_dir, cube_name, dataset_name = ctx["base_dir"], ctx["cube_name"], ctx["dataset_name"]
+        export_format = ctx["export_format"]
+        cfg = ctx.get("execution_config", {})
+        block_size = cfg.get("gdal_warp_block_size", 2048)
+        
+        def _load_and_stack(paths: List[str]) -> xr.DataArray:
+            """Internal closure dynamically generating and squeezing Dask-backed xarray slices."""
+            slices = []
+            for p in paths:
+                da = rioxarray.open_rasterio(p, chunks={'x': block_size, 'y': block_size})
+                if 'band' in da.dims: 
+                    da = da.squeeze('band', drop=True)
+                slices.append(da)
+            return xr.concat(slices, dim=z_dim) if slices else None
+
+        # Assemble and structure fractional datasets (Categorical Classifications)
+        if rule == "class_fraction":
+            class_das = []
+            for class_int, paths in warped_paths.items():
+                if not paths: continue
+                z_stacked = _load_and_stack(paths)
+                if z_stacked is not None:
+                    # Assign the native integer coordinate natively to allow discrete masking downstream
+                    z_stacked = z_stacked.expand_dims('class_id').assign_coords({'class_id': [class_int]})
+                    class_das.append(z_stacked)
+            if not class_das:
+                log_execution(logger, f"No warped slices produced for {var_name}.", logging.ERROR)
+                return None
+            
+            # Concatenate along the new integer dimension (Yielding a true 4D (x, y, time, class_id) array)
+            combined_da = xr.concat(class_das, dim='class_id')
+            
+            # --- INJECT CF-COMPLIANT METADATA ---
+            if target_classes:
+                # 1. CF attributes should represent the entire dictionary namespace (Flag Bindings)
+                all_class_ints = list(target_classes.keys())
+                all_class_strs = [target_classes[c] for c in all_class_ints]
+                # CF strictly requires spaces to be replaced by underscores for flag mappings
+                safe_strings = [s.replace(" ", "_") for s in all_class_strs]
+                
+                combined_da.attrs['flag_values'] = all_class_ints
+                combined_da.attrs['flag_meanings'] = " ".join(safe_strings)
+                combined_da.attrs['raw_class_mapping'] = json.dumps(target_classes)
+
+                # 2. The parallel textual coordinate MUST match the exact length of the actually assembled dimension
+                actual_class_ints = combined_da['class_id'].values.tolist()
+                actual_class_strs = [target_classes[c] for c in actual_class_ints]
+                combined_da = combined_da.assign_coords(class_name=("class_id", actual_class_strs))
+                
+        # Assemble standard continuous arrays
+        else:
+            if not warped_paths:
+                log_execution(logger, f"No warped slices produced for {var_name}.", logging.ERROR)
+                return None
+            combined_da = _load_and_stack(warped_paths)
+            
+        if combined_da is None:
+            return None
+
+        # Broadcast required dimensions and rigid limits before physical execution
         combined_da.name = var_name
-        
-        # Re-attach the temporal and auxiliary coordinates that were stripped during GDAL warping
         combined_da = combined_da.assign_coords(full_meta_coords)
-        
-        # Clip off any nodata padding created during reprojection bounding-box expansion
         combined_da = combined_da.rio.clip_box(*target_bounds)
-        
-        # Force Dask to compute the graph and load the final array entirely into RAM
+
+        # Triggers materialization of the lazy Dask Graph into system RAM
         with tracker.track_strain(f"Dask Materialization ({var_name})"):
             combined_da = combined_da.load()
             
-        # Ensure CF-compliant spatial attributes are baked into the DataArray
         combined_da = combined_da.rio.set_spatial_dims(x_dim="x", y_dim="y")
         combined_da = combined_da.rio.write_crs(target_crs, convention=Convention.CF)
         combined_da = combined_da.rio.write_transform(convention=Convention.CF)
         combined_da.attrs['crs'] = str(target_crs)
         combined_da.attrs['res'] = float(target_res)
 
-        # --- 5. Export ---
         level_dir = os.path.join(base_dir, cube_name, dataset_name, level)
         os.makedirs(level_dir, exist_ok=True)
         export_ds = combined_da.to_dataset(name=var_name)
 
-        # NetCDF/Zarr engines cannot serialize generic Python 'object' types; force string casting
+        # NetCDF export strictness: Forces arbitrarily typed 'object' columns/attributes into proper strings
         for v_key in export_ds.variables:
             if export_ds[v_key].dtype == 'O':
                 export_ds[v_key] = export_ds[v_key].astype(str)
 
-        # Serialize the materialized dataset to the user's requested format
+        # Execute final serialized write commands to disk
         if export_format == 'zarr':
             var_cache_path = os.path.join(level_dir, f"{var_name}.zarr")
             export_ds.to_zarr(var_cache_path, mode='w')
@@ -1234,12 +1617,11 @@ def _align_warp_and_export(
             var_cache_path = os.path.join(level_dir, f"{var_name}.nc")
             export_ds.to_netcdf(var_cache_path, engine="netcdf4", format="NETCDF4")
         
-        # Memory cleanup: purge xarray backend file locks and force garbage collection
+        # Purge dangling caches to prevent memory leaks across loops
         xr.backends.file_manager.FILE_CACHE.clear()
-        del snapped_list, combined_da, export_ds
+        del combined_da, export_ds
         gc.collect()
 
-        # Brief pause to ensure OS-level file handlers have released the warp cache
         time.sleep(cfg.get("warp_cache_cleanup_delay_sec", 30))
         
         return var_cache_path
