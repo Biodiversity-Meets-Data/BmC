@@ -1,0 +1,122 @@
+[2026-09-28 20:34:34] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-28 20:34:34] [INFO] 
+=== Initiating Data Cube Pipeline: 'techDemo_cube' | Dataset: 'gbif' ===
+[2026-09-28 20:34:34] [INFO]   Cube Directory   : ./tech_demo_output/techDemo_cube
+[2026-09-28 20:34:34] [INFO]   Output Directory : ./tech_demo_output/techDemo_cube\gbif
+[2026-09-28 20:34:34] [INFO]   Log File         : ./tech_demo_output/techDemo_cube\logs\techDemo_cube_gbif.log
+[2026-09-28 20:34:34] [INFO] Processing Mode: VECTOR
+[2026-09-28 20:34:34] [INFO] Loading GBIF data from gbif_data/0016977-260721160103020.zip...
+[2026-09-28 20:34:37] [INFO] Constructed and resolved master grid key: EEA_1km
+[2026-09-28 20:34:37] [INFO] Extracting padded global bounding box from recipe...
+[2026-09-28 20:34:37] [INFO] CRS mismatch detected. Reprojecting from WGS 84 to ETRS89-extended / LAEA Europe...
+[2026-09-28 20:34:37] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-09-28 20:34:37] [INFO] Validation report saved to ./tech_demo_output/techDemo_cube\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-09-28 20:34:37] [INFO] Exporting source geometries to ./tech_demo_output/techDemo_cube\gbif\gbif_source_geometries.parquet...
+[2026-09-28 20:34:37] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-09-28 20:34:37] [INFO] Fractional geometries detected. Spatial multiplier: 'fraction'.
+[2026-09-28 20:34:37] [INFO] Aggregating 'fraction' -> 'expected_occurrences' (Method: sum, Weighted: False)
+[2026-09-28 20:34:37] [INFO] Vector aggregation complete. Yielded 296 final cells.
+[2026-09-28 20:34:37] [INFO] Exporting final aggregated spatial dataset to ./tech_demo_output/techDemo_cube\gbif\gbif_aggregated.parquet...
+[2026-09-28 20:34:37] [INFO] === GBIF Generation Complete ===
+[2026-09-28 20:34:37] [INFO] === Assembling STAC Item for GBIF ===
+[2026-09-28 20:34:37] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-09-28 20:34:37] [INFO] Spatial Dimension Table saved to: ./tech_demo_output/techDemo_cube\gbif\gbif_EEA_1km_dimension_table.parquet
+[2026-09-28 20:34:37] [INFO] === STAC Item Assembly Complete: techDemo_cube_gbif_20260928203437 ===
+[2026-09-28 20:34:37] [INFO] Exported STAC item to ./tech_demo_output/techDemo_cube\meta\STAC_assets\gbif_stac.json
+[2026-09-28 20:54:48] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-28 20:54:48] [INFO] 
+=== Initiating Data Cube Pipeline: 'techDemo_cube' | Dataset: 'gbif' ===
+[2026-09-28 20:54:48] [INFO]   Cube Directory   : ./tech_demo_output/techDemo_cube
+[2026-09-28 20:54:48] [INFO]   Output Directory : ./tech_demo_output/techDemo_cube\gbif
+[2026-09-28 20:54:48] [INFO]   Log File         : ./tech_demo_output/techDemo_cube\logs\techDemo_cube_gbif.log
+[2026-09-28 20:54:48] [INFO] Processing Mode: VECTOR
+[2026-09-28 20:54:48] [INFO] Loading GBIF data from gbif_data/0013304-260721160103020.zip...
+[2026-09-28 20:55:03] [INFO] Constructed and resolved master grid key: EEA_1km
+[2026-09-28 20:55:03] [INFO] Extracting padded global bounding box from recipe...
+[2026-09-28 20:55:03] [INFO] CRS mismatch detected. Reprojecting from WGS 84 to ETRS89-extended / LAEA Europe...
+[2026-09-28 20:56:02] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-09-28 20:56:15] [INFO] Validation report saved to ./tech_demo_output/techDemo_cube\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-09-28 20:56:15] [INFO] Exporting source geometries to ./tech_demo_output/techDemo_cube\gbif\gbif_source_geometries.parquet...
+[2026-09-28 20:56:16] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-09-28 20:56:16] [INFO] Fractional geometries detected. Spatial multiplier: 'fraction'.
+[2026-09-28 20:56:17] [INFO] Aggregating 'fraction' -> 'expected_occurrences' (Method: sum, Weighted: False)
+[2026-09-28 20:56:17] [INFO] Vector aggregation complete. Yielded 357322 final cells.
+[2026-09-28 20:56:17] [INFO] Exporting final aggregated spatial dataset to ./tech_demo_output/techDemo_cube\gbif\gbif_aggregated.parquet...
+[2026-09-28 20:56:18] [INFO] === GBIF Generation Complete ===
+[2026-09-28 20:56:18] [INFO] === Assembling STAC Item for GBIF ===
+[2026-09-28 20:56:18] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-09-28 20:56:19] [INFO] Spatial Dimension Table saved to: ./tech_demo_output/techDemo_cube\gbif\gbif_EEA_1km_dimension_table.parquet
+[2026-09-28 20:56:19] [INFO] === STAC Item Assembly Complete: techDemo_cube_gbif_20260928205618 ===
+[2026-09-28 20:56:19] [INFO] Exported STAC item to ./tech_demo_output/techDemo_cube\meta\STAC_assets\gbif_stac.json
+[2026-09-28 21:28:37] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-28 21:28:37] [INFO] 
+=== Initiating Data Cube Pipeline: 'techDemo_cube' | Dataset: 'gbif' ===
+[2026-09-28 21:28:37] [INFO]   Cube Directory   : ./tech_demo_output/techDemo_cube
+[2026-09-28 21:28:37] [INFO]   Output Directory : ./tech_demo_output/techDemo_cube\gbif
+[2026-09-28 21:28:37] [INFO]   Log File         : ./tech_demo_output/techDemo_cube\logs\techDemo_cube_gbif.log
+[2026-09-28 21:28:37] [INFO] Processing Mode: VECTOR
+[2026-09-28 21:28:37] [INFO] Loading GBIF data from gbif_data/0013304-260721160103020.zip...
+[2026-09-28 21:29:04] [INFO] Constructed and resolved master grid key: EEA_1km
+[2026-09-28 21:29:04] [INFO] Extracting padded global bounding box from recipe...
+[2026-09-28 21:29:04] [INFO] CRS mismatch detected. Reprojecting from WGS 84 to ETRS89-extended / LAEA Europe...
+[2026-09-28 21:30:17] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-09-28 21:30:20] [INFO] Validation report saved to ./tech_demo_output/techDemo_cube\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-09-28 21:30:20] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-09-28 21:30:20] [INFO] Discrete classification detected. Spatial multiplier set to 1.0.
+[2026-09-28 21:30:20] [WARNING] Metric column 'fraction' missing from data payload. Skipping.
+[2026-09-28 21:30:20] [INFO] Vector aggregation complete. Yielded 76356 final cells.
+[2026-09-28 21:30:20] [INFO] Exporting final aggregated spatial dataset to ./tech_demo_output/techDemo_cube\gbif\gbif_aggregated.parquet...
+[2026-09-28 21:30:21] [INFO] === GBIF Generation Complete ===
+[2026-09-28 21:30:21] [INFO] === Assembling STAC Item for GBIF ===
+[2026-09-28 21:30:21] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-09-28 21:30:21] [INFO] Spatial Dimension Table saved to: ./tech_demo_output/techDemo_cube\gbif\gbif_EEA_1km_dimension_table.parquet
+[2026-09-28 21:30:21] [INFO] === STAC Item Assembly Complete: techDemo_cube_gbif_20260928213021 ===
+[2026-09-28 21:30:21] [INFO] Exported STAC item to ./tech_demo_output/techDemo_cube\meta\STAC_assets\gbif_stac.json
+[2026-09-28 21:47:08] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-28 21:47:08] [INFO] 
+=== Initiating Data Cube Pipeline: 'techDemo_cube' | Dataset: 'gbif' ===
+[2026-09-28 21:47:08] [INFO]   Cube Directory   : ./tech_demo_output/techDemo_cube
+[2026-09-28 21:47:08] [INFO]   Output Directory : ./tech_demo_output/techDemo_cube\gbif
+[2026-09-28 21:47:08] [INFO]   Log File         : ./tech_demo_output/techDemo_cube\logs\techDemo_cube_gbif.log
+[2026-09-28 21:47:08] [INFO] Processing Mode: VECTOR
+[2026-09-28 21:47:08] [INFO] Loading GBIF data from gbif_data/0013304-260721160103020.zip...
+[2026-09-28 21:47:24] [INFO] Constructed and resolved master grid key: EEA_1km
+[2026-09-28 21:47:24] [INFO] Extracting padded global bounding box from recipe...
+[2026-09-28 21:47:25] [INFO] CRS mismatch detected. Reprojecting from WGS 84 to ETRS89-extended / LAEA Europe...
+[2026-09-28 21:48:27] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-09-28 21:48:29] [INFO] Validation report saved to ./tech_demo_output/techDemo_cube\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-09-28 21:48:29] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-09-28 21:48:29] [INFO] Discrete classification detected. Spatial multiplier set to 1.0.
+[2026-09-28 21:48:30] [INFO] Aggregating 'gbifid' -> 'observation_count' (Method: nunique, Weighted: False)
+[2026-09-28 21:48:30] [INFO] Vector aggregation complete. Yielded 76331 final cells.
+[2026-09-28 21:48:30] [INFO] Exporting final aggregated spatial dataset to ./tech_demo_output/techDemo_cube\gbif\gbif_aggregated.parquet...
+[2026-09-28 21:48:31] [INFO] === GBIF Generation Complete ===
+[2026-09-28 21:48:31] [INFO] === Assembling STAC Item for GBIF ===
+[2026-09-28 21:48:31] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-09-28 21:48:31] [INFO] Spatial Dimension Table saved to: ./tech_demo_output/techDemo_cube\gbif\gbif_EEA_1km_dimension_table.parquet
+[2026-09-28 21:48:32] [INFO] === STAC Item Assembly Complete: techDemo_cube_gbif_20260928214831 ===
+[2026-09-28 21:48:32] [INFO] Exported STAC item to ./tech_demo_output/techDemo_cube\meta\STAC_assets\gbif_stac.json
+[2026-09-28 22:17:15] [INFO] No alternative execution component present in recipe. Utilizing standard execution configuration: {'min_slices_for_parallel': 16, 'max_safe_threadpool_workers': 8, 'large_slice_threshold_mb': 50.0, 'gdal_warp_block_size': 2048, 'warp_cache_cleanup_delay_sec': 30}
+[2026-09-28 22:17:15] [INFO] 
+=== Initiating Data Cube Pipeline: 'techDemo_cube' | Dataset: 'gbif' ===
+[2026-09-28 22:17:15] [INFO]   Cube Directory   : ./tech_demo_output/techDemo_cube
+[2026-09-28 22:17:15] [INFO]   Output Directory : ./tech_demo_output/techDemo_cube\gbif
+[2026-09-28 22:17:15] [INFO]   Log File         : ./tech_demo_output/techDemo_cube\logs\techDemo_cube_gbif.log
+[2026-09-28 22:17:15] [INFO] Processing Mode: VECTOR
+[2026-09-28 22:17:15] [INFO] Loading GBIF data from gbif_data/0013304-260721160103020.zip...
+[2026-09-28 22:17:33] [INFO] Constructed and resolved master grid key: EEA_1km
+[2026-09-28 22:17:33] [INFO] Extracting padded global bounding box from recipe...
+[2026-09-28 22:17:33] [INFO] CRS mismatch detected. Reprojecting from WGS 84 to ETRS89-extended / LAEA Europe...
+[2026-09-28 22:18:29] [INFO] === Initiating Dynamic Vector QA/QC Profiling ===
+[2026-09-28 22:18:32] [INFO] Validation report saved to ./tech_demo_output/techDemo_cube\gbif\validation_report\gbif_qa_qc_failures.json
+[2026-09-28 22:18:32] [INFO] Aggregating vector data by dimensions: ['grid_idx', 'specieskey', 'year', 'month']...
+[2026-09-28 22:18:32] [INFO] Discrete classification detected. Spatial multiplier set to 1.0.
+[2026-09-28 22:18:32] [INFO] Aggregating 'gbifid' -> 'observation_count' (Method: nunique, Weighted: False)
+[2026-09-28 22:18:32] [INFO] Vector aggregation complete. Yielded 76459 final cells.
+[2026-09-28 22:18:32] [INFO] Exporting final aggregated spatial dataset to ./tech_demo_output/techDemo_cube\gbif\gbif_aggregated.parquet...
+[2026-09-28 22:18:33] [INFO] === GBIF Generation Complete ===
+[2026-09-28 22:18:33] [INFO] === Assembling STAC Item for GBIF ===
+[2026-09-28 22:18:33] [INFO] Generating discrete Spatial Dimension Table from unique grid IDs...
+[2026-09-28 22:18:33] [INFO] Spatial Dimension Table saved to: ./tech_demo_output/techDemo_cube\gbif\gbif_EEA_1km_dimension_table.parquet
+[2026-09-28 22:18:33] [INFO] === STAC Item Assembly Complete: techDemo_cube_gbif_20260928221833 ===
+[2026-09-28 22:18:33] [INFO] Exported STAC item to ./tech_demo_output/techDemo_cube\meta\STAC_assets\gbif_stac.json

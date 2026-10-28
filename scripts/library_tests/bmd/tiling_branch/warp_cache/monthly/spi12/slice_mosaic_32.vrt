@@ -1,0 +1,27 @@
+<VRTDataset rasterXSize="70" rasterYSize="46">
+  <SRS dataAxisToSRSAxisMapping="2,1">GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AXIS["Latitude",NORTH],AXIS["Longitude",EAST],AUTHORITY["EPSG","4326"]]</SRS>
+  <GeoTransform>  4.1214485875558582e+00,  8.3333333000000006e-03,  0.0000000000000000e+00,  5.1023308067288077e+01,  0.0000000000000000e+00, -8.3333333000000006e-03</GeoTransform>
+  <VRTRasterBand dataType="UInt16" band="1">
+    <NoDataValue>0</NoDataValue>
+    <Offset>-300</Offset>
+    <Scale>0.01</Scale>
+    <ColorInterp>Gray</ColorInterp>
+    <ComplexSource resampling="near">
+      <SourceFilename relativeToVRT="0">/vsicurl/https://os.unil.cloud.switch.ch/chelsa02/chelsa/global/annual/spi12/2018/CHELSA_spi12_09_2018_V.2.1.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="43200" RasterYSize="20880" DataType="UInt16" BlockXSize="512" BlockYSize="512" />
+      <SrcRect xOff="22094.5905855471" yOff="3957.18629757218" xSize="70" ySize="46" />
+      <DstRect xOff="0" yOff="0" xSize="70" ySize="46" />
+      <NODATA>0</NODATA>
+    </ComplexSource>
+    <ComplexSource resampling="near">
+      <SourceFilename relativeToVRT="0">/vsicurl/https://os.unil.cloud.switch.ch/chelsa02/chelsa/global/monthly/spi12/2018/CHELSA_spi12_09_2018_V.2.1.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="43200" RasterYSize="20880" DataType="UInt16" BlockXSize="512" BlockYSize="512" />
+      <SrcRect xOff="22094.5905855471" yOff="3957.18629757218" xSize="70" ySize="46" />
+      <DstRect xOff="0" yOff="0" xSize="70" ySize="46" />
+      <NODATA>0</NODATA>
+    </ComplexSource>
+  </VRTRasterBand>
+  <OverviewList resampling="near">2 4 8 16 32</OverviewList>
+</VRTDataset>

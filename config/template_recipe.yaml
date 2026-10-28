@@ -1,6 +1,17 @@
 base_dir: "./test_outputs/"
 cube_name: "dev_cube"
 
+# Only include this if you want to change the execution configuration 
+# For more explanation of these options, consult the readme file in the config directory
+"""
+execution:
+    min_slices_for_parallel: 16,
+    max_safe_threadpool_workers: 8,
+    large_slice_threshold_mb: 50.0,
+    gdal_warp_block_size: 2048,
+    warp_cache_cleanup_delay_sec: 30
+"""
+
 export_as:
   format: "zarr"
 # ======================================================================
@@ -194,15 +205,15 @@ sources:
           sfcWind: false
           hurs: false
           vpd: true
+          spei12: true    # Standardized Precipitation Evapotranspiration Index (12-month)
+          spi12: false    # Standardized Precipitation Index (12-month)
 
       # --- ANNUAL TIME SERIES (Inherits global 'temporal' block) ---
       annual:
         include: true
         variables:
-          tas: true
-          tasmax: false
-          tasmin: false
-          pr: false
+          qkndvi: true    # Vegetation index
+          mymd: false     # Growing degree days / derived temperature index
 
       # --- CLIMATOLOGIES (30-year normals, Overrides global 'temporal' block) ---
       climatologies:
@@ -368,3 +379,91 @@ sources:
           kg3: false
           kg4: false
           kg5: false
+
+  # --------------------------------------------------------------------
+  # COPERNICUS LAND MONITORING SERVICE (CLMS) DATASETS
+  # --------------------------------------------------------------------
+  clms:
+    enabled: true
+    base_s3_path: "s3://eodata/CLMS/"
+
+    clc:
+      include: true 
+      variables:
+        landcover: true
+        
+    clcplus:
+      include: true
+      variables:
+        lulucf_instance: true
+
+    crop_types:
+      include: true
+      variables:
+        cty: true      # Crop Types
+        ctycl: false   # Crop Types Confidence Layer
+
+    cropping_patterns:
+      include: true
+      variables:
+        cpbsa: true    # Bare Soil After
+        cpbsacl: false # Bare Soil After Confidence Layer
+        cpbsb: true    # Bare Soil Before
+        cpbsbcl: false # Bare Soil Before Confidence Layer
+        cpcst: true    # Cropping Seasons Types
+        cpcsy: true    # Cropping Seasons
+        cpfld: false   # Fallow Land Duration
+        cpfldcl: false # Fallow Land Duration Confidence Layer
+        cpflp: false   # Fallow Land Presence
+        cpflpcl: false # Fallow Land Presence Confidence Layer
+        cpmcd: false   # Main Crop Duration
+        cpmcdcl: false # Main Crop Duration Confidence Layer
+        cpmce: false   # Main Crop Emergence
+        cpmcecl: false # Main Crop Emergence Confidence Layer
+        cpmch: false   # Main Crop Harvest
+        cpmchcl: false # Main Crop Harvest Confidence Layer
+        cpscd: false   # Secondary Crop Duration
+        cpscdcl: false # Secondary Crop Duration Confidence Layer
+        cpsce: false   # Secondary Crop Emergence
+        cpsct: false   # Secondary Crop Types
+
+    dominant_leaf_type:
+      include: true
+      variables:
+        dlt: true      # Dominant Leaf Type
+        dltc: false    # Dominant Leaf Type Change
+        dltcl: false   # Dominant Leaf Type Confidence Layer
+
+    forest_type:
+      include: true
+      variables:
+        fadsl: false   # Forest Area Density / Status Layer
+        fty: true      # Forest Type
+
+    grassland_herbaceous:
+      include: true
+      variables:
+        gra: true      # Grassland
+        grac: false    # Grassland Change
+        graccl: false  # Grassland Change Confidence Layer
+        gracl: false   # Grassland Confidence Layer
+        her: false     # Herbaceous Cover
+        plough: false  # Ploughing Indicator
+
+    grassland_mowing:
+      include: false
+      variables:
+        gramd1: true   # Grassland Mowing Dynamics (Events 1)
+        gramd2: false  # Grassland Mowing Dynamics (Events 2)
+        gramd3: false  # Grassland Mowing Dynamics (Events 3)
+        gramd4: false  # Grassland Mowing Dynamics (Events 4)
+        grame: false   # Grassland Mowing Events
+        gramecl: false # Grassland Mowing Events Confidence Layer
+
+    tree_cover_density:
+      include: true
+      variables:
+        tcd: true      # Tree Cover Density
+        tcdcl: false   # Tree Cover Density Confidence Layer
+        tcpc: false    # Tree Cover Probability / Change
+        tcpccl: false  # Tree Cover Probability / Change Confidence Layer

@@ -1,7 +1,7 @@
 import os
 import yaml
 import logging
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 import shutil
 
 import importlib
@@ -304,8 +304,8 @@ class bmdCube:
 
     def process_recipe(
         self, 
-        recipe_file: str, 
-        recipe_path: str, 
+        recipe_file: Union[str, Dict[str, Any]], 
+        recipe_path: str = ".", 
         max_workers: int = 10, 
         logger: Optional[logging.Logger] = None,
         creds: Optional[Dict[str, str]] = None
@@ -314,26 +314,27 @@ class bmdCube:
         Orchestrates the data cube generation by reading the recipe and delegating
         processing to the respective dataset engines. 
 
-        This pipeline features an asynchronous execution flow: It triggers heavy 
-        backend tasks (like GBIF API generation) immediately, runs synchronous localized 
-        raster tasks (like CHELSA warping) while waiting, and finally resolves the 
-        blocking downloads once the raster generation finishes.
-
         Parameters
         ----------
-        recipe_file : str
-            Filename of the configuration target.
-        recipe_path : str
-            Directory path containing the configuration YAML.
+        recipe_file : str or dict
+            Filename of the configuration target, OR a fully instantiated Python dictionary.
+        recipe_path : str, optional
+            Directory path containing the configuration YAML (default is ".").
         max_workers : int, optional
             Maximum Python ThreadPool/GDAL C++ cores available to assign to tasks. Default 10.
         logger : logging.Logger, optional
             The master orchestrator tracking execution flow.
         creds : dict, optional
-            API credentials dictionary (e.g., gbif_username, gbif_password, gbif_email) 
-            passed downstream to remote fetch tasks.
+            API credentials dictionary passed downstream to remote fetch tasks.
         """
-        recipe = self._load_recipe(recipe_file, recipe_path)
+        from typing import Union
+        
+        # --- NEW: Check if recipe is already a dictionary ---
+        if isinstance(recipe_file, dict):
+            recipe = recipe_file
+        else:
+            recipe = self._load_recipe(recipe_file, recipe_path)
+            
         sources = recipe.get("sources", {})
 
         base_dir = recipe.get("base_dir", ".")
@@ -359,10 +360,6 @@ class bmdCube:
         # =================================================================
         # PHASE 1: ASYNCHRONOUS GBIF SUBMISSION
         # =================================================================
-        # GBIF SQL API queries can take anywhere from a few minutes to hours depending 
-        # on data volume. We compile and submit the query immediately so the remote 
-        # GBIF servers begin processing it while our local machine concurrently 
-        # downloads and warps raster datasets.
         gbif_cfg = sources.get("gbif")
         gbif_local_path = gbif_cfg.get("local_file_path") if gbif_cfg else None
         
@@ -375,27 +372,46 @@ class bmdCube:
                 log_execution(logger, "--- Submitting GBIF Query (Running in Background) ---", logging.INFO)
                 query = gbif_inst.generate_gbif_query_from_recipe(recipe, logger=logger)
                 
-                # Pass the creds dictionary exactly as expected by the original SQL utility
                 raw_key_response = sql.submit_gbif_query(query, creds=creds)
                 gbif_download_key = raw_key_response.get("key") if isinstance(raw_key_response, dict) else raw_key_response
 
         # =================================================================
         # PHASE 2: PROCESS ALL OTHER DATASETS (RASTER / OTHER VECTORS)
         # =================================================================
-        # Iterates through the dispatch map and executes active raster engines (e.g. CHELSA)
         for source_name, cube_class in self._source_map.items():
             if source_name == "gbif":
-                continue # Skip GBIF, as it is uniquely deferred to Phase 3
+                continue 
             
             source_cfg = sources.get(source_name, {})
             if source_cfg.get("enabled", False):
                 log_execution(logger, f"Initializing {source_name.upper()} cube generation...", logging.INFO)
                 
-                # Instantiate the engine dynamically and process synchronous arrays
-                cube_inst = cube_class()
+                if source_name == "clms":
+                    cdse_creds = (creds or {}).get("cdse_s3_credentials")
+                    priv_creds = (creds or {}).get("private_s3_credentials")
+                    
+                    if not cdse_creds:
+                        cdse_creds = source_cfg.get("cdse_s3_credentials")
+                    if not priv_creds:
+                        priv_creds = source_cfg.get("private_s3_credentials")
+                        
+                    if not cdse_creds:
+                        error_msg = (
+                            "CRITICAL: The 'clms' dataset requires 'cdse_s3_credentials' to authenticate against "
+                            "the Copernicus Dataspace S3 bucket. Provide the path to your credentials dictionary."
+                        )
+                        log_execution(logger, error_msg, logging.ERROR)
+                        raise ValueError(error_msg)
+                        
+                    cube_inst = cube_class(
+                        cdse_s3_credentials=cdse_creds,
+                        private_s3_credentials=priv_creds
+                    )
+                else:
+                    cube_inst = cube_class()
+                
                 res = cube_inst.process_cube(recipe, max_workers=max_workers, logger=logger)
                 
-                # Gather the generated metadata structures
                 item = self._collect_stac_item(res, source_name, cube_dir, logger)
                 if item:
                     stac_items.append(item)
@@ -403,8 +419,6 @@ class bmdCube:
         # =================================================================
         # PHASE 3: FETCH AND PROCESS GBIF (VECTOR)
         # =================================================================
-        # Now that raster processing has completed and local system load has reduced, 
-        # we resolve the GBIF dataset.
         if gbif_inst:
             if gbif_local_path:
                 log_execution(logger, "--- Processing Local GBIF Data ---", logging.INFO)
@@ -415,10 +429,6 @@ class bmdCube:
                 download_dir = os.path.join(base_dir, "downloads")
                 os.makedirs(download_dir, exist_ok=True)
                 
-                # The fetch_gbif_download command uses internal exponential backoff to 
-                # poll the API. This thread will now block execution safely until the 
-                # payload is fully ready and downloaded to the local hard drive.
-                # Pass credentials down for authentication retrieval
                 download_info = sql.fetch_gbif_download(gbif_download_key, target_dir=download_dir, max_time=10800, creds=creds)
                 local_data_path = download_info.get("path") if isinstance(download_info, dict) else download_info
             else:
@@ -426,7 +436,6 @@ class bmdCube:
 
             if local_data_path:
                 log_execution(logger, "Initializing GBIF cube generation...", logging.INFO)
-                # Map geometries using the retrieved payload
                 res = gbif_inst.process_cube(
                     recipe=recipe, 
                     dataset_name="gbif",
@@ -441,7 +450,6 @@ class bmdCube:
         # =================================================================
         # PHASE 4: CONSTRUCT UNIFYING STAC CATALOG
         # =================================================================
-        # Encapsulate the generated independent datasets into a unified hierarchical catalog
         self._create_unifying_stac_catalog(stac_items, cube_name, meta_dir, logger)
 
         log_execution(logger, f"=== BMD Cube Generation Complete. Nested DataTree available at: {cube_dir} ===", logging.INFO)

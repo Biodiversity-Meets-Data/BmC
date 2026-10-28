@@ -15,7 +15,7 @@ scripts/dev_notebooks/
 __pycache__/
 
 # EXCEPTIONS: Allow CSVs in the meta directory
-!meta/*.csv
+!meta/**/*.parquet
 !scripts/prototype/inp/prototypeNames.csv
 !scripts/prototype/img/AOI.png
 !scripts/prototype/out/prototype_cube/prototype_test.nc

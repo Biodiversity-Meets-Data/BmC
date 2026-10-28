@@ -1,0 +1,47 @@
+
+aggregation_rules:
+  categorical:
+    method: "fractional_coverage"
+    variables: 
+      - "lulucf_instance"
+      - "cty"
+      - "cpcst"
+      - "cpsct"
+      - "cpflp"
+      - "dlt"
+      - "fty"
+      - "gra"
+      - "plough"
+      - "gramd1"
+  continuous:
+    method: "average"
+    variables: 
+      - "tcd"
+      - "her"
+      - "tcpc"
+  temporal_doy:
+    method: "median"  # Using median to prevent invalid interpolated dates
+    variables: 
+      - "cpbsa"
+      - "cpbsb"
+      - "cpcsy"
+      - "cpmcd"
+      - "cpmce"
+      - "cpmch"
+      - "cpscd"
+      - "cpsce"
+  confidence:
+    method: "min"     # Conservative estimate of area quality (can be changed to 'average')
+    variables:
+      - "ctycl"
+      - "cpbsacl"
+      - "cpbsbcl"
+      - "cpflpcl"
+      - "cpmcdcl"
+      - "cpmcecl"
+      - "cpmchcl"
+      - "cpscdcl"
+      - "dltcl"
+      - "graccl"
+      - "gracl"
+      - "tcdcl"

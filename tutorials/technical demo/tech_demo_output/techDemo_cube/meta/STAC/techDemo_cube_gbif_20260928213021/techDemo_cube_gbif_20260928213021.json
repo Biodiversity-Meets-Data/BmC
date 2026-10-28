@@ -1,0 +1,97 @@
+{
+  "type": "Feature",
+  "stac_version": "1.1.0",
+  "stac_extensions": [],
+  "id": "techDemo_cube_gbif_20260928213021",
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [
+          6.052319302467305,
+          50.467554442741644
+        ],
+        [
+          6.052319302467305,
+          52.17360266293553
+        ],
+        [
+          2.3291651589571094,
+          52.17360266293553
+        ],
+        [
+          2.3291651589571094,
+          50.467554442741644
+        ],
+        [
+          6.052319302467305,
+          50.467554442741644
+        ]
+      ]
+    ]
+  },
+  "bbox": [
+    2.3291651589571094,
+    50.467554442741644,
+    6.052319302467305,
+    52.17360266293553
+  ],
+  "properties": {
+    "cube:dataset": "gbif",
+    "cube:grid_registry_key": "EEA_1km",
+    "processing:topology": "point_cloud",
+    "processing:mapping_mode": "classify",
+    "start_datetime": "2004-01-01T00:00:00+00:00",
+    "end_datetime": "2025-12-01T00:00:00+00:00",
+    "processing:distribution": "gaussian",
+    "processing:n_passes": 100,
+    "processing:random_seed": 42,
+    "processing:aggregation_groups": [
+      "specieskey",
+      "year",
+      "month"
+    ],
+    "processing:aggregation_metrics": [
+      {
+        "column": "fraction",
+        "method": "sum",
+        "weighted": false,
+        "rename": "expected_occurrences"
+      }
+    ],
+    "datetime": "2004-01-01T00:00:00Z"
+  },
+  "links": [
+    {
+      "rel": "root",
+      "href": "../catalog.json",
+      "type": "application/json"
+    },
+    {
+      "rel": "parent",
+      "href": "../catalog.json",
+      "type": "application/json"
+    }
+  ],
+  "assets": {
+    "aggregated_cube": {
+      "href": "./tech_demo_output/techDemo_cube/gbif/gbif_aggregated.parquet",
+      "type": "application/x-parquet",
+      "title": "Aggregated Vector Cube",
+      "description": "Final multidimensional grouped cube summarizing observations and spatial weights.",
+      "roles": [
+        "data"
+      ]
+    },
+    "grid_geometries": {
+      "href": "./tech_demo_output/techDemo_cube/gbif/gbif_EEA_1km_dimension_table.parquet",
+      "type": "application/x-parquet",
+      "title": "EEA_1km Spatial Dimension Table",
+      "description": "Explicit GeoParquet linking discrete grid identifiers to physical grid cell polygons.",
+      "roles": [
+        "metadata",
+        "spatial-index"
+      ]
+    }
+  }
+}

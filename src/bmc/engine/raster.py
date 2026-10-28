@@ -272,12 +272,16 @@ class rasterEngine(baseGrid):
                 resampleAlg=resampler,
                 srcNodata=nodata_val,
                 dstNodata=nodata_val,
+                outputType=gdal.GDT_Float32,  # Prevents nodata clamping and preserves interpolation decimals
                 creationOptions=[f'COMPRESS={compress_mode.upper()}', 
                                  'TILED=YES',
                                  'BIGTIFF=YES'],
                 warpMemoryLimit=memory_limit_bytes,
                 warpOptions=[f'NUM_THREADS={num_threads}']
             )
+            
+            # Execute Warp
+            gdal.Warp(output_filepath, source_path, options=warp_options)
             
             # Execute Warp
             gdal.Warp(output_filepath, source_path, options=warp_options)
@@ -414,3 +418,167 @@ class rasterEngine(baseGrid):
         
         else:
             raise TypeError("source_data must be either a string path (for VRTs) or an xarray.DataArray")
+
+    def build_virtual_mosaic(
+            self,
+            input_folder: str, 
+            output_vrt_path: str, 
+            logger: Optional[logging.Logger] = None
+        ) -> Optional[str]:
+            """
+            Creates a lightweight Virtual Raster (VRT) blueprint from multiple GeoTIFF tiles.
+    
+            This method discovers all `.tif` files in a folder and creates an XML-based `.vrt` 
+            file, mosaicking them together at their native resolution.
+    
+            Parameters
+            ----------
+            input_folder : str
+                The directory containing the raw `.tif` tiles.
+            output_vrt_path : str
+                The destination file path for the blueprint (must end in `.vrt`).
+            logger : logging.Logger, optional
+                The logger instance to use for recording execution messages. Default is ``None``.
+    
+            Returns
+            -------
+            str or None
+                The file path to the generated `.vrt` file. Returns ``None`` if no tiles were found.
+            """
+            # Enable errors
+            gdal.UseExceptions()
+            
+            tif_files = glob.glob(f"{input_folder}/*.tif")
+            if not tif_files:
+                log_execution(logger, f"No .tif files found in '{input_folder}'.", logging.WARNING)
+                return None
+    
+            log_execution(logger, f"Found {len(tif_files)} files. Building VRT blueprint...", logging.INFO)
+    
+            try:
+                os.makedirs(os.path.dirname(os.path.abspath(output_vrt_path)), exist_ok=True)
+    
+                # Build the VRT without any resampling options
+                vrt = gdal.BuildVRT(output_vrt_path, tif_files)
+                
+                # Critical: Flush cache and destroy the python object to force GDAL to write the XML to disk
+                vrt.FlushCache()
+                vrt = None 
+    
+                log_execution(logger, f"Virtual mosaic successfully saved to: {output_vrt_path}", logging.INFO)
+                return output_vrt_path
+    
+            except Exception as e:
+                log_execution(logger, f"Error building virtual mosaic: {e}", logging.ERROR, exc_info=True)
+                raise
+    
+            
+    def process_virtual_mosaic(
+        self, 
+        vrt_path: str, 
+        strategy: str, 
+        grid_name: str,
+        output_dir_or_file: str,
+        logger: Optional[logging.Logger] = None,
+        **kwargs
+    ) -> Union[xr.DataArray, xr.Dataset, List[str], None]:
+        """
+        Routes a Virtual Raster (VRT) blueprint to the appropriate spatial processing algorithm.
+
+        This dispatcher function delays heavy pixel-crunching until the exact mathematical 
+        strategy is determined. It acts as a switchboard, routing the lightweight XML 
+        blueprint to either a standard GDAL affine reprojection or a categorical 
+        fractional coverage calculator utilizing core rasterEngine primitives.
+
+        Parameters
+        ----------
+        vrt_path : str
+            The file path to the source `.vrt` file.
+        strategy : str
+            The processing algorithm to apply. Valid options: 'reproject', 'coverage'.
+        grid_name : str
+            The key of the target grid defined in the class grid registry.
+        output_dir_or_file : str
+            If strategy is 'reproject', this should be the output file path (.tif).
+            If strategy is 'coverage', this should be the output directory.
+        logger : logging.Logger, optional
+            The logger instance to use for recording execution messages. Default is ``None``.
+        **kwargs : dict
+            Keyword arguments passed directly to the chosen processing function 
+            (e.g., class_values, class_mapping, file_prefix, resample_keyword, compress_mode).
+
+        Returns
+        -------
+        xarray.DataArray or xarray.Dataset or List[str] or None
+            The lazily loaded result of the processing step if 'reproject'. 
+            Returns a list of generated file paths if 'coverage' is used.
+        """
+        import os
+        import uuid
+        from bmc.utils.logger import log_execution
+
+        if not os.path.exists(vrt_path):
+            raise FileNotFoundError(f"VRT blueprint not found at: {vrt_path}")
+
+        log_execution(logger, f"Initializing '{strategy}' processing pipeline for VRT...", logging.INFO)
+
+        try:
+            if strategy.lower() == 'reproject':
+                # Delegate directly to the rasterEngine primitive
+                return self.affine_reproject(
+                    input_data=vrt_path, 
+                    output_filepath=output_dir_or_file, 
+                    grid_name=grid_name, 
+                    logger=logger, 
+                    **kwargs
+                )
+                
+            elif strategy.lower() == 'coverage':
+                target_classes = kwargs.get('class_values', [])
+                file_prefix = kwargs.get('file_prefix', 'fractional')
+                class_mapping = kwargs.get('class_mapping', None)
+                
+                output_paths = []
+                
+                # Orchestration loop pulled from the dismantled build_fractional_cogs
+                for cls in target_classes:
+                    cls_int = int(cls)
+                    
+                    if class_mapping and cls_int in class_mapping:
+                        cls_name = str(class_mapping[cls_int]).replace(" ", "_").replace("/", "_").replace("-", "_")
+                    else:
+                        cls_name = f"class_{cls_int}"
+
+                    # 1. Create a safe physical temp file explicitly on the target hard drive
+                    temp_path = os.path.join(output_dir_or_file, f"temp_frac_{cls_name}_{uuid.uuid4().hex[:8]}.tif")
+                    final_cog_path = os.path.join(output_dir_or_file, f"{file_prefix}_{cls_name}.tif")
+
+                    if logger:
+                        logger.info(f"Processing spatial math for class: {cls_name}")
+                    
+                    # 2. Hand the VRT string path down to the rasterEngine spatial math primitive
+                    self.compute_class_fraction(
+                        source_data=vrt_path, 
+                        class_value=cls_int, 
+                        grid_name=grid_name, 
+                        output_filepath=temp_path, 
+                        logger=logger
+                    )
+                    
+                    # 3. Hand off the output to the generic COG baker primitive
+                    if hasattr(self, 'translate_to_cog'):
+                        self.translate_to_cog(temp_path, final_cog_path, logger=logger)
+                    else:
+                        # Temporary fallback mapping standard outputs if translate_to_cog is unavailable
+                        os.rename(temp_path, final_cog_path)
+                        
+                    output_paths.append(final_cog_path)
+                    
+                return output_paths
+                
+            else:
+                raise ValueError(f"Unknown processing strategy: '{strategy}'. Must be 'reproject' or 'coverage'.")
+
+        except Exception as e:
+            log_execution(logger, f"Pipeline failure during {strategy}: {e}", logging.ERROR, exc_info=True)
+            raise

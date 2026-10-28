@@ -1,0 +1,130 @@
+16:14:42 | PID: 44104 | [START Processing qkndvi] - CPU Load: 12.0% (22 Cores) | Active Threads: 105 | Script RAM: 0.35 GB | Server RAM: 92.4%
+16:14:44 | PID: 44104 | [STRAIN] Network Fetch (qkndvi) | Duration: 1.6s | Avg CPU: 13.3% | RAM Shift: +0.01 GB | Final RAM: 0.36 GB
+16:14:44 | PID: 44104 | [STRAIN] Main-Thread Sequential Warp (qkndvi) | Duration: 0.1s | Avg CPU: 16.5% | RAM Shift: +0.00 GB | Final RAM: 0.37 GB
+16:14:44 | PID: 44104 | [STRAIN] Dask Materialization (qkndvi) | Duration: 0.0s | Avg CPU: 0.0% | RAM Shift: +0.00 GB | Final RAM: 0.37 GB
+16:15:14 | PID: 44104 | [END Processing qkndvi] - CPU Load: 11.6% (22 Cores) | Active Threads: 102 | Script RAM: 0.37 GB | Server RAM: 91.4%
+16:15:14 | PID: 44104 | [START Processing pr] - CPU Load: 11.7% (22 Cores) | Active Threads: 102 | Script RAM: 0.37 GB | Server RAM: 91.4%
+16:15:22 | PID: 44104 | [STRAIN] Network Fetch (pr) | Duration: 7.8s | Avg CPU: 10.8% | RAM Shift: +0.01 GB | Final RAM: 0.38 GB
+16:15:24 | PID: 44104 | [STRAIN] Main-Thread Sequential Warp (pr) | Duration: 1.4s | Avg CPU: 15.2% | RAM Shift: +0.00 GB | Final RAM: 0.38 GB
+16:15:24 | PID: 44104 | [STRAIN] Dask Materialization (pr) | Duration: 0.0s | Avg CPU: 40.0% | RAM Shift: +0.00 GB | Final RAM: 0.38 GB
+16:15:54 | PID: 44104 | [END Processing pr] - CPU Load: 6.6% (22 Cores) | Active Threads: 103 | Script RAM: 0.38 GB | Server RAM: 97.0%
+16:15:54 | PID: 44104 | [START Processing spei12] - CPU Load: 7.3% (22 Cores) | Active Threads: 103 | Script RAM: 0.38 GB | Server RAM: 96.9%
+16:16:03 | PID: 44104 | [STRAIN] Network Fetch (spei12) | Duration: 9.0s | Avg CPU: 3.7% | RAM Shift: +0.00 GB | Final RAM: 0.38 GB
+16:16:05 | PID: 44104 | [STRAIN] Main-Thread Sequential Warp (spei12) | Duration: 1.9s | Avg CPU: 7.0% | RAM Shift: +0.00 GB | Final RAM: 0.38 GB
+16:16:06 | PID: 44104 | [STRAIN] Dask Materialization (spei12) | Duration: 0.0s | Avg CPU: 4.8% | RAM Shift: +0.00 GB | Final RAM: 0.38 GB
+16:16:36 | PID: 44104 | [END Processing spei12] - CPU Load: 0.8% (22 Cores) | Active Threads: 103 | Script RAM: 0.38 GB | Server RAM: 95.9%
+16:16:36 | PID: 44104 | [START Processing spi12] - CPU Load: 4.5% (22 Cores) | Active Threads: 103 | Script RAM: 0.38 GB | Server RAM: 95.9%
+16:16:43 | PID: 44104 | [STRAIN] Network Fetch (spi12) | Duration: 6.5s | Avg CPU: 3.3% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+16:16:44 | PID: 44104 | [STRAIN] Main-Thread Sequential Warp (spi12) | Duration: 1.8s | Avg CPU: 7.1% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+16:16:45 | PID: 44104 | [STRAIN] Dask Materialization (spi12) | Duration: 0.0s | Avg CPU: 20.0% | RAM Shift: +0.00 GB | Final RAM: 0.38 GB
+16:17:15 | PID: 44104 | [END Processing spi12] - CPU Load: 0.0% (22 Cores) | Active Threads: 102 | Script RAM: 0.38 GB | Server RAM: 95.8%
+16:17:15 | PID: 44104 | [START Processing tas] - CPU Load: 8.5% (22 Cores) | Active Threads: 102 | Script RAM: 0.38 GB | Server RAM: 95.8%
+16:17:22 | PID: 44104 | [STRAIN] Network Fetch (tas) | Duration: 6.6s | Avg CPU: 4.7% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+16:17:23 | PID: 44104 | [STRAIN] Main-Thread Sequential Warp (tas) | Duration: 1.2s | Avg CPU: 7.9% | RAM Shift: -0.00 GB | Final RAM: 0.39 GB
+16:17:24 | PID: 44104 | [STRAIN] Dask Materialization (tas) | Duration: 0.0s | Avg CPU: 4.8% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+16:17:54 | PID: 44104 | [END Processing tas] - CPU Load: 2.0% (22 Cores) | Active Threads: 102 | Script RAM: 0.39 GB | Server RAM: 95.6%
+16:18:00 | PID: 44104 | [START Processing landcover] - CPU Load: 5.9% (22 Cores) | Active Threads: 105 | Script RAM: 0.39 GB | Server RAM: 95.5%
+16:18:03 | PID: 44104 | [STRAIN] Network Fetch (landcover) | Duration: 2.9s | Avg CPU: 3.7% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+16:18:11 | PID: 44104 | [STRAIN] Fractional Warping (45 classes) | Duration: 8.0s | Avg CPU: 6.8% | RAM Shift: +0.01 GB | Final RAM: 0.40 GB
+16:18:12 | PID: 44104 | [STRAIN] Dask Materialization (landcover) | Duration: 0.0s | Avg CPU: 5.1% | RAM Shift: +0.01 GB | Final RAM: 0.41 GB
+16:18:42 | PID: 44104 | [END Processing landcover] - CPU Load: 1.8% (22 Cores) | Active Threads: 126 | Script RAM: 0.39 GB | Server RAM: 95.1%
+16:18:42 | PID: 44104 | [START Processing LULUCF-INSTANCE] - CPU Load: 0.9% (22 Cores) | Active Threads: 126 | Script RAM: 0.39 GB | Server RAM: 95.2%
+16:18:44 | PID: 44104 | [STRAIN] Network Fetch (LULUCF-INSTANCE) | Duration: 2.1s | Avg CPU: 2.4% | RAM Shift: +0.01 GB | Final RAM: 0.40 GB
+16:18:49 | PID: 44104 | [STRAIN] Fractional Warping (29 classes) | Duration: 4.9s | Avg CPU: 6.9% | RAM Shift: -0.00 GB | Final RAM: 0.40 GB
+16:18:50 | PID: 44104 | [STRAIN] Dask Materialization (LULUCF-INSTANCE) | Duration: 0.0s | Avg CPU: 1.7% | RAM Shift: +0.01 GB | Final RAM: 0.40 GB
+16:19:20 | PID: 44104 | [END Processing LULUCF-INSTANCE] - CPU Load: 17.9% (22 Cores) | Active Threads: 126 | Script RAM: 0.39 GB | Server RAM: 94.4%
+16:19:20 | PID: 44104 | [START Processing CTY] - CPU Load: 17.3% (22 Cores) | Active Threads: 126 | Script RAM: 0.39 GB | Server RAM: 94.3%
+16:19:23 | PID: 44104 | [STRAIN] Network Fetch (CTY) | Duration: 2.8s | Avg CPU: 11.6% | RAM Shift: +0.04 GB | Final RAM: 0.43 GB
+16:19:23 | PID: 44104 | [STRAIN] VRT Construction (CTY slice 6) | Duration: 0.0s | Avg CPU: 10.3% | RAM Shift: +0.00 GB | Final RAM: 0.43 GB
+16:22:43 | PID: 44104 | [STRAIN] Fractional Warping (21 classes) | Duration: 199.9s | Avg CPU: 8.8% | RAM Shift: +0.04 GB | Final RAM: 0.48 GB
+16:22:43 | PID: 44104 | [STRAIN] Dask Materialization (CTY) | Duration: 0.0s | Avg CPU: 4.5% | RAM Shift: +0.00 GB | Final RAM: 0.48 GB
+16:23:14 | PID: 44104 | [END Processing CTY] - CPU Load: 2.8% (22 Cores) | Active Threads: 125 | Script RAM: 0.45 GB | Server RAM: 90.5%
+16:23:14 | PID: 44104 | [START Processing FADSL] - CPU Load: 3.8% (22 Cores) | Active Threads: 125 | Script RAM: 0.45 GB | Server RAM: 90.5%
+16:23:17 | PID: 44104 | [STRAIN] Network Fetch (FADSL) | Duration: 2.7s | Avg CPU: 3.3% | RAM Shift: +0.01 GB | Final RAM: 0.46 GB
+16:23:17 | PID: 44104 | [STRAIN] VRT Construction (FADSL slice 4) | Duration: 0.0s | Avg CPU: 12.9% | RAM Shift: +0.00 GB | Final RAM: 0.46 GB
+16:23:23 | PID: 44104 | [STRAIN] Main-Thread Sequential Warp (FADSL) | Duration: 6.6s | Avg CPU: 8.0% | RAM Shift: +0.00 GB | Final RAM: 0.46 GB
+16:23:23 | PID: 44104 | [STRAIN] Dask Materialization (FADSL) | Duration: 0.0s | Avg CPU: 0.0% | RAM Shift: +0.00 GB | Final RAM: 0.46 GB
+16:23:54 | PID: 44104 | [END Processing FADSL] - CPU Load: 7.1% (22 Cores) | Active Threads: 126 | Script RAM: 0.45 GB | Server RAM: 91.9%
+16:23:54 | PID: 44104 | [START Processing FTY] - CPU Load: 10.1% (22 Cores) | Active Threads: 126 | Script RAM: 0.45 GB | Server RAM: 91.9%
+16:23:57 | PID: 44104 | [STRAIN] Network Fetch (FTY) | Duration: 2.8s | Avg CPU: 7.8% | RAM Shift: +0.01 GB | Final RAM: 0.46 GB
+16:23:57 | PID: 44104 | [STRAIN] VRT Construction (FTY slice 5) | Duration: 0.0s | Avg CPU: 9.1% | RAM Shift: -0.00 GB | Final RAM: 0.46 GB
+16:24:27 | PID: 44104 | [STRAIN] Fractional Warping (4 classes) | Duration: 30.3s | Avg CPU: 10.9% | RAM Shift: -0.01 GB | Final RAM: 0.45 GB
+16:24:27 | PID: 44104 | [STRAIN] Dask Materialization (FTY) | Duration: 0.0s | Avg CPU: 0.0% | RAM Shift: +0.00 GB | Final RAM: 0.45 GB
+16:24:57 | PID: 44104 | [END Processing FTY] - CPU Load: 6.0% (22 Cores) | Active Threads: 126 | Script RAM: 0.43 GB | Server RAM: 86.0%
+16:24:57 | PID: 44104 | [START Processing GRA] - CPU Load: 11.6% (22 Cores) | Active Threads: 126 | Script RAM: 0.43 GB | Server RAM: 86.0%
+16:25:00 | PID: 44104 | [STRAIN] Network Fetch (GRA) | Duration: 2.6s | Avg CPU: 5.0% | RAM Shift: +0.00 GB | Final RAM: 0.43 GB
+16:25:00 | PID: 44104 | [STRAIN] VRT Construction (GRA slice 2) | Duration: 0.0s | Avg CPU: 3.0% | RAM Shift: +0.00 GB | Final RAM: 0.43 GB
+16:25:22 | PID: 44104 | [STRAIN] Fractional Warping (3 classes) | Duration: 21.8s | Avg CPU: 8.6% | RAM Shift: +0.03 GB | Final RAM: 0.46 GB
+16:25:22 | PID: 44104 | [STRAIN] Dask Materialization (GRA) | Duration: 0.0s | Avg CPU: 0.0% | RAM Shift: +0.00 GB | Final RAM: 0.46 GB
+16:25:52 | PID: 44104 | [END Processing GRA] - CPU Load: 2.2% (22 Cores) | Active Threads: 125 | Script RAM: 0.43 GB | Server RAM: 86.8%
+16:25:52 | PID: 44104 | [START Processing TCD] - CPU Load: 3.1% (22 Cores) | Active Threads: 125 | Script RAM: 0.43 GB | Server RAM: 86.7%
+16:26:13 | PID: 44104 | [STRAIN] Network Fetch (TCD) | Duration: 20.4s | Avg CPU: 2.9% | RAM Shift: +0.01 GB | Final RAM: 0.44 GB
+16:26:13 | PID: 44104 | [STRAIN] VRT Construction (TCD slice 3) | Duration: 0.0s | Avg CPU: 8.3% | RAM Shift: +0.00 GB | Final RAM: 0.44 GB
+16:26:20 | PID: 44104 | [STRAIN] Main-Thread Sequential Warp (TCD) | Duration: 6.8s | Avg CPU: 7.6% | RAM Shift: +0.00 GB | Final RAM: 0.44 GB
+16:26:20 | PID: 44104 | [STRAIN] Dask Materialization (TCD) | Duration: 0.0s | Avg CPU: 0.0% | RAM Shift: +0.00 GB | Final RAM: 0.45 GB
+16:26:50 | PID: 44104 | [END Processing TCD] - CPU Load: 4.5% (22 Cores) | Active Threads: 126 | Script RAM: 0.43 GB | Server RAM: 86.4%
+16:51:45 | PID: 40488 | [START Processing qkndvi] - CPU Load: 8.7% (22 Cores) | Active Threads: 102 | Script RAM: 0.36 GB | Server RAM: 95.4%
+16:51:47 | PID: 40488 | [STRAIN] Network Fetch (qkndvi) | Duration: 2.3s | Avg CPU: 8.2% | RAM Shift: +0.01 GB | Final RAM: 0.36 GB
+16:51:47 | PID: 40488 | [STRAIN] Main-Thread Sequential Warp (qkndvi) | Duration: 0.2s | Avg CPU: 33.5% | RAM Shift: +0.00 GB | Final RAM: 0.37 GB
+16:51:47 | PID: 40488 | [STRAIN] Dask Materialization (qkndvi) | Duration: 0.0s | Avg CPU: 28.6% | RAM Shift: +0.00 GB | Final RAM: 0.37 GB
+16:52:18 | PID: 40488 | [END Processing qkndvi] - CPU Load: 12.1% (22 Cores) | Active Threads: 102 | Script RAM: 0.37 GB | Server RAM: 96.4%
+16:52:18 | PID: 40488 | [START Processing pr] - CPU Load: 5.3% (22 Cores) | Active Threads: 102 | Script RAM: 0.37 GB | Server RAM: 96.4%
+16:52:28 | PID: 40488 | [STRAIN] Network Fetch (pr) | Duration: 9.8s | Avg CPU: 5.8% | RAM Shift: +0.01 GB | Final RAM: 0.39 GB
+16:52:33 | PID: 40488 | [STRAIN] Main-Thread Sequential Warp (pr) | Duration: 4.5s | Avg CPU: 7.7% | RAM Shift: +0.00 GB | Final RAM: 0.38 GB
+16:52:33 | PID: 40488 | [STRAIN] Dask Materialization (pr) | Duration: 0.0s | Avg CPU: 5.0% | RAM Shift: +0.00 GB | Final RAM: 0.38 GB
+16:53:03 | PID: 40488 | [END Processing pr] - CPU Load: 5.3% (22 Cores) | Active Threads: 111 | Script RAM: 0.38 GB | Server RAM: 92.8%
+16:53:03 | PID: 40488 | [START Processing spei12] - CPU Load: 5.4% (22 Cores) | Active Threads: 111 | Script RAM: 0.38 GB | Server RAM: 92.8%
+16:53:42 | PID: 40488 | [STRAIN] Network Fetch (spei12) | Duration: 38.3s | Avg CPU: 3.7% | RAM Shift: +0.01 GB | Final RAM: 0.39 GB
+16:53:43 | PID: 40488 | [STRAIN] Main-Thread Sequential Warp (spei12) | Duration: 0.9s | Avg CPU: 8.9% | RAM Shift: -0.00 GB | Final RAM: 0.39 GB
+16:53:43 | PID: 40488 | [STRAIN] Dask Materialization (spei12) | Duration: 0.0s | Avg CPU: 0.0% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+16:54:13 | PID: 40488 | [END Processing spei12] - CPU Load: 4.7% (22 Cores) | Active Threads: 110 | Script RAM: 0.39 GB | Server RAM: 93.2%
+16:54:13 | PID: 40488 | [START Processing spi12] - CPU Load: 5.5% (22 Cores) | Active Threads: 110 | Script RAM: 0.39 GB | Server RAM: 93.2%
+16:54:26 | PID: 40488 | [STRAIN] Network Fetch (spi12) | Duration: 12.5s | Avg CPU: 3.9% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+16:54:27 | PID: 40488 | [STRAIN] Main-Thread Sequential Warp (spi12) | Duration: 0.8s | Avg CPU: 9.1% | RAM Shift: -0.00 GB | Final RAM: 0.39 GB
+16:54:27 | PID: 40488 | [STRAIN] Dask Materialization (spi12) | Duration: 0.0s | Avg CPU: 13.0% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+16:54:57 | PID: 40488 | [END Processing spi12] - CPU Load: 6.1% (22 Cores) | Active Threads: 110 | Script RAM: 0.39 GB | Server RAM: 88.7%
+16:54:57 | PID: 40488 | [START Processing tas] - CPU Load: 5.2% (22 Cores) | Active Threads: 110 | Script RAM: 0.39 GB | Server RAM: 88.7%
+16:55:11 | PID: 40488 | [STRAIN] Network Fetch (tas) | Duration: 13.4s | Avg CPU: 3.0% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+16:55:12 | PID: 40488 | [STRAIN] Main-Thread Sequential Warp (tas) | Duration: 0.8s | Avg CPU: 9.6% | RAM Shift: -0.00 GB | Final RAM: 0.39 GB
+16:55:12 | PID: 40488 | [STRAIN] Dask Materialization (tas) | Duration: 0.0s | Avg CPU: 9.5% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+16:55:42 | PID: 40488 | [END Processing tas] - CPU Load: 4.4% (22 Cores) | Active Threads: 109 | Script RAM: 0.39 GB | Server RAM: 89.1%
+16:55:49 | PID: 40488 | [START Processing landcover] - CPU Load: 3.6% (22 Cores) | Active Threads: 113 | Script RAM: 0.40 GB | Server RAM: 89.3%
+16:55:55 | PID: 40488 | [STRAIN] Network Fetch (landcover) | Duration: 6.3s | Avg CPU: 3.3% | RAM Shift: +0.00 GB | Final RAM: 0.40 GB
+16:56:02 | PID: 40488 | [STRAIN] Fractional Warping (45 classes) | Duration: 6.3s | Avg CPU: 11.2% | RAM Shift: +0.07 GB | Final RAM: 0.47 GB
+16:56:02 | PID: 40488 | [STRAIN] Dask Materialization (landcover) | Duration: 0.1s | Avg CPU: 12.1% | RAM Shift: +0.06 GB | Final RAM: 0.50 GB
+16:56:33 | PID: 40488 | [END Processing landcover] - CPU Load: 5.4% (22 Cores) | Active Threads: 134 | Script RAM: 0.40 GB | Server RAM: 88.8%
+16:56:33 | PID: 40488 | [START Processing LULUCF-INSTANCE] - CPU Load: 13.1% (22 Cores) | Active Threads: 134 | Script RAM: 0.40 GB | Server RAM: 88.8%
+16:56:36 | PID: 40488 | [STRAIN] Network Fetch (LULUCF-INSTANCE) | Duration: 2.6s | Avg CPU: 6.5% | RAM Shift: +0.01 GB | Final RAM: 0.41 GB
+16:56:39 | PID: 40488 | [STRAIN] Fractional Warping (29 classes) | Duration: 3.8s | Avg CPU: 11.8% | RAM Shift: +0.04 GB | Final RAM: 0.46 GB
+16:56:40 | PID: 40488 | [STRAIN] Dask Materialization (LULUCF-INSTANCE) | Duration: 0.0s | Avg CPU: 20.9% | RAM Shift: +0.03 GB | Final RAM: 0.47 GB
+16:57:10 | PID: 40488 | [END Processing LULUCF-INSTANCE] - CPU Load: 6.7% (22 Cores) | Active Threads: 134 | Script RAM: 0.40 GB | Server RAM: 88.9%
+16:57:10 | PID: 40488 | [START Processing CTY] - CPU Load: 5.0% (22 Cores) | Active Threads: 134 | Script RAM: 0.40 GB | Server RAM: 88.9%
+16:57:17 | PID: 40488 | [STRAIN] Network Fetch (CTY) | Duration: 7.0s | Avg CPU: 5.5% | RAM Shift: +0.28 GB | Final RAM: 0.68 GB
+16:57:17 | PID: 40488 | [STRAIN] VRT Construction (CTY slice 6) | Duration: 0.0s | Avg CPU: 9.1% | RAM Shift: +0.00 GB | Final RAM: 0.68 GB
+20:15:07 | PID: 40488 | [STRAIN] Fractional Warping (21 classes) | Duration: 11869.5s | Avg CPU: 9.3% | RAM Shift: +0.00 GB | Final RAM: 0.68 GB
+20:15:08 | PID: 40488 | [STRAIN] Dask Materialization (CTY) | Duration: 0.1s | Avg CPU: 11.5% | RAM Shift: +0.01 GB | Final RAM: 0.69 GB
+20:15:38 | PID: 40488 | [END Processing CTY] - CPU Load: 7.7% (22 Cores) | Active Threads: 132 | Script RAM: 0.29 GB | Server RAM: 77.4%
+20:15:38 | PID: 40488 | [START Processing FADSL] - CPU Load: 13.5% (22 Cores) | Active Threads: 132 | Script RAM: 0.29 GB | Server RAM: 77.5%
+20:15:44 | PID: 40488 | [STRAIN] Network Fetch (FADSL) | Duration: 5.6s | Avg CPU: 7.2% | RAM Shift: +0.32 GB | Final RAM: 0.60 GB
+20:15:44 | PID: 40488 | [STRAIN] VRT Construction (FADSL slice 4) | Duration: 0.1s | Avg CPU: 23.1% | RAM Shift: +0.00 GB | Final RAM: 0.60 GB
+20:20:43 | PID: 40488 | [STRAIN] C++ Multi-Core Native Warp (FADSL) | Duration: 298.5s | Avg CPU: 9.0% | RAM Shift: +0.04 GB | Final RAM: 0.64 GB
+20:20:43 | PID: 40488 | [STRAIN] Dask Materialization (FADSL) | Duration: 0.0s | Avg CPU: 0.0% | RAM Shift: +0.00 GB | Final RAM: 0.64 GB
+20:21:13 | PID: 40488 | [END Processing FADSL] - CPU Load: 7.4% (22 Cores) | Active Threads: 132 | Script RAM: 0.64 GB | Server RAM: 79.7%
+20:21:13 | PID: 40488 | [START Processing FTY] - CPU Load: 8.4% (22 Cores) | Active Threads: 132 | Script RAM: 0.64 GB | Server RAM: 79.7%
+20:21:22 | PID: 40488 | [STRAIN] Network Fetch (FTY) | Duration: 8.8s | Avg CPU: 5.9% | RAM Shift: +0.08 GB | Final RAM: 0.72 GB
+20:21:22 | PID: 40488 | [STRAIN] VRT Construction (FTY slice 5) | Duration: 0.1s | Avg CPU: 16.8% | RAM Shift: +0.00 GB | Final RAM: 0.72 GB
+20:58:43 | PID: 40488 | [STRAIN] Fractional Warping (4 classes) | Duration: 2241.3s | Avg CPU: 12.3% | RAM Shift: +0.16 GB | Final RAM: 0.88 GB
+20:58:44 | PID: 40488 | [STRAIN] Dask Materialization (FTY) | Duration: 0.0s | Avg CPU: 4.2% | RAM Shift: +0.00 GB | Final RAM: 0.88 GB
+20:59:14 | PID: 40488 | [END Processing FTY] - CPU Load: 2.7% (22 Cores) | Active Threads: 132 | Script RAM: 0.57 GB | Server RAM: 80.6%
+20:59:14 | PID: 40488 | [START Processing GRA] - CPU Load: 9.7% (22 Cores) | Active Threads: 132 | Script RAM: 0.57 GB | Server RAM: 80.6%
+20:59:21 | PID: 40488 | [STRAIN] Network Fetch (GRA) | Duration: 6.9s | Avg CPU: 10.1% | RAM Shift: +0.02 GB | Final RAM: 0.59 GB
+20:59:21 | PID: 40488 | [STRAIN] VRT Construction (GRA slice 2) | Duration: 0.0s | Avg CPU: 20.0% | RAM Shift: +0.00 GB | Final RAM: 0.59 GB
+21:25:45 | PID: 40488 | [STRAIN] Fractional Warping (3 classes) | Duration: 1583.5s | Avg CPU: 10.2% | RAM Shift: +0.06 GB | Final RAM: 0.65 GB
+21:25:45 | PID: 40488 | [STRAIN] Dask Materialization (GRA) | Duration: 0.0s | Avg CPU: 14.3% | RAM Shift: +0.00 GB | Final RAM: 0.65 GB
+21:26:15 | PID: 40488 | [END Processing GRA] - CPU Load: 9.2% (22 Cores) | Active Threads: 132 | Script RAM: 0.57 GB | Server RAM: 86.1%
+21:26:16 | PID: 40488 | [START Processing TCD] - CPU Load: 10.9% (22 Cores) | Active Threads: 132 | Script RAM: 0.57 GB | Server RAM: 86.1%
+21:26:23 | PID: 40488 | [STRAIN] Network Fetch (TCD) | Duration: 7.6s | Avg CPU: 10.7% | RAM Shift: +0.04 GB | Final RAM: 0.60 GB
+21:26:23 | PID: 40488 | [STRAIN] VRT Construction (TCD slice 3) | Duration: 0.0s | Avg CPU: 16.9% | RAM Shift: +0.00 GB | Final RAM: 0.60 GB
+21:31:23 | PID: 40488 | [STRAIN] C++ Multi-Core Native Warp (TCD) | Duration: 299.2s | Avg CPU: 8.0% | RAM Shift: +0.11 GB | Final RAM: 0.71 GB
+21:31:23 | PID: 40488 | [STRAIN] Dask Materialization (TCD) | Duration: 0.0s | Avg CPU: 33.3% | RAM Shift: +0.00 GB | Final RAM: 0.71 GB
+21:31:53 | PID: 40488 | [END Processing TCD] - CPU Load: 2.3% (22 Cores) | Active Threads: 132 | Script RAM: 0.71 GB | Server RAM: 87.1%

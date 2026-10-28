@@ -1,0 +1,18 @@
+{
+  "type": "Catalog",
+  "id": "combined_brussels_eea250m_netcdf_catalog",
+  "stac_version": "1.1.0",
+  "description": "Unified STAC catalog aggregating all sub-cube STAC items for 'combined_brussels_eea250m_netcdf'.",
+  "links": [
+    {
+      "rel": "root",
+      "href": "./catalog.json",
+      "type": "application/json"
+    },
+    {
+      "rel": "item",
+      "href": "./combined_brussels_eea250m_netcdf_gbif_20261026155207/combined_brussels_eea250m_netcdf_gbif_20261026155207.json",
+      "type": "application/geo+json"
+    }
+  ]
+}

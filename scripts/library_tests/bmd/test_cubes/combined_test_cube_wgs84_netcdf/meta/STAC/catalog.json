@@ -11,7 +11,7 @@
     },
     {
       "rel": "item",
-      "href": "./combined_test_cube_wgs84_netcdf_gbif_20260810135802/combined_test_cube_wgs84_netcdf_gbif_20260810135802.json",
+      "href": "./combined_test_cube_wgs84_netcdf_gbif_20260910120426/combined_test_cube_wgs84_netcdf_gbif_20260910120426.json",
       "type": "application/geo+json"
     }
   ]

@@ -1,0 +1,89 @@
+15:38:57 | PID: 2916 | [START Processing qkndvi] - CPU Load: 8.3% (22 Cores) | Active Threads: 103 | Script RAM: 0.35 GB | Server RAM: 96.5%
+15:38:59 | PID: 2916 | [STRAIN] Network Fetch (qkndvi) | Duration: 1.8s | Avg CPU: 10.7% | RAM Shift: +0.01 GB | Final RAM: 0.36 GB
+15:38:59 | PID: 2916 | [STRAIN] Main-Thread Sequential Warp (qkndvi) | Duration: 0.1s | Avg CPU: 10.7% | RAM Shift: +0.00 GB | Final RAM: 0.37 GB
+15:38:59 | PID: 2916 | [STRAIN] Dask Materialization (qkndvi) | Duration: 0.0s | Avg CPU: 75.0% | RAM Shift: +0.00 GB | Final RAM: 0.37 GB
+15:39:30 | PID: 2916 | [END Processing qkndvi] - CPU Load: 10.5% (22 Cores) | Active Threads: 100 | Script RAM: 0.37 GB | Server RAM: 92.2%
+15:39:30 | PID: 2916 | [START Processing pr] - CPU Load: 19.5% (22 Cores) | Active Threads: 100 | Script RAM: 0.37 GB | Server RAM: 92.4%
+15:39:36 | PID: 2916 | [STRAIN] Network Fetch (pr) | Duration: 6.2s | Avg CPU: 8.6% | RAM Shift: +0.01 GB | Final RAM: 0.38 GB
+15:39:37 | PID: 2916 | [STRAIN] Main-Thread Sequential Warp (pr) | Duration: 0.9s | Avg CPU: 12.3% | RAM Shift: +0.00 GB | Final RAM: 0.38 GB
+15:39:37 | PID: 2916 | [STRAIN] Dask Materialization (pr) | Duration: 0.0s | Avg CPU: 15.0% | RAM Shift: +0.00 GB | Final RAM: 0.38 GB
+15:40:07 | PID: 2916 | [END Processing pr] - CPU Load: 0.8% (22 Cores) | Active Threads: 111 | Script RAM: 0.38 GB | Server RAM: 90.5%
+15:40:08 | PID: 2916 | [START Processing spei12] - CPU Load: 4.5% (22 Cores) | Active Threads: 111 | Script RAM: 0.38 GB | Server RAM: 90.5%
+15:40:29 | PID: 2916 | [STRAIN] Network Fetch (spei12) | Duration: 21.2s | Avg CPU: 4.8% | RAM Shift: +0.01 GB | Final RAM: 0.39 GB
+15:40:29 | PID: 2916 | [STRAIN] VRT Construction (spei12 slice 12) | Duration: 0.0s | Avg CPU: 8.1% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:40:29 | PID: 2916 | [STRAIN] VRT Construction (spei12 slice 13) | Duration: 0.0s | Avg CPU: 8.7% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:40:29 | PID: 2916 | [STRAIN] VRT Construction (spei12 slice 14) | Duration: 0.0s | Avg CPU: 10.5% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:40:29 | PID: 2916 | [STRAIN] VRT Construction (spei12 slice 15) | Duration: 0.0s | Avg CPU: 0.0% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:40:29 | PID: 2916 | [STRAIN] VRT Construction (spei12 slice 16) | Duration: 0.0s | Avg CPU: 10.0% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:40:29 | PID: 2916 | [STRAIN] VRT Construction (spei12 slice 17) | Duration: 0.0s | Avg CPU: 20.0% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:40:29 | PID: 2916 | [STRAIN] VRT Construction (spei12 slice 18) | Duration: 0.0s | Avg CPU: 66.7% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:40:29 | PID: 2916 | [STRAIN] VRT Construction (spei12 slice 19) | Duration: 0.0s | Avg CPU: 0.0% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:40:29 | PID: 2916 | [STRAIN] VRT Construction (spei12 slice 20) | Duration: 0.0s | Avg CPU: 0.0% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:40:29 | PID: 2916 | [STRAIN] VRT Construction (spei12 slice 21) | Duration: 0.0s | Avg CPU: 4.8% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:40:29 | PID: 2916 | [STRAIN] VRT Construction (spei12 slice 22) | Duration: 0.0s | Avg CPU: 15.0% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:40:29 | PID: 2916 | [STRAIN] VRT Construction (spei12 slice 23) | Duration: 0.0s | Avg CPU: 14.3% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:40:36 | PID: 2916 | [STRAIN] Main-Thread Sequential Warp (spei12) | Duration: 7.0s | Avg CPU: 5.1% | RAM Shift: +0.01 GB | Final RAM: 0.40 GB
+15:40:36 | PID: 2916 | [STRAIN] Dask Materialization (spei12) | Duration: 0.0s | Avg CPU: 0.0% | RAM Shift: +0.00 GB | Final RAM: 0.40 GB
+15:41:07 | PID: 2916 | [END Processing spei12] - CPU Load: 6.0% (22 Cores) | Active Threads: 107 | Script RAM: 0.39 GB | Server RAM: 90.4%
+15:41:07 | PID: 2916 | [START Processing spi12] - CPU Load: 5.3% (22 Cores) | Active Threads: 107 | Script RAM: 0.39 GB | Server RAM: 90.4%
+15:41:18 | PID: 2916 | [STRAIN] Network Fetch (spi12) | Duration: 11.1s | Avg CPU: 3.6% | RAM Shift: +0.01 GB | Final RAM: 0.39 GB
+15:41:18 | PID: 2916 | [STRAIN] VRT Construction (spi12 slice 24) | Duration: 0.0s | Avg CPU: 14.3% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:41:18 | PID: 2916 | [STRAIN] VRT Construction (spi12 slice 25) | Duration: 0.0s | Avg CPU: 0.0% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:41:18 | PID: 2916 | [STRAIN] VRT Construction (spi12 slice 26) | Duration: 0.0s | Avg CPU: 12.1% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:41:18 | PID: 2916 | [STRAIN] VRT Construction (spi12 slice 27) | Duration: 0.0s | Avg CPU: 0.0% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:41:18 | PID: 2916 | [STRAIN] VRT Construction (spi12 slice 28) | Duration: 0.0s | Avg CPU: 15.8% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:41:18 | PID: 2916 | [STRAIN] VRT Construction (spi12 slice 29) | Duration: 0.0s | Avg CPU: 0.0% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:41:18 | PID: 2916 | [STRAIN] VRT Construction (spi12 slice 30) | Duration: 0.0s | Avg CPU: 5.0% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:41:18 | PID: 2916 | [STRAIN] VRT Construction (spi12 slice 31) | Duration: 0.0s | Avg CPU: 10.0% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:41:18 | PID: 2916 | [STRAIN] VRT Construction (spi12 slice 32) | Duration: 0.1s | Avg CPU: 17.2% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:41:18 | PID: 2916 | [STRAIN] VRT Construction (spi12 slice 33) | Duration: 0.0s | Avg CPU: 33.3% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:41:18 | PID: 2916 | [STRAIN] VRT Construction (spi12 slice 34) | Duration: 0.0s | Avg CPU: 15.8% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:41:18 | PID: 2916 | [STRAIN] VRT Construction (spi12 slice 35) | Duration: 0.0s | Avg CPU: 5.0% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:41:25 | PID: 2916 | [STRAIN] Main-Thread Sequential Warp (spi12) | Duration: 6.6s | Avg CPU: 6.7% | RAM Shift: +0.01 GB | Final RAM: 0.40 GB
+15:41:25 | PID: 2916 | [STRAIN] Dask Materialization (spi12) | Duration: 0.0s | Avg CPU: 33.3% | RAM Shift: +0.00 GB | Final RAM: 0.41 GB
+15:41:56 | PID: 2916 | [END Processing spi12] - CPU Load: 5.3% (22 Cores) | Active Threads: 108 | Script RAM: 0.39 GB | Server RAM: 90.8%
+15:41:56 | PID: 2916 | [START Processing tas] - CPU Load: 6.7% (22 Cores) | Active Threads: 108 | Script RAM: 0.39 GB | Server RAM: 90.7%
+15:42:03 | PID: 2916 | [STRAIN] Network Fetch (tas) | Duration: 7.8s | Avg CPU: 5.5% | RAM Shift: +0.01 GB | Final RAM: 0.40 GB
+15:42:04 | PID: 2916 | [STRAIN] Main-Thread Sequential Warp (tas) | Duration: 0.8s | Avg CPU: 9.7% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:42:04 | PID: 2916 | [STRAIN] Dask Materialization (tas) | Duration: 0.0s | Avg CPU: 9.1% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:42:35 | PID: 2916 | [END Processing tas] - CPU Load: 14.4% (22 Cores) | Active Threads: 108 | Script RAM: 0.39 GB | Server RAM: 95.6%
+15:42:38 | PID: 2916 | [START Processing landcover] - CPU Load: 13.5% (22 Cores) | Active Threads: 113 | Script RAM: 0.40 GB | Server RAM: 95.7%
+15:42:41 | PID: 2916 | [STRAIN] Network Fetch (landcover) | Duration: 3.2s | Avg CPU: 14.8% | RAM Shift: +0.00 GB | Final RAM: 0.40 GB
+15:42:45 | PID: 2916 | [STRAIN] Fractional Warping (45 classes) | Duration: 4.1s | Avg CPU: 20.2% | RAM Shift: +0.01 GB | Final RAM: 0.41 GB
+15:42:46 | PID: 2916 | [STRAIN] Dask Materialization (landcover) | Duration: 0.0s | Avg CPU: 10.3% | RAM Shift: +0.01 GB | Final RAM: 0.42 GB
+15:43:16 | PID: 2916 | [END Processing landcover] - CPU Load: 10.1% (22 Cores) | Active Threads: 134 | Script RAM: 0.40 GB | Server RAM: 90.4%
+15:43:16 | PID: 2916 | [START Processing LULUCF-INSTANCE] - CPU Load: 15.6% (22 Cores) | Active Threads: 134 | Script RAM: 0.40 GB | Server RAM: 90.6%
+15:43:18 | PID: 2916 | [STRAIN] Network Fetch (LULUCF-INSTANCE) | Duration: 1.3s | Avg CPU: 16.3% | RAM Shift: +0.01 GB | Final RAM: 0.41 GB
+15:43:20 | PID: 2916 | [STRAIN] Fractional Warping (29 classes) | Duration: 2.4s | Avg CPU: 23.6% | RAM Shift: -0.00 GB | Final RAM: 0.40 GB
+15:43:21 | PID: 2916 | [STRAIN] Dask Materialization (LULUCF-INSTANCE) | Duration: 0.0s | Avg CPU: 23.3% | RAM Shift: +0.01 GB | Final RAM: 0.41 GB
+15:43:51 | PID: 2916 | [END Processing LULUCF-INSTANCE] - CPU Load: 4.0% (22 Cores) | Active Threads: 134 | Script RAM: 0.40 GB | Server RAM: 95.7%
+15:43:51 | PID: 2916 | [START Processing CTY] - CPU Load: 5.5% (22 Cores) | Active Threads: 134 | Script RAM: 0.40 GB | Server RAM: 95.7%
+15:43:54 | PID: 2916 | [STRAIN] Network Fetch (CTY) | Duration: 2.9s | Avg CPU: 14.5% | RAM Shift: +0.05 GB | Final RAM: 0.44 GB
+15:43:54 | PID: 2916 | [STRAIN] VRT Construction (CTY slice 6) | Duration: 0.0s | Avg CPU: 9.1% | RAM Shift: -0.01 GB | Final RAM: 0.44 GB
+15:47:54 | PID: 2916 | [STRAIN] Fractional Warping (21 classes) | Duration: 240.2s | Avg CPU: 15.4% | RAM Shift: -0.02 GB | Final RAM: 0.42 GB
+15:47:55 | PID: 2916 | [STRAIN] Dask Materialization (CTY) | Duration: 0.0s | Avg CPU: 11.9% | RAM Shift: +0.00 GB | Final RAM: 0.42 GB
+15:48:25 | PID: 2916 | [END Processing CTY] - CPU Load: 7.4% (22 Cores) | Active Threads: 133 | Script RAM: 0.38 GB | Server RAM: 90.8%
+15:48:25 | PID: 2916 | [START Processing FADSL] - CPU Load: 13.9% (22 Cores) | Active Threads: 133 | Script RAM: 0.39 GB | Server RAM: 90.8%
+15:48:28 | PID: 2916 | [STRAIN] Network Fetch (FADSL) | Duration: 2.7s | Avg CPU: 13.6% | RAM Shift: +0.01 GB | Final RAM: 0.40 GB
+15:48:28 | PID: 2916 | [STRAIN] VRT Construction (FADSL slice 4) | Duration: 0.0s | Avg CPU: 13.6% | RAM Shift: +0.00 GB | Final RAM: 0.40 GB
+15:48:37 | PID: 2916 | [STRAIN] Main-Thread Sequential Warp (FADSL) | Duration: 8.7s | Avg CPU: 14.4% | RAM Shift: +0.00 GB | Final RAM: 0.40 GB
+15:48:37 | PID: 2916 | [STRAIN] Dask Materialization (FADSL) | Duration: 0.0s | Avg CPU: 0.0% | RAM Shift: +0.00 GB | Final RAM: 0.40 GB
+15:49:07 | PID: 2916 | [END Processing FADSL] - CPU Load: 6.6% (22 Cores) | Active Threads: 134 | Script RAM: 0.39 GB | Server RAM: 91.1%
+15:49:07 | PID: 2916 | [START Processing FTY] - CPU Load: 6.1% (22 Cores) | Active Threads: 134 | Script RAM: 0.39 GB | Server RAM: 91.1%
+15:49:10 | PID: 2916 | [STRAIN] Network Fetch (FTY) | Duration: 2.8s | Avg CPU: 12.8% | RAM Shift: +0.01 GB | Final RAM: 0.40 GB
+15:49:10 | PID: 2916 | [STRAIN] VRT Construction (FTY slice 5) | Duration: 0.0s | Avg CPU: 32.0% | RAM Shift: +0.00 GB | Final RAM: 0.40 GB
+15:49:50 | PID: 2916 | [STRAIN] Fractional Warping (4 classes) | Duration: 39.2s | Avg CPU: 17.7% | RAM Shift: -0.01 GB | Final RAM: 0.39 GB
+15:49:50 | PID: 2916 | [STRAIN] Dask Materialization (FTY) | Duration: 0.0s | Avg CPU: 18.2% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:50:20 | PID: 2916 | [END Processing FTY] - CPU Load: 14.0% (22 Cores) | Active Threads: 134 | Script RAM: 0.37 GB | Server RAM: 88.3%
+15:50:20 | PID: 2916 | [START Processing GRA] - CPU Load: 17.5% (22 Cores) | Active Threads: 134 | Script RAM: 0.37 GB | Server RAM: 88.1%
+15:50:22 | PID: 2916 | [STRAIN] Network Fetch (GRA) | Duration: 2.1s | Avg CPU: 12.4% | RAM Shift: +0.00 GB | Final RAM: 0.37 GB
+15:50:22 | PID: 2916 | [STRAIN] VRT Construction (GRA slice 2) | Duration: 0.0s | Avg CPU: 100.0% | RAM Shift: +0.00 GB | Final RAM: 0.37 GB
+15:50:52 | PID: 2916 | [STRAIN] Fractional Warping (3 classes) | Duration: 29.8s | Avg CPU: 14.2% | RAM Shift: +0.02 GB | Final RAM: 0.39 GB
+15:50:52 | PID: 2916 | [STRAIN] Dask Materialization (GRA) | Duration: 0.0s | Avg CPU: 0.0% | RAM Shift: +0.00 GB | Final RAM: 0.39 GB
+15:51:23 | PID: 2916 | [END Processing GRA] - CPU Load: 13.1% (22 Cores) | Active Threads: 134 | Script RAM: 0.37 GB | Server RAM: 89.0%
+15:51:23 | PID: 2916 | [START Processing TCD] - CPU Load: 24.5% (22 Cores) | Active Threads: 134 | Script RAM: 0.37 GB | Server RAM: 89.1%
+15:51:26 | PID: 2916 | [STRAIN] Network Fetch (TCD) | Duration: 3.4s | Avg CPU: 16.2% | RAM Shift: +0.01 GB | Final RAM: 0.38 GB
+15:51:26 | PID: 2916 | [STRAIN] VRT Construction (TCD slice 3) | Duration: 0.0s | Avg CPU: 28.6% | RAM Shift: +0.00 GB | Final RAM: 0.38 GB
+15:51:34 | PID: 2916 | [STRAIN] Main-Thread Sequential Warp (TCD) | Duration: 8.2s | Avg CPU: 15.3% | RAM Shift: -0.00 GB | Final RAM: 0.38 GB
+15:51:35 | PID: 2916 | [STRAIN] Dask Materialization (TCD) | Duration: 0.0s | Avg CPU: 0.0% | RAM Shift: +0.00 GB | Final RAM: 0.38 GB
+15:52:05 | PID: 2916 | [END Processing TCD] - CPU Load: 6.2% (22 Cores) | Active Threads: 134 | Script RAM: 0.37 GB | Server RAM: 87.9%
