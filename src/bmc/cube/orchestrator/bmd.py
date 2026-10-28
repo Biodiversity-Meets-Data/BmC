@@ -329,7 +329,7 @@ class bmdCube:
         """
         from typing import Union
         
-        # --- NEW: Check if recipe is already a dictionary ---
+        # --- Check if recipe is already a dictionary ---
         if isinstance(recipe_file, dict):
             recipe = recipe_file
         else:
@@ -410,7 +410,12 @@ class bmdCube:
                 else:
                     cube_inst = cube_class()
                 
-                res = cube_inst.process_cube(recipe, max_workers=max_workers, logger=logger)
+                #Pass dataset_name only to engines (like the vector engine) that explicitly require it
+                process_kwargs = {"max_workers": max_workers, "logger": logger}
+                if "dataset_name" in inspect.signature(cube_inst.process_cube).parameters:
+                    process_kwargs["dataset_name"] = source_name
+
+                res = cube_inst.process_cube(recipe, **process_kwargs)
                 
                 item = self._collect_stac_item(res, source_name, cube_dir, logger)
                 if item:
