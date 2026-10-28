@@ -84,7 +84,7 @@ class bmdCube:
         """
         source_map: Dict[str, Any] = {}
 
-        # Force the base package string to prevent the orchestrator sub-directory from breaking imports
+        # Resolve base package path (resolves to 'bmc.cube' when imported)
         base_pkg = "bmc.cube"
 
         packages_to_scan = [
