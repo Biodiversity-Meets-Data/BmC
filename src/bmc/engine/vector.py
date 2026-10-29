@@ -1174,8 +1174,15 @@ class vectorEngine(baseGrid):
         bbox_gdf = gpd.GeoDataFrame({'geometry': [bbox_poly]}, crs="EPSG:4326").to_crs(proj_crs)
         strict_bounds = bbox_gdf.geometry.iloc[0]
 
-        uncert_col = next((c for c in orig_proj.columns if 'uncertainty' in c.lower()), 'coordinateuncertaintyinmeters')
-        uncertainties = orig_proj[uncert_col].fillna(default_uncert).astype(float)
+        # 1. Look for an uncertainty column
+        uncert_col = next((c for c in orig_proj.columns if 'uncertainty' in c.lower()), None)
+
+        if uncert_col and uncert_col in orig_proj.columns:
+            # GBIF Scenario: Column exists, fill missing records with the recipe's default
+            uncertainties = orig_proj[uncert_col].fillna(default_uncert).astype(float)
+        else:
+            # OSM/Strict Vector Scenario: No uncertainty attribute exists, assume absolute precision (0.0)
+            uncertainties = pd.Series(0.0, index=orig_proj.index, dtype=float)
         
         dist_to_boundary = orig_proj.geometry.distance(strict_bounds.exterior)
         is_inside = orig_proj.geometry.within(strict_bounds)
