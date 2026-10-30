@@ -61,8 +61,7 @@ def resolve_taxonomic_columns(target_level: str) -> list[str]:
 def map_taxonkeys_to_columns(
     taxon_keys: list[int | str], 
     max_workers: int = 8,
-    col_backbone: bool = False,
-    col_uuid: str = '7ddf754f-d193-4cc9-b351-99906754a03b'
+    dataset_uuid: str | None = '7ddf754f-d193-4cc9-b351-99906754a03b'
 ) -> dict[str, list[int | str]]:
     """Group raw taxon keys into their optimal indexed GBIF SQL column positions.
 
@@ -79,10 +78,7 @@ def map_taxonkeys_to_columns(
     max_workers : int, default 8
         The total allocation of worker threads reserved for execution inside the
         ThreadPoolExecutor.
-    col_backbone : bool, default False
-        If True, treats the keys as Catalogue of Life identifiers and passes the 
-        toggle down to the underlying API lookup helper.
-    col_uuid : str, default '7ddf754f-d193-4cc9-b351-99906754a03b'
+    dataset_uuid : str, default '7ddf754f-d193-4cc9-b351-99906754a03b'
         The target checklist dataset UUID parameter passed to the lookup helper.
 
     Returns
@@ -106,7 +102,7 @@ def map_taxonkeys_to_columns(
     
     # Freeze our backbone configuration arguments into the single-argument callable 
     # expected by executor.map
-    lookup_func = partial(interface.lookup_backbone_single, col_backbone=col_backbone, col_uuid=col_uuid)
+    lookup_func = partial(interface.lookup_usage_single, dataset_uuid=dataset_uuid)
     
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         # Note: calling our optimized, flat-payload lookup_backbone_single function
@@ -128,11 +124,10 @@ def map_taxonkeys_to_columns(
     
     # Zip up the unique keys with their flattened lookup metadata dicts
     for key, record in zip(unique_keys, records):
-        if record and "rank" in record and record.get("matchType") != "NONE":
+        if record and "rank" in record:
             rank = str(record["rank"]).upper()
             column_name = rank_to_column.get(rank, "taxonKey")
         else:
-            # Route unmatchable keys or intermediate ranks cleanly to the generic catchment
             column_name = "taxonKey"
             
         if column_name not in column_mapping:
@@ -288,49 +283,69 @@ def estimate_grid_size_meters(grid: str, resolution: int) -> float:
     else:
         raise NotImplementedError(f"Automated metric mapping for {grid} is not supported.")
     
-def format_column_selects(columns: list[str], 
-                          col_backbone: bool = False, 
-                          col_uuid: str = '7ddf754f-d193-4cc9-b351-99906754a03b') -> list[str]:
-    """
-    Format column names for GBIF queries, mapping backbone JSON to standard column names.
-    """
+def format_column_selects(columns: list[str]) -> list[str]:
+    """Format column names for GBIF queries, escaping SQL reserved keywords."""
     reserved_columns = {"group", "order", "type", "references", "class", "language", "year", "month", "day"}
     
-    taxonomic_terms = {
-        "kingdom", "kingdomkey", "phylum", "phylumkey", "class", "classkey",
-        "order", "orderkey", "family", "familykey", "genus", "genuskey",
-        "species", "specieskey", "scientificname", "taxonkey", "acceptedtaxonkey"
-    }
-
     formatted_columns = []
-    
     for col in columns:
         col_lower = col.lower()
-        
-        # Determine the SQL-safe name up front (e.g., "order" vs genus)
+        # Only quote if it is a reserved SQL word
         safe_name = f'"{col_lower}"' if col_lower in reserved_columns else col_lower
-        
-        if col_backbone and col_lower in taxonomic_terms:
-            # Output: classificationdetails['...']['genus'] AS genus
-            # Or:     classificationdetails['...']['order'] AS "order"
-            formatted_columns.append(f"classificationdetails['{col_uuid}']['{col_lower}'] AS {safe_name}")
-        else:
-            # Output standard column with quotes if necessary
-            formatted_columns.append(safe_name)
+        formatted_columns.append(safe_name)
                 
     return formatted_columns
 
-def format_taxonomic_filters(taxon_keys: list[int | str] | dict[str, list[int | str]], 
-                             col_backbone: bool = False,
-                             col_uuid: str = '7ddf754f-d193-4cc9-b351-99906754a03b') -> str:
+def format_taxonomic_filters(taxon_keys: list[int | str] | dict[str, list[int | str]]) -> str:
     """
-    Format taxonomic WHERE clauses, supporting standard integer keys or CoL backbone string keys.
-    Accepts a flat list (defaults to 'taxonkey') or a dictionary mapping specific ranks to keys.
+    Format taxonomic WHERE clauses, securely quoting alphanumeric string keys.
+
+    Takes a list of taxonomic keys or a mapping of specific GBIF SQL column 
+    names to keys, and constructs a syntactically valid SQL condition. 
+    Alphanumeric Catalogue of Life (CoL) identifiers are automatically 
+    wrapped in single quotes, while standard integer keys remain unquoted.
+
+    Parameters
+    ----------
+    taxon_keys : list of int or str, or dict of str to list of int or str
+        The taxonomic identifiers to filter by. If a list is provided, it 
+        defaults to the generic 'taxonkey' column. If a dictionary is 
+        provided, the keys should be valid SQL column names (e.g., 
+        'speciesKey', 'familyKey') and the values should be lists of 
+        associated identifiers.
+
+    Returns
+    -------
+    str
+        The formatted SQL conditional string to be injected into a WHERE 
+        clause. Returns an empty string if no valid keys are provided.
+
+    Raises
+    ------
+    ValueError
+        If `taxon_keys` is not a list or a dictionary.
+
+    Examples
+    --------
+    >>> # Flat list of standard GBIF integer keys (defaults to 'taxonkey')
+    >>> format_taxonomic_filters([2, 216])
+    'taxonkey IN (2, 216)'
+
+    >>> # Flat list of alphanumeric CoL keys (automatically quoted)
+    >>> format_taxonomic_filters(['7G3C6', '4MPXY'])
+    "taxonkey IN ('7G3C6', '4MPXY')"
+
+    >>> # Dictionary mapping specific ranks to keys (mix of ints and strings)
+    >>> format_taxonomic_filters({'familyKey': [4334], 'speciesKey': ['7G3C6']})
+    "(familyKey IN (4334) OR speciesKey IN ('7G3C6'))"
+    
+    >>> # Empty input handling
+    >>> format_taxonomic_filters([])
     """
     if not taxon_keys:
         return ""
     
-    # Normalize input: if it's a flat list, assume it belongs to the base 'taxonkey'
+    # Normalize input
     if isinstance(taxon_keys, list):
         filters = {'taxonkey': taxon_keys}
     elif isinstance(taxon_keys, dict):
@@ -339,31 +354,18 @@ def format_taxonomic_filters(taxon_keys: list[int | str] | dict[str, list[int | 
         raise ValueError("taxon_keys must be a list or a dictionary.")
 
     sub_clauses = []
-    
     for col_name, keys in filters.items():
         if not keys:
             continue
             
-        col_lower = col_name.lower()
+        # Safely quote strings (CoL keys are alphanumeric) or stringify integers
+        formatted_keys = [f"'{k}'" if isinstance(k, str) and not str(k).isdigit() else str(k) for k in keys]
         
-        if col_backbone:
-            # CoL backbone: requires JSON map syntax and single-quoted string keys
-            formatted_keys = [f"'{str(k)}'" for k in keys]
-            col_expr = f"classificationdetails['{col_uuid}']['{col_lower}']"
-        else:
-            # Standard GBIF syntax
-            # Safely quote strings if alphanumeric CoL keys are passed without the backbone flag,
-            # otherwise just stringify the integers.
-            formatted_keys = [f"'{k}'" if isinstance(k, str) and not str(k).isdigit() else str(k) for k in keys]
-            col_expr = col_name
+        sub_clauses.append(f"{col_name} IN ({', '.join(formatted_keys)})")
 
-        sub_clauses.append(f"{col_expr} IN ({', '.join(formatted_keys)})")
-
-    # Guard against empty dictionaries or empty lists inside dictionaries
     if not sub_clauses:
         return ""
 
-    # Return single clause without wrapping parentheses, or join multiples with OR
     if len(sub_clauses) == 1:
         return sub_clauses[0]
         
@@ -384,17 +386,9 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
                    max_uncertainty: int | float | str | None = None,
                    includeUnknownStatus: bool = True,
                    include_uncertainty: bool = True,
-                   issue_flags: list[str] | None = None,
-                   col_backbone: bool = False,
-                   col_uuid: str = '7ddf754f-d193-4cc9-b351-99906754a03b') -> str:
-    """Generate a syntactically validated SQL string optimized for the GBIF query engine.
-
-    Assembles SELECT, WHERE, and spatial or grid-based GROUP BY clauses into a 
-    pretty-printed, readable SQL string. Includes dynamic bounding box optimization, 
-    fallback coordinate uncertainty handling, and spatial precision filtering.
-    """
+                   issue_flags: list[str] | None = None) -> str:
+    """Generate a syntactically validated SQL string optimized for the GBIF query engine."""
     
-    # ---- INJECT GBIF ID ----
     if not grid and not aggregate:
         if "gbifid" not in [col.lower() for col in columns]:
             columns = ["gbifid"] + columns
@@ -408,21 +402,21 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
             "NOT GBIF_STRINGARRAYCONTAINS(occurrence.issue, 'COUNTRY_COORDINATE_MISMATCH', TRUE)"
         ]
 
-    # ---- VALIDITY CHECK ----
-    if not set(columns).issubset(GBIF_COLUMNS):
-        invalid_cols = set(columns) - set(GBIF_COLUMNS)
+    # Convert both to lowercase for case-insensitive validation
+    lower_columns = set([c.lower() for c in columns])
+    lower_gbif_columns = set([g.lower() for g in GBIF_COLUMNS])
+
+    if not lower_columns.issubset(lower_gbif_columns):
+        invalid_cols = lower_columns - lower_gbif_columns
         raise ValueError(f"The following column(s) ({invalid_cols}) are not present in the GBIF data table") 
         
     if record_type.lower() not in ["occurrence", "absence", "mixed"]:
         raise ValueError(f"Chosen record type '{record_type}' is invalid.")
 
-    # ---- APPLY COLUMN FORMATTER ----
-    quoted_columns = format_column_selects(columns, col_backbone=col_backbone, col_uuid=col_uuid)
-
-    # ---- WHERE CONDITIONS ARRAY INITIALIZATION ----
+    # FIX 1: Removed dataset_uuid kwarg
+    quoted_columns = format_column_selects(columns)
     where_conditions = []
 
-    # 1. Bounding Box Pre-Filter
     try:
         geom = shapely.wkt.loads(wkt_polygon)
         min_lon, min_lat, max_lon, max_lat = geom.bounds
@@ -431,10 +425,8 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
     except Exception as e:
         raise ValueError(f"Failed to parse bounding box from wkt_polygon: {str(e)}")
 
-    # 2. Complex Polygon Filter
     where_conditions.append(f"GBIF_Within('{wkt_polygon}', decimalLatitude, decimalLongitude) = TRUE")
 
-    # 3. Maximum Uncertainty Filter
     if max_uncertainty is not None:
         if str(max_uncertainty).lower() == "auto":
             if not grid or grid_resolution is None:
@@ -444,7 +436,6 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
         else:
             where_conditions.append(f"COALESCE(coordinateUncertaintyInMeters, {coordinateUncertainty}) <= {max_uncertainty}")
 
-    # 4. Temporal Filters
     time_columns_filter = " AND ".join([f'"{col}" IS NOT NULL' for col in columns if col in ["year", "month", "day"]])
     if time_columns_filter:
         where_conditions.append(time_columns_filter)
@@ -467,11 +458,9 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
             if not (1 <= month_range <= 12): raise ValueError("Month must be an integer between 1 and 12.")
             where_conditions.append(f'"month" = {month_range}')
         
-    # 5. Issue Flags
     if issue_flags:
         where_conditions.extend(issue_flags)
 
-    # ---- OCCURRENCE STATUS ----
     status_map = {"occurrence": ["'PRESENT'"], "absence": ["'ABSENT'"], "mixed": ["'PRESENT'", "'ABSENT'"]}
     status_values = status_map[record_type.lower()].copy()
     if includeUnknownStatus:
@@ -479,13 +468,12 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
     where_conditions.append(f"occurrenceStatus IN ({', '.join(status_values)})")
     status_str_map = {"occurrence": "occurrences", "absence": "absences", "mixed": "frequency"}
 
-    # ---- OPTIMIZED TAXONOMIC FILTER GENERATION ----
     if taxonKeys:
-        taxa_filter = format_taxonomic_filters(taxonKeys, col_backbone=col_backbone, col_uuid=col_uuid)
+        # FIX 2: Removed dataset_uuid kwarg
+        taxa_filter = format_taxonomic_filters(taxonKeys)
         if taxa_filter:
             where_conditions.append(taxa_filter)
 
-    # ---- GRID SECTION ----
     gridding_str = ""
     if grid:
         if grid.upper() not in GBIF_GRIDS:
@@ -498,11 +486,8 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
         selected_function = GBIF_GRID_FUNCTIONS[grid_idx]
         gridding_str = f"{selected_function}({grid_resolution}, decimalLatitude, decimalLongitude, COALESCE(coordinateUncertaintyInMeters, {coordinateUncertainty})) AS {grid.lower()}cellcode"
 
-    # ---- SQL QUERY BUILD (NESTED FORMATTING) ----
-    
-    # Base columns (only those required for grouping if aggregate is True)
     cols_to_select = sql_group_cols if (aggregate and sql_group_cols) else columns
-    quoted_selects = format_column_selects(cols_to_select, col_backbone=col_backbone, col_uuid=col_uuid)
+    quoted_selects = format_column_selects(cols_to_select)
     select_lines = [f"    {col}" for col in quoted_selects]
     
     if not aggregate:
@@ -512,11 +497,9 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
         select_lines.append(f"    COALESCE(coordinateUncertaintyInMeters, {coordinateUncertainty}) AS coordinateUncertaintyInMeters")
         
     if aggregate:
-        # Dynamically inject the SQL metrics derived from the YAML recipe
         if sql_metric_selects:
             select_lines.extend([f"    {metric}" for metric in sql_metric_selects])
         else:
-            # Fallback if no custom metrics were provided
             select_lines.append(f"    COUNT(*) AS {status_str_map[record_type]}")
             
     if grid:
@@ -527,8 +510,6 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
     
     if aggregate:
         reserved_columns = {"group", "order", "type", "references", "class", "language", "year", "month", "day"}
-        
-        # Group by the dynamically provided columns, or default to all extracted base columns
         cols_to_group = sql_group_cols if sql_group_cols else columns
         group_cols = [f'"{col.lower()}"' if col.lower() in reserved_columns else col.lower() for col in cols_to_group]
         
@@ -540,6 +521,7 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
         group_block = ""
         
     return f"{select_block}\n{filter_block}{group_block}"
+
 
 def submit_gbif_query(gbif_query: str, creds: dict = None) -> str:
     """
