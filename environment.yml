@@ -26,6 +26,9 @@ dependencies:
   - libpysal
   - esda
 
+  # OpenStreetMap Data Access (Overpass via OSMnx)
+  - osmnx>=2.0
+
   # Web Services & STAC Metadata APIs
   - requests
   - hda
