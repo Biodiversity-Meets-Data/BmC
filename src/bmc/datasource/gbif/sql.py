@@ -386,6 +386,7 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
                    max_uncertainty: int | float | str | None = None,
                    includeUnknownStatus: bool = True,
                    include_uncertainty: bool = True,
+                   flag_default_uncertainty: bool = True, # <-- NEW PARAMETER
                    issue_flags: list[str] | None = None) -> str:
     """Generate a syntactically validated SQL string optimized for the GBIF query engine."""
     
@@ -413,7 +414,6 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
     if record_type.lower() not in ["occurrence", "absence", "mixed"]:
         raise ValueError(f"Chosen record type '{record_type}' is invalid.")
 
-    # FIX 1: Removed dataset_uuid kwarg
     quoted_columns = format_column_selects(columns)
     where_conditions = []
 
@@ -469,7 +469,6 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
     status_str_map = {"occurrence": "occurrences", "absence": "absences", "mixed": "frequency"}
 
     if taxonKeys:
-        # FIX 2: Removed dataset_uuid kwarg
         taxa_filter = format_taxonomic_filters(taxonKeys)
         if taxa_filter:
             where_conditions.append(taxa_filter)
@@ -496,6 +495,9 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
     if include_uncertainty and not aggregate:
         select_lines.append(f"    COALESCE(coordinateUncertaintyInMeters, {coordinateUncertainty}) AS coordinateUncertaintyInMeters")
         
+        if flag_default_uncertainty:
+            select_lines.append("    CASE WHEN coordinateUncertaintyInMeters IS NULL THEN TRUE ELSE FALSE END AS is_default_uncertainty")
+            
     if aggregate:
         if sql_metric_selects:
             select_lines.extend([f"    {metric}" for metric in sql_metric_selects])
@@ -521,7 +523,6 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
         group_block = ""
         
     return f"{select_block}\n{filter_block}{group_block}"
-
 
 def submit_gbif_query(gbif_query: str, creds: dict = None) -> str:
     """
