@@ -277,12 +277,11 @@ class vectorCube(vectorEngine, dataCube, ABC):
         return work_df
 
     def process_cube(
-        self, 
-        recipe: Dict[str, Any], 
-        dataset_name: str, 
-        logger: Optional[logging.Logger] = None,
-        **kwargs
-    ) -> 'pystac.Item':
+            self, 
+            recipe: Dict[str, Any], 
+            logger: Optional[logging.Logger] = None,
+            **kwargs
+        ) -> 'pystac.Item':
         """
         Orchestrates the entire vector pipeline retrieving geometries, translating to grids, 
         conducting QA/QC topological checks, and outputting forms.
@@ -291,8 +290,6 @@ class vectorCube(vectorEngine, dataCube, ABC):
         ----------
         recipe : dict
             Master execution mapping blueprint.
-        dataset_name : str
-            Identifier distinguishing the source integration parameters (e.g., 'gbif').
         logger : logging.Logger, optional
             System output streaming component tracking pipeline steps.
             
@@ -301,6 +298,11 @@ class vectorCube(vectorEngine, dataCube, ABC):
         pystac.Item
             A PySTAC catalog item referencing the physical GeoParquet/Zarr files written to disk.
         """
+
+        # Dynamically mine the dataset name from the instantiated child class name
+        # e.g., 'gbifCube' -> 'gbif'
+        dataset_name = self.__class__.__name__[:-4].lower()
+        
         # =====================================================================
         # 1. Pipeline Initialization
         # =====================================================================

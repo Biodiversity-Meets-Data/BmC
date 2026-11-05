@@ -187,14 +187,19 @@ class gbifCube(vectorCube):
         else:
             raise ValueError(f"Invalid processing_mode '{processing_mode}'.")
 
-        # Exclude flagged biodiversity data issues (e.g., zero coordinates, country coordinate mismatches)
+        # Exclude flagged biodiversity data issues
         issue_flags = ["hasCoordinate = TRUE"]
         for issue in query_filters.get("exclude_issues", []):
             issue_flags.append(f"NOT GBIF_STRINGARRAYCONTAINS(occurrence.issue, '{issue}', TRUE)")
 
-        # Link requested taxa to the GBIF Backbone if necessary
+        # Inject raw custom SQL statements directly into the WHERE clause
+        for custom_sql in query_filters.get("custom_sql_filters", []):
+            issue_flags.append(custom_sql)
+
+        # Link requested taxa to the GBIF Backbone if necessary (col_backbone removed)
         raw_taxon_keys = query_filters.get("taxon_keys", [])
-        mapped_taxon_keys = sql.map_taxonkeys_to_columns(raw_taxon_keys, col_backbone, col_uuid) if not query_filters.get("fetch_all_taxa", False) and raw_taxon_keys else []
+        col_uuid = taxonomy_cfg.get("dataset_uuid", "7ddf754f-d193-4cc9-b351-99906754a03b")
+        mapped_taxon_keys = sql.map_taxonkeys_to_columns(raw_taxon_keys, dataset_uuid=col_uuid) if not query_filters.get("fetch_all_taxa", False) and raw_taxon_keys else []
 
         # =====================================================================
         # 5. Dispatch to SQL generator
@@ -213,9 +218,7 @@ class gbifCube(vectorCube):
             grid_resolution=query_res,     
             coordinateUncertainty=default_uncert, 
             max_uncertainty=max_uncertainty,      
-            issue_flags=issue_flags,
-            col_backbone=col_backbone,
-            col_uuid=col_uuid
+            issue_flags=issue_flags
         )
 
         return gbif_sql_query

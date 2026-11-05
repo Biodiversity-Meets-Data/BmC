@@ -386,7 +386,7 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
                    max_uncertainty: int | float | str | None = None,
                    includeUnknownStatus: bool = True,
                    include_uncertainty: bool = True,
-                   flag_default_uncertainty: bool = True, # <-- NEW PARAMETER
+                   flag_default_uncertainty: bool = False, # <-- NEW PARAMETER
                    issue_flags: list[str] | None = None) -> str:
     """Generate a syntactically validated SQL string optimized for the GBIF query engine."""
     
