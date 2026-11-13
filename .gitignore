@@ -9,6 +9,9 @@ scripts/dev_notebooks/
 *.zip
 *.pyc
 *.env
+*.vrt
+*.json
+*.log
 *.parquet
 .ipynb_checkpoints/
 *.egg-info/

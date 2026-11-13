@@ -205,8 +205,6 @@ sources:
           sfcWind: false
           hurs: false
           vpd: true
-          spei12: true    # Standardized Precipitation Evapotranspiration Index (12-month)
-          spi12: false    # Standardized Precipitation Index (12-month)
 
       # --- ANNUAL TIME SERIES (Inherits global 'temporal' block) ---
       annual:
@@ -214,6 +212,8 @@ sources:
         variables:
           qkndvi: true    # Vegetation index
           mymd: false     # Growing degree days / derived temperature index
+          spei12: true    # Standardized Precipitation Evapotranspiration Index (12-month)
+          spi12: false    # Standardized Precipitation Index (12-month)
 
       # --- CLIMATOLOGIES (30-year normals, Overrides global 'temporal' block) ---
       climatologies:

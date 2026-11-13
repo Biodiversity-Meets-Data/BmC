@@ -317,37 +317,15 @@ class rasterCube(rasterEngine, dataCube, ABC):
         self.variables = list(set(self.variables))
 
     def generate_execution_plan(
-        self, recipe: Dict[str, Any], logger: logging.Logger
+        self, recipe: Dict[str, Any], logger: Optional[logging.Logger] = None
     ) -> pd.DataFrame:
         """
         Constructs a tabular execution manifest outlining the required spatial assets.
-
-        This method parses the user-provided YAML recipe and filters the underlying 
-        spatial catalog (e.g., Parquet file) based on requested variables, spatial 
-        bounding boxes, temporal ranges, and auxiliary dimensions. It acts as the 
-        query planner for the orchestrator.
-
-        Parameters
-        ----------
-        recipe : Dict[str, Any]
-            The master pipeline configuration dictionary parsed from YAML.
-        logger : logging.Logger
-            The logger instance for tracking telemetry and pipeline warnings.
-
-        Returns
-        -------
-        pd.DataFrame
-            A fully filtered and grouped Pandas DataFrame containing the required 
-            asset URIs (`vsi_path`), their types (`tile` vs `slice`), and temporal/spatial 
-            metadata necessary for GDAL retrieval. Returns an empty DataFrame if no 
-            assets match the query constraints.
         """
         # --- 0. Initialize Dynamic Attributes ---
-        # Binds metadata variables and custom arguments specified in the recipe to the class instance
         self._apply_recipe_attributes(recipe)
 
         # --- 1. Extract Config from Recipe ---
-        # Default to a global bounding box if none is explicitly provided in the spatial block
         bbox_cfg = recipe.get("spatial", {}).get("bbox", {})
         bbox = (
             bbox_cfg.get("long_min", -180),
@@ -356,12 +334,10 @@ class rasterCube(rasterEngine, dataCube, ABC):
             bbox_cfg.get("lat_max", 90),
         )
 
-        # Default temporal bounds to a broad range if absent
         temp_cfg = recipe.get("temporal", {})
         start_date = f"{temp_cfg.get('start_year', 1900)}-01-01"
         end_date = f"{temp_cfg.get('end_year', 2100)}-12-31"
 
-        # Construct exact Shapely geometry for spatial intersection queries
         search_geom = shapely.geometry.box(*bbox)
         start = pd.to_datetime(start_date, utc=True)
         end = pd.to_datetime(end_date, utc=True)
@@ -377,68 +353,47 @@ class rasterCube(rasterEngine, dataCube, ABC):
         manifest_chunks = []
 
         # --- Process Level-by-Level ---
-        # Catalogs are often partitioned by temporal resolution (e.g., 'annual' vs 'monthly')
         for level in levels:
-
             # --- 2. Load ONLY the catalog file for the current level ---
             catalog_dict = getattr(self, "catalogs", {})
             unified_catalog = getattr(self, "catalog", "")
 
-            # Resolve the physical filepath of the Parquet catalog
             if isinstance(catalog_dict, dict) and level in catalog_dict:
-                # Target found in dictionary mapping (e.g., CLMS modular datasets)
                 level_catalog_path = catalog_dict[level]
             elif isinstance(unified_catalog, str) and unified_catalog.endswith('.parquet'):
-                # Target is a single, unified master catalog file (e.g., CHELSA)
                 level_catalog_path = unified_catalog
             else:
-                # Fallback to standard directory structure if self.catalog is a directory path
                 base_path = getattr(self, "catalog_path", unified_catalog)
                 level_catalog_path = f"{base_path}/{level}_catalog.parquet"
 
             try:
                 level_gdf = gpd.read_parquet(level_catalog_path)
-                log_execution(
-                    logger,
-                    f"Loaded catalog for level '{level}' ({len(level_gdf)} rows) from {level_catalog_path}",
-                    logging.INFO,
-                )
+                if logger:
+                    log_execution(
+                        logger,
+                        f"Loaded catalog for level '{level}' ({len(level_gdf)} rows) from {level_catalog_path}",
+                        logging.INFO,
+                    )
             except Exception as e:
-                log_execution(
-                    logger,
-                    f"Failed to load catalog for level '{level}' ({level_catalog_path}): {e}",
-                    logging.WARNING,
-                )
+                if logger:
+                    log_execution(logger, f"Failed to load catalog for level '{level}': {e}", logging.WARNING)
                 continue
 
-            # Schema Validation: Ensure the catalog adheres to the required strict SpatioTemporal schema
-            required_cols = [
-                "geometry",
-                "datetime",
-                "level",
-                "variable",
-                "vsi_path",
-            ]
+            required_cols = ["geometry", "datetime", "level", "variable", "vsi_path"]
             missing = [c for c in required_cols if c not in level_gdf.columns]
             if missing:
-                log_execution(
-                    logger,
-                    f"Catalog '{level}' missing columns: {missing}. Skipping.",
-                    logging.ERROR,
-                )
                 continue
 
             # --- 3. Filter Variables ---
-            # Drop all records that are not explicitly requested in the YAML recipe
             level_gdf = level_gdf[
                 (level_gdf["level"] == level)
                 & (level_gdf["variable"].isin(variables))
             ].copy()
+            
             if level_gdf.empty:
                 continue
 
             # --- 4. Auxiliary Dimension Filter & Grouping Injection ---
-            # Defines how records should be grouped together into a single time-slice
             grouping_cols = ["level", "variable", "datetime"]
 
             if aux_dims:
@@ -446,12 +401,17 @@ class rasterCube(rasterEngine, dataCube, ABC):
                     if dim_col in level_gdf.columns:
                         if not isinstance(values, list):
                             values = [values]
-                        # Retain records matching requested dimensions or explicitly marked as NaN (applies everywhere)
+                            
                         if not level_gdf[dim_col].isna().all():
+                            # FIX 1: Enforce safe, case-insensitive string matching to prevent drops
+                            safe_col = level_gdf[dim_col].astype(str).str.lower().str.strip()
+                            safe_vals = [str(v).lower().strip() for v in values]
+                            
                             level_gdf = level_gdf[
-                                level_gdf[dim_col].isin(values)
+                                safe_col.isin(safe_vals)
                                 | level_gdf[dim_col].isna()
                             ]
+                            
                             if dim_col not in grouping_cols:
                                 grouping_cols.append(dim_col)
 
@@ -459,13 +419,11 @@ class rasterCube(rasterEngine, dataCube, ABC):
                 continue
 
             # --- 5. Spatial Filter ---
-            # Perform bounding box intersection using the GeoPandas STRTree index
             level_gdf = level_gdf[level_gdf.intersects(search_geom)].copy()
             if level_gdf.empty:
                 continue
 
             # --- 6. Temporal Filter ---
-            # Discard records outside the requested timeframe (unless the data is strictly temporally static)
             level_gdf["datetime"] = pd.to_datetime(level_gdf["datetime"], utc=True)
             if level not in static_levels:
                 level_gdf = level_gdf[
@@ -477,21 +435,16 @@ class rasterCube(rasterEngine, dataCube, ABC):
                 continue
 
             # --- 7. Grouping & Manifest Construction ---
-            # Condense identical temporal/spatial slices into a single row. 
-            # If multiple spatial tiles exist for the same timestamp, their URLs are bundled into a list.
             agg_rules = {"vsi_path": list}
 
             if "proj:epsg" in level_gdf.columns:
-                agg_rules["proj:epsg"] = lambda x: list(
-                    set([int(v) for v in x if pd.notna(v)])
-                )
+                agg_rules["proj:epsg"] = lambda x: list(set([int(v) for v in x if pd.notna(v)]))
             if "nodata" in level_gdf.columns:
-                agg_rules["nodata"] = (
-                    lambda x: list(set(x))[0] if len(set(x)) > 0 else None
-                )
+                agg_rules["nodata"] = lambda x: list(set(x))[0] if len(set(x)) > 0 else None
 
             level_manifest = (
-                level_gdf.groupby(grouping_cols, dropna=True)
+                # FIX 2: dropna=False prevents pandas from destroying future ensembles that have NaT datetimes
+                level_gdf.groupby(grouping_cols, dropna=False)
                 .agg(agg_rules)
                 .reset_index()
             )
@@ -508,16 +461,11 @@ class rasterCube(rasterEngine, dataCube, ABC):
             columns={k: v for k, v in rename_map.items() if k in manifest.columns}
         )
 
-        # Dynamically determine the pipeline routing strategy.
-        # 'tile': Distributed multi-file spatial blocks requiring GDAL VRT mosaicking.
-        # 'slice': Single global/regional files requiring straightforward GDAL windowing.
         manifest['asset_type'] = manifest['vsi_path'].apply(
             lambda paths: 'tile' if len(paths) > 1 else 'slice'
         )
         manifest['path_type'] = 'remote'
         
-        # --- Safely execute the dataset-specific provider resolver ---
-        # Used downstream to apply specific S3 / Cloud authentication headers
         if hasattr(self, 'resolve_provider'):
             manifest['provider_id'] = manifest['vsi_path'].apply(self.resolve_provider)
         else:

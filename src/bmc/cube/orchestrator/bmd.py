@@ -325,9 +325,13 @@ class bmdCube:
         creds : dict, optional
             API credentials dictionary passed downstream to remote fetch tasks.
         """
+        import os
+        import json
         from typing import Union
         
-        # --- Check if recipe is already a dictionary ---
+        # =================================================================
+        # RECIPE RESOLUTION
+        # =================================================================
         if isinstance(recipe_file, dict):
             recipe = recipe_file
         else:
@@ -335,6 +339,48 @@ class bmdCube:
             
         sources = recipe.get("sources", {})
 
+        # =================================================================
+        # CENTRALIZED CREDENTIAL HANDLING
+        # =================================================================
+        creds = creds or {}
+        
+        # 1. Unpack GBIF credentials if a file path was provided
+        if "gbif_credentials" in creds:
+            gbif_path = creds["gbif_credentials"]
+            if os.path.exists(gbif_path):
+                try:
+                    with open(gbif_path, 'r') as f:
+                        creds.update(json.load(f))
+                except Exception as e:
+                    if logger:
+                        logger.warning(f"Failed to read GBIF credentials JSON at {gbif_path}: {e}")
+            else:
+                if logger:
+                    logger.warning(f"GBIF credentials file not found at path: {gbif_path}")
+
+        # 2. Resolve CLMS / S3 credentials (checks args first, falls back to recipe)
+        clms_cfg = sources.get("clms", {})
+        cdse_creds = creds.get("cdse_s3_credentials") or clms_cfg.get("cdse_s3_credentials")
+        priv_creds = creds.get("private_s3_credentials") or clms_cfg.get("private_s3_credentials")
+        
+        # Validate CLMS credentials early if the dataset is enabled
+        if clms_cfg.get("enabled", False) and not cdse_creds:
+            error_msg = (
+                "CRITICAL: The 'clms' dataset requires 'cdse_s3_credentials' to authenticate against "
+                "the Copernicus Dataspace S3 bucket. Provide the path to your credentials dictionary."
+            )
+            if logger:
+                log_execution(logger, error_msg, logging.ERROR)
+            raise ValueError(error_msg)
+            
+        # Store resolved paths safely back in the creds dictionary for downstream use
+        creds["cdse_s3_credentials"] = cdse_creds
+        creds["private_s3_credentials"] = priv_creds
+
+
+        # =================================================================
+        # DIRECTORY SETUP
+        # =================================================================
         base_dir = recipe.get("base_dir", ".")
         cube_name = recipe.get("cube_name", "default_cube")
         
@@ -385,30 +431,15 @@ class bmdCube:
                 log_execution(logger, f"Initializing {source_name.upper()} cube generation...", logging.INFO)
                 
                 if source_name == "clms":
-                    cdse_creds = (creds or {}).get("cdse_s3_credentials")
-                    priv_creds = (creds or {}).get("private_s3_credentials")
-                    
-                    if not cdse_creds:
-                        cdse_creds = source_cfg.get("cdse_s3_credentials")
-                    if not priv_creds:
-                        priv_creds = source_cfg.get("private_s3_credentials")
-                        
-                    if not cdse_creds:
-                        error_msg = (
-                            "CRITICAL: The 'clms' dataset requires 'cdse_s3_credentials' to authenticate against "
-                            "the Copernicus Dataspace S3 bucket. Provide the path to your credentials dictionary."
-                        )
-                        log_execution(logger, error_msg, logging.ERROR)
-                        raise ValueError(error_msg)
-                        
+                    # Credentials are now guaranteed to be resolved and validated from the top block
                     cube_inst = cube_class(
-                        cdse_s3_credentials=cdse_creds,
-                        private_s3_credentials=priv_creds
+                        cdse_s3_credentials=creds["cdse_s3_credentials"],
+                        private_s3_credentials=creds.get("private_s3_credentials")
                     )
                 else:
                     cube_inst = cube_class()
                 
-                #Pass dataset_name only to engines (like the vector engine) that explicitly require it
+                # Pass dataset_name only to engines (like the vector engine) that explicitly require it
                 process_kwargs = {"max_workers": max_workers, "logger": logger}
                 if "dataset_name" in inspect.signature(cube_inst.process_cube).parameters:
                     process_kwargs["dataset_name"] = source_name

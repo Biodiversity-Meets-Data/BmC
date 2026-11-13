@@ -90,7 +90,7 @@ def map_taxonkeys_to_columns(
     Examples
     --------
     >>> keys = [2, 216, 1043084]
-    >>> map_taxonkeys_to_columns(keys, max_workers=4, col_backbone=False)
+    >>> map_taxonkeys_to_columns(keys, max_workers=4)
     {'kingdomKey': [2], 'classKey': [216], 'speciesKey': [1043084]}
     """
     if not taxon_keys:
@@ -461,7 +461,7 @@ def generate_query(taxonKeys: list[int | str] | dict[str, list[int | str]],
     if issue_flags:
         where_conditions.extend(issue_flags)
 
-    status_map = {"occurrence": ["'PRESENT'"], "absence": ["'ABSENT'"], "mixed": ["'PRESENT'", "'ABSENT'"]}
+    status_map = {"occurrence": ["'DETECTED'"], "absence": ["'ABSENT'"], "mixed": ["'DETECTED'", "'ABSENT'"]}
     status_values = status_map[record_type.lower()].copy()
     if includeUnknownStatus:
         status_values.append("'UNKNOWN'")

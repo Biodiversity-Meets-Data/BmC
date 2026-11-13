@@ -101,9 +101,6 @@ class gbifCube(vectorCube):
             if col not in columns:
                 columns.append(col)
 
-        col_backbone = taxonomy_cfg.get("col_backbone", False)
-        col_uuid = taxonomy_cfg.get("col_uuid", "7ddf754f-d193-4cc9-b351-99906754a03b")
-
         temporal_cfg = recipe.get("temporal", {})
         year_range = [temporal_cfg.get("start_year"), temporal_cfg.get("end_year")]
         month_range = [temporal_cfg.get("start_month"), temporal_cfg.get("end_month")]
