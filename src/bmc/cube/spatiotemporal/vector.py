@@ -417,6 +417,15 @@ class vectorCube(vectorEngine, dataCube, ABC):
                     target_bbox=target_bbox,
                     logger=logger
                 )
+            elif topology == "linestring":
+                transformed_data = self.map_linestring_to_template(
+                    source_gdf=sanitized_gdf,
+                    target_grid_name=target_grid_key,
+                    geom_column="geometry",
+                    output_col="grid_idx",
+                    target_bbox=target_bbox,
+                    logger=logger
+                )
             else:
                 raise ValueError(f"Unsupported topology '{topology}' specified in recipe.")
 

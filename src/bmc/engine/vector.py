@@ -1049,6 +1049,165 @@ class vectorEngine(baseGrid):
         
         result = result.rename(columns={_uid_col: "src_uid"}).reset_index(drop=True)
         return result[result_columns]
+
+    def map_linestring_to_template(
+        self,
+        source_gdf: gpd.GeoDataFrame,
+        target_grid_name: str,
+        geom_column: str = "geometry",
+        output_col: str = "grid_idx",
+        target_bbox: Optional[Tuple[float, float, float, float]] = None,
+        min_length_fraction: float = 1e-6,
+        include_centroid_tracking: bool = True,
+        logger: Optional[logging.Logger] = None,
+    ) -> pd.DataFrame:
+        """
+        Maps line datasets onto the master grid by splitting every line at the cell
+        borders and distributing its length across the intersected cells.
+
+        Parameters
+        ----------
+        source_gdf : geopandas.GeoDataFrame
+            Input layer with LineString / MultiLineString geometries.
+        target_grid_name : str
+            Master grid registry name.
+        geom_column : str, default 'geometry'
+            Column holding the line geometries.
+        output_col : str, default 'grid_idx'
+            Name of the resulting grid index column.
+        target_bbox : tuple of float, optional
+            Rigid boundary (in target CRS) overriding the source extent.
+        min_length_fraction : float, default 1e-6
+            Fragments with a smaller share of the source length are dropped.
+        include_centroid_tracking : bool, default True
+            Adds the grid cell containing the line's centroid.
+        logger : logging.Logger, optional
+            Logger instance.
+
+        Returns
+        -------
+        pandas.DataFrame
+            One row per (source feature, grid cell) with the columns
+            ``output_col``, ``src_uid``, [``centroid_grid_idx``],
+            ``length_fraction`` (share of the feature's length in the cell),
+            ``length_m`` (metric length in the cell) and all non-geometry
+            source attributes.
+        """
+        # 1. CRS validation and geometry hygiene
+        target_crs = self.GRID_REGISTRY[target_grid_name]["crs"]
+        source_gdf = self._ensure_crs(source_gdf, target_crs, logger)
+
+        preserve_cols = [
+            c for c in source_gdf.columns
+            if not isinstance(source_gdf[c].dtype, gpd.array.GeometryDtype)
+        ]
+        result_columns = (
+            [output_col, "src_uid"]
+            + (["centroid_grid_idx"] if include_centroid_tracking else [])
+            + ["length_fraction", "length_m"]
+            + preserve_cols
+        )
+
+        if source_gdf.empty:
+            return pd.DataFrame(columns=result_columns)
+
+        self._validate_geom_column(
+            source_gdf, geom_column, {"LineString", "MultiLineString"}, "map_linestring_to_template"
+        )
+
+        # 2. Pristine target grid mesh
+        target_grid_gdf, _, res = self._build_target_grid(
+            target_grid_name=target_grid_name,
+            source_crs=source_gdf.crs,
+            source_bounds=source_gdf.total_bounds,
+            target_bbox=target_bbox,
+            logger=logger,
+        )
+        grid_centroids = target_grid_gdf.geometry.centroid
+        target_grid_gdf["grid_idx"] = self.calculate_deterministic_global_indices(
+            x_coords=grid_centroids.x.values,
+            y_coords=grid_centroids.y.values,
+            grid_name=target_grid_name,
+            logger=logger,
+        )
+
+        # 3. Baseline lengths (metric)
+        _uid_col = "_map_line_src_uid_tmp"
+        _len_col = "_map_line_source_length_tmp"
+
+        source_df = source_gdf.copy()
+        source_df[_uid_col] = source_df.index
+        source_df = source_df.set_geometry(geom_column, crs=source_gdf.crs)
+
+        is_geographic_grid = CRS.from_user_input(target_crs).is_geographic
+        metric_crs = source_df.estimate_utm_crs() if is_geographic_grid else None
+
+        def _length(gdf_: gpd.GeoDataFrame) -> pd.Series:
+            return gdf_.to_crs(metric_crs).geometry.length if metric_crs else gdf_.geometry.length
+
+        source_df[_len_col] = _length(source_df)
+        source_df = source_df[source_df[_len_col] > 0]
+        if source_df.empty:
+            return pd.DataFrame(columns=result_columns)
+
+        # 4. Centroid tracking
+        centroid_mapping = None
+        if include_centroid_tracking:
+            tree = KDTree(np.column_stack([grid_centroids.x.values, grid_centroids.y.values]))
+            centroid_mapping = self._compute_home_cell_mapping(
+                reference_geom=source_df.geometry,
+                uid_values=source_df[_uid_col].values,
+                uid_col_name=_uid_col,
+                tree=tree,
+                grid_idx_values=target_grid_gdf["grid_idx"].values,
+                res=res,
+            )
+
+        # 5. Batched intersection (line splitting at cell borders)
+        chunk_size = 10000
+        num_chunks = math.ceil(len(source_df) / chunk_size)
+        intersections_list = []
+
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message=".*keep_geom_type.*")
+            for i in range(num_chunks):
+                chunk = source_df.iloc[i * chunk_size : (i + 1) * chunk_size]
+                intersection_chunk = gpd.overlay(
+                    chunk[[_uid_col, _len_col, geom_column]],
+                    target_grid_gdf,
+                    how="intersection",
+                    keep_geom_type=True,  # drops zero-length (point) touches
+                )
+                if not intersection_chunk.empty:
+                    intersections_list.append(intersection_chunk)
+                del chunk, intersection_chunk
+                gc.collect()
+
+        if not intersections_list:
+            return pd.DataFrame(columns=result_columns)
+
+        intersections = pd.concat(intersections_list, ignore_index=True)
+
+        # 6. Fractional yields
+        intersections["length_m"] = _length(intersections)
+        intersections["length_fraction"] = intersections["length_m"] / intersections[_len_col]
+        intersections = intersections[intersections["length_fraction"] > min_length_fraction]
+        intersections = intersections.rename(columns={"grid_idx": output_col})
+
+        # 7. Merge cell pieces of the same feature (e.g. multi-part lines) per cell
+        result = (
+            intersections.groupby([_uid_col, output_col], as_index=False)[["length_fraction", "length_m"]].sum()
+        )
+        if include_centroid_tracking:
+            result = result.merge(centroid_mapping, on=_uid_col, how="left")
+
+        result = result.merge(
+            source_gdf[preserve_cols].reset_index().rename(columns={source_gdf.index.name or "index": _uid_col}),
+            on=_uid_col,
+            how="left",
+        )
+        result = result.rename(columns={_uid_col: "src_uid"}).reset_index(drop=True)
+        return result[result_columns]    
     
     def map_cellCollection_to_template(
         self, 

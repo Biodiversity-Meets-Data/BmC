@@ -19,7 +19,7 @@ By parsing YAML configuration recipes, `bmd_cube` completely automates the gener
 ## Output Directory Structure
 
 <p align="center">
-  <img src="../../../img/datatree.png" alt="Datatree" width="50%">
+  <img src="../../../../img/datatree.png" alt="Datatree" width="50%">
 </p>
 
 The orchestrator generates a highly organized, standardized directory tree upon successful execution. This structure cleanly separates the harmonized ecological datasets from their machine-readable metadata and provenance logs.
@@ -40,7 +40,7 @@ The `vectorCube` engine standardizes spatial vector datasets into a highly struc
 
 Below is the Entity-Relationship Diagram mapping the standard output structure:
 
-![Vector Cube Relational Output](../../../img/vectorCube_output.png)
+![Vector Cube Relational Output](../../../../img/vectorCube_output.png)
 
 ### 1. Source Geometries Table (Dimension)
 This table preserves the original, complex geometries ingested from the raw dataset (e.g., points, multi-polygons) alongside their untouched raw attributes. 
