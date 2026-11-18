@@ -72,8 +72,7 @@ class clmsCube(rasterCube):
         self.cdse_credentials_path = cdse_s3_credentials
         self.private_credentials_path = private_s3_credentials
         
-        # Dynamically extract the dataset name from the class definition (clmsCube -> clms)
-        self.dataset_name = self.__class__.__name__.replace("Cube", "").lower()
+        self.dataset_name = "clms"
 
         # Wipe any lingering global AWS pollution from the environment.
         # This prevents credentials from a different dataset engine (e.g., CHELSA) 

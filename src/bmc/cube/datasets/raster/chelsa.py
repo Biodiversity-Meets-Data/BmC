@@ -69,7 +69,7 @@ class chelsaCube(rasterCube):
         super().__init__(**kwargs)
         
        # 1. Dynamically derive the dataset name
-        self.dataset_name = self.__class__.__name__.replace('Cube', '').lower()
+        self.dataset_name = "chelsa"
         
         # 2. Anchor to the repo root using pathlib
         # __file__     = BmC/src/bmc/__init__.py
@@ -243,7 +243,8 @@ class chelsaCube(rasterCube):
         active_ranges = set()
         active_ensembles = set()
         active_scenarios = set()
-        
+        active_months = set()
+
         # Iterate exclusively through the structural levels that utilize climate 
         # projection and historical baseline dimensions.
         for level in ['climatologies', 'bioclim']:
@@ -253,15 +254,14 @@ class chelsaCube(rasterCube):
             if settings.get('include', False):
                 # Extract dictionary keys where the boolean value is True
                 active_ranges.update(
-                    [tr for tr, state in settings.get('time_ranges', {}).items() if state]
-                )
+                    [tr for tr, state in settings.get('time_ranges', {}).items() if state])
                 active_ensembles.update(
-                    [ens for ens, state in settings.get('ensembles', {}).items() if state]
-                )
+                    [ens for ens, state in settings.get('ensembles', {}).items() if state])
                 active_scenarios.update(
-                    [scen for scen, state in settings.get('scenarios', {}).items() if state]
-                )
-                
+                    [scen for scen, state in settings.get('scenarios', {}).items() if state])
+                active_months.update(
+                    [m for m, state in settings.get('months', {}).items() if state])
+        
         # Map the extracted YAML configuration keys to the exact column names 
         # present in the underlying GeoParquet catalog.
         if active_ranges:
@@ -273,5 +273,10 @@ class chelsaCube(rasterCube):
             
         if active_scenarios:
             aux_dims['scenario'] = list(active_scenarios)
-            
+
+        # Register 'month' for grouping whenever climatologies is included,
+        # passing None if the user didn't filter specific months in the recipe
+        if levels_cfg.get('climatologies', {}).get('include', False):
+            aux_dims['month'] = list(active_months) if active_months else None
+
         return aux_dims

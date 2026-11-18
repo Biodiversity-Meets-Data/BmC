@@ -399,21 +399,22 @@ class rasterCube(rasterEngine, dataCube, ABC):
             if aux_dims:
                 for dim_col, values in aux_dims.items():
                     if dim_col in level_gdf.columns:
-                        if not isinstance(values, list):
-                            values = [values]
-                            
-                        if not level_gdf[dim_col].isna().all():
-                            # FIX 1: Enforce safe, case-insensitive string matching to prevent drops
-                            safe_col = level_gdf[dim_col].astype(str).str.lower().str.strip()
-                            safe_vals = [str(v).lower().strip() for v in values]
-                            
-                            level_gdf = level_gdf[
-                                safe_col.isin(safe_vals)
-                                | level_gdf[dim_col].isna()
-                            ]
-                            
-                            if dim_col not in grouping_cols:
-                                grouping_cols.append(dim_col)
+                        # Allow None/empty list to register the dimension for grouping without filtering values
+                        if values is not None and len(values) > 0:
+                            if not isinstance(values, list):
+                                values = [values]
+                                
+                            if not level_gdf[dim_col].isna().all():
+                                safe_col = level_gdf[dim_col].astype(str).str.lower().str.strip()
+                                safe_vals = [str(v).lower().strip() for v in values]
+                                
+                                level_gdf = level_gdf[
+                                    safe_col.isin(safe_vals)
+                                    | level_gdf[dim_col].isna()
+                                ]
+                        
+                        if dim_col not in grouping_cols:
+                            grouping_cols.append(dim_col)
 
             if level_gdf.empty:
                 continue
@@ -679,6 +680,21 @@ class rasterCube(rasterEngine, dataCube, ABC):
             if col not in reserved_cols and pd.notna(row[col])
         }
 
+        is_static = hasattr(self, 'temporally_static_levels') and level in self.temporally_static_levels
+        
+        if is_static:
+            if 'time' in active_meta:
+                del active_meta['time']
+            
+            # Use assign_coords instead of expand_dims to prevent GDAL 4D+ crash
+            for meta_key, meta_val in active_meta.items():
+                da = da.assign_coords({meta_key: str(meta_val)})
+                
+            if "band" in da.coords:
+                da = da.squeeze("band", drop=True)
+                
+            return level, da
+        
         # --- 1. Determine Primary Z-Dimension and Coordinates ---
         
         if 'time' in active_meta:
@@ -1352,39 +1368,63 @@ class rasterCube(rasterEngine, dataCube, ABC):
         Optional[str]
             Path to the completed output file, or None if the sequence failed.
         """
-        
+    
         if not da_list:
             log_execution(logger, f"No valid data returned for {var_name}. Skipping.", logging.WARNING)
             return None
 
         base_dir = ctx["base_dir"]
-        
+
         # --- 1. Z-Axis Alignment & Coordinate Extraction ---
-        # Ensure perfect planar conformance by broadcasting the x/y basis of the first 
-        # slice across the stack before extracting the primary temporal 'Z' tracking dimension.
-        base_x, base_y = da_list[0].coords['x'], da_list[0].coords['y']
+        # Use .values to extract raw numpy arrays. This prevents Xarray from silently 
+        # dragging slice 0's scalar metadata (e.g., month=1.0) and overwriting all other slices.
+        base_x = da_list[0].coords['x'].values
+        base_y = da_list[0].coords['y'].values
         snapped_list = [d.assign_coords(x=base_x, y=base_y) for d in da_list]
-        z_dim = [dim for dim in snapped_list[0].dims if dim not in ['x', 'y']][0]
-        
-        # Chronological / sequential sorting ensures identical output parity
-        snapped_list.sort(key=lambda da: da.coords[z_dim].values[0])
-        
-        z_vals = np.array([da[z_dim].values for da in snapped_list]).flatten()
-        full_meta_coords = {z_dim: z_vals}
-        
-        # Extract arbitrary supplemental coordinates (like EPSG tracking or source flags)
-        for k in snapped_list[0].coords.keys():
-            if k not in ['x', 'y', 'spatial_ref', z_dim]:
-                meta_vector = np.array([da[k].values for da in snapped_list]).flatten()
-                full_meta_coords[k] = (z_dim, meta_vector)
-        
+
+        # Check if the current processing level is defined as temporally static 
+        # (e.g., climatologies) to determine if we should bypass standard 1D time-stacking
+        is_static = hasattr(self, 'temporally_static_levels') and level in self.temporally_static_levels
+
+        if is_static:
+            z_dim = None
+            # MUST BE A LIST: Cache the non-spatial metadata for each slice in chronological order.
+            # Intermediate .tif files strip custom dimensions, so we cache them here 
+            # and re-inject them right before final assembly.
+            full_meta_coords = []
+            for da in snapped_list:
+                slice_coords = {
+                    k: v.values.item() if hasattr(v.values, 'item') else str(v.values)
+                    for k, v in da.coords.items() 
+                    if k not in ['x', 'y', 'spatial_ref', 'band']
+                }
+                full_meta_coords.append(slice_coords)
+        else:
+            # For standard timeseries, dynamically identify the primary temporal 'Z' tracking 
+            # dimension (usually 'time') by excluding the spatial axes.
+            z_dim = [dim for dim in snapped_list[0].dims if dim not in ['x', 'y']][0]
+            
+            # Chronological sorting ensures the final stacked NetCDF/Zarr array is perfectly 
+            # ordered by time, preventing scrambled datasets.
+            snapped_list.sort(key=lambda da: da.coords[z_dim].values[0])
+            
+            # Extract the raw sorted temporal values into a flat array to serve as the master coordinate
+            z_vals = np.array([da[z_dim].values for da in snapped_list]).flatten()
+            full_meta_coords = {z_dim: z_vals}
+            
+            # Loop through any remaining auxiliary coordinates (e.g., source flags, satellite names)
+            # and extract them into parallel vectors explicitly tied to the primary z_dim.
+            for k in snapped_list[0].coords.keys():
+                if k not in ['x', 'y', 'spatial_ref', z_dim]:
+                    meta_vector = np.array([da[k].values for da in snapped_list]).flatten()
+                    full_meta_coords[k] = (z_dim, meta_vector)
+
         rule = self.get_resample_rule(var_name)
         cache_dir = os.path.join(base_dir, "warp_cache", level, var_name)
         os.makedirs(cache_dir, exist_ok=True)
 
         # --- 2. Pipeline Routing ---
         if rule == "class_fraction":
-            # Extract categorical integers natively provided by the child class
             target_classes = getattr(self, "class_mapping", {}).get(var_name, {})
             if not target_classes:
                 log_execution(logger, f"No class mapping found for {var_name}. Aborting fraction warp.", logging.ERROR)
@@ -1406,6 +1446,7 @@ class rasterCube(rasterEngine, dataCube, ABC):
             target_bounds, target_crs, target_res, rule, target_classes if rule == "class_fraction" else None, 
             tracker, logger
         )
+
 
     def _assemble_and_export_cube(
         self, warped_paths: Union[List[str], Dict[int, List[str]]], var_name: str, level: str, 
@@ -1480,15 +1521,83 @@ class rasterCube(rasterEngine, dataCube, ABC):
         block_size = cfg.get("gdal_warp_block_size", 2048)
         
         def _load_and_stack(paths: List[str]) -> xr.DataArray:
-            """Internal closure dynamically generating and squeezing Dask-backed xarray slices."""
-            slices = []
-            for p in paths:
-                da = rioxarray.open_rasterio(p, chunks={'x': block_size, 'y': block_size})
-                if 'band' in da.dims: 
-                    da = da.squeeze('band', drop=True)
-                slices.append(da)
-            return xr.concat(slices, dim=z_dim) if slices else None
+            is_static = hasattr(self, 'temporally_static_levels') and level in self.temporally_static_levels
+            
+            if not is_static:
+                slices = []
+                for p in paths:
+                    da = rioxarray.open_rasterio(p, chunks={'x': block_size, 'y': block_size})
+                    if 'band' in da.dims:
+                        da = da.squeeze('band', drop=True)
+                    slices.append(da)
+                return xr.concat(slices, dim=z_dim) if slices else None
 
+            # --- Optimized Static Hypercube Assembly ---
+            # Group slices by non-month dimensions so we can fast-concat along 'month' first
+            grouped_series = {}
+            
+            for i, p in enumerate(paths):
+                da = rioxarray.open_rasterio(p, chunks={'x': block_size, 'y': block_size})
+                if 'band' in da.dims:
+                    da = da.squeeze('band', drop=True)
+                
+                # If the slice is small (< 5 MB), load into RAM immediately to avoid Dask graph explosion
+                if da.nbytes < 5 * 1024 * 1024:
+                    da = da.load()
+                    
+                da.name = var_name
+                meta_dict = full_meta_coords[i]
+                
+                series_key = []
+                month_val = None
+                
+                for k, v in meta_dict.items():
+                    if k not in ['geometry', 'provider_id', 'time', 'epsg_codes', 'nodata']:
+                        try:
+                            val = float(v) if '.' in str(v) else int(v)
+                        except ValueError:
+                            val = str(v)
+                            
+                        if k == 'month':
+                            month_val = val
+                        else:
+                            series_key.append((k, val))
+                            
+                # Sort key tuple for deterministic grouping
+                series_key = tuple(sorted(series_key))
+                
+                if month_val is not None:
+                    da = da.expand_dims(dim={'month': 1}).assign_coords({'month': [month_val]})
+                    
+                grouped_series.setdefault(series_key, []).append(da)
+
+            if not grouped_series:
+                return None
+
+            # Step 1: Fast 1D concatenation along 'month' (reduces 372 slices -> ~31 cubes)
+            series_cubes = []
+            for series_key, month_das in grouped_series.items():
+                if 'month' in month_das[0].dims:
+                    month_das.sort(key=lambda d: d.coords['month'].values[0])
+                    cube = xr.concat(month_das, dim='month')
+                else:
+                    cube = month_das[0]
+                    
+                # Expand the remaining dimensions (model, scenario, time_range) onto the 3D cube
+                for k, val in series_key:
+                    cube = cube.expand_dims(dim={k: 1}).assign_coords({k: [val]})
+                    
+                series_cubes.append(cube)
+
+            # Step 2: Merge the ~31 cubes into the final sparse hypercube
+            combined_ds = xr.merge(
+                series_cubes,
+                compat='no_conflicts',
+                join='outer',
+                combine_attrs='drop_conflicts'
+            )
+            return combined_ds[var_name]
+            
         # Assemble and structure fractional datasets (Categorical Classifications)
         if rule == "class_fraction":
             class_das = []
@@ -1535,7 +1644,13 @@ class rasterCube(rasterEngine, dataCube, ABC):
 
         # Broadcast required dimensions and rigid limits before physical execution
         combined_da.name = var_name
-        combined_da = combined_da.assign_coords(full_meta_coords)
+        
+        # CRITICAL FIX: Only assign coords globally for standard timeseries.
+        # Static levels have already perfectly assigned their dimensions during _load_and_stack.
+        is_static = hasattr(self, 'temporally_static_levels') and level in self.temporally_static_levels
+        if not is_static:
+            combined_da = combined_da.assign_coords(full_meta_coords)
+            
         combined_da = combined_da.rio.clip_box(*target_bounds)
 
         # Triggers materialization of the lazy Dask Graph into system RAM
