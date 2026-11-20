@@ -73,58 +73,199 @@ tutorial_cube = {
         "time_aggregation": "monthly"
     },
     "sources": {
-        "clms": {
+        "gbif": {
+            "local_file_path": None,
+            "query_filters": {
+                "fetch_all_taxa": True,
+                "record_type": "presence",
+                "default_Uncertainty": 1000,
+                "max_uncertainty": 5000,
+                "exclude_issues": [
+                    "ZERO_COORDINATE",
+                    "COORDINATE_OUT_OF_RANGE",
+                    "COUNTRY_COORDINATE_MISMATCH"
+                ]
+            },
+            "taxonomy": {
+                "lowest_level": None
+            },
+            "columns": ["year", "month", "recordedby"],
+            "time_cols": ["year", "month"],
+            "processing_mode": "vector",
+            "vector_processing": {
+                "topology": "point_cloud",
+                "mapping_mode": "classify",
+                "spatial_method": "intersect",
+                "topology_config": {
+                    "point_cloud": {
+                        "n_passes": 200,
+                        "distribution": "uniform",
+                        "random_seed": 42
+                    }
+                }
+            },
+            "aggregate": {
+                "export_unaggregated": True,
+                "group_by_columns": ["year", "month", "speciesKey"],
+                "metrics": [
+                    {
+                        "column": "speciesKey",
+                        "method": "count",
+                        "weighted": False,
+                        "rename": "occurrences"
+                    },
+                    {
+                        "column": "recordedBy",
+                        "method": "nunique",
+                        "weighted": False,
+                        "rename": "distinct_observers"
+                    }
+                ]
+            }
+        },
+        "chelsa": {
             "enabled": True,
-            "base_s3_path": "s3://eodata/CLMS/",
+            "catalog_path": "C:/Users/niels/Documents/Repositories/BmC/meta/chelsa_gp_stac/chelsa_master.parquet",
             "levels": {
-                "clc": {
+                "monthly": {
                     "include": True,
                     "variables": {
-                        "landcover": True
+                        "tas": True,
+                        "tasmax": True,
+                        "tasmin": True
                     }
                 },
-                "clcplus": {
+                "annual": {
                     "include": True,
                     "variables": {
-                        "LULUCF-INSTANCE": True
+                        "qkndvi": True,
+                        "mymd": True
                     }
                 },
-                "crop_types": {
+                "climatologies": {
                     "include": True,
+                    "time_ranges": {
+                        "1981-2010": True,
+                        "2011-2040": True,
+                        "2041-2070": True
+                    },
+                    "ensembles": {
+                        "historical": True,
+                        "GFDL-ESM4": True,
+                        "IPSL-CM6A-LR": True,
+                        "MPI-ESM1-2-HR": True,
+                        "MRI-ESM2-0": True,
+                        "UKESM1-0-LL": True
+                    },
+                    "scenarios": {
+                        "historical": True,
+                        "ssp126": True,
+                        "ssp370": True,
+                        "ssp585": True
+                    },
                     "variables": {
-                        "CTY": True
+                        "tas": True,
+                        "tasmax": True,
+                        "tasmin": True
                     }
                 },
-                "dominant_leaf_type": {
+                "bioclim": {
                     "include": True,
+                    "time_ranges": {
+                        "1981-2010": True,
+                        "2011-2040": True,
+                        "2041-2070": True,
+                        "2071-2100": True
+                    },
+                    "ensembles": {
+                        "historical": True,
+                        "GFDL-ESM4": True,
+                        "IPSL-CM6A-LR": True,
+                        "MPI-ESM1-2-HR": True,
+                        "MRI-ESM2-0": True,
+                        "UKESM1-0-LL": True
+                    },
+                    "scenarios": {
+                        "historical": True,
+                        "ssp126": True,
+                        "ssp370": True,
+                        "ssp585": True
+                    },
                     "variables": {
-                        "DLT": True
+                        "bio01": True,
+                        "bio02": True,
+                        "bio03": True,
+                        "bio04": True,
+                        "bio05": True,
+                        "bio06": True,
+                        "bio07": True,
+                        "bio08": True,
+                        "bio09": True,
+                        "bio10": True,
+                        "bio11": True,
+                        "bio12": True,
+                        "bio13": True,
+                        "bio14": True,
+                        "bio15": True,
+                        "bio16": True,
+                        "bio17": True,
+                        "bio18": True,
+                        "bio19": True,
                     }
-                },
-                "forest_type": {
-                    "include": True,
-                    "variables": {
-                        "FTY": True
-                    }
-                },
-                "grassland_herbaceous": {
-                    "include": True,
-                    "variables": {
-                        "GRA": True,
-                        "HER": True
-                    }
-                },
-                "tree_cover_density": {
-                    "include": True,
-                    "variables": {
-                        "TCD": True
+                }
+            }
+        },
+        "clms": {
+                    "enabled": True,
+                    "base_s3_path": "s3://eodata/CLMS/",
+                    "levels": {
+                        "clc": {
+                            "include": True,
+                            "variables": {
+                                "landcover": True
+                            }
+                        },
+                        "clcplus": {
+                            "include": True,
+                            "variables": {
+                                "LULUCF-INSTANCE": True
+                            }
+                        },
+                        "crop_types": {
+                            "include": True,
+                            "variables": {
+                                "CTY": True
+                            }
+                        },
+                        "dominant_leaf_type": {
+                            "include": True,
+                            "variables": {
+                                "DLT": True
+                            }
+                        },
+                        "forest_type": {
+                            "include": True,
+                            "variables": {
+                                "FTY": True
+                            }
+                        },
+                        "grassland_herbaceous": {
+                            "include": True,
+                            "variables": {
+                                "GRA": True,
+                                "HER": True
+                            }
+                        },
+                        "tree_cover_density": {
+                            "include": True,
+                            "variables": {
+                                "TCD": True
+                            }
+                        }
                     }
                 }
             }
         }
-    }
-}
-
 # 4. Execute the pipeline
 if __name__ == "__main__":
     orchestrator = bmdCube()
