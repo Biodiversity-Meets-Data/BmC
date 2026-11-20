@@ -83,9 +83,9 @@ class clmsCube(rasterCube):
         # CLMS pulls from both 'eodata' (CDSE) and private buckets, requiring dynamic per-request sessions
         self.cloud_session = None
 
-        # Anchor to the repo root using pathlib to ensure robust cross-platform path resolution
-        repo_root = Path(bmc.__file__).parents[2]
-        self.catalog_dir = os.path.join(repo_root, "meta", self.dataset_name)
+        # Resolve the root metadata directory via the parent class
+        base_meta = self._get_meta_dir()
+        self.catalog_dir = str(base_meta / self.dataset_name)
         self.catalog_path = self.catalog_dir
 
         # Explicitly map all individual CLMS catalogs.

@@ -71,18 +71,11 @@ class chelsaCube(rasterCube):
        # 1. Dynamically derive the dataset name
         self.dataset_name = "chelsa"
         
-        # 2. Anchor to the repo root using pathlib
-        # __file__     = BmC/src/bmc/__init__.py
-        # parents[0]   = BmC/src/bmc
-        # parents[1]   = BmC/src
-        # parents[2]   = BmC (The actual repository root)
-        repo_root = Path(bmc.__file__).parents[2]
+        # 2. Resolve the root metadata directory via the parent class
+        base_meta = self._get_meta_dir()
         
-        self.catalog = os.path.join(
-            repo_root, 
-            "meta", 
-            self.dataset_name, 
-            f"{self.dataset_name}_catalog.parquet"
+        self.catalog = str(
+            base_meta / self.dataset_name / f"{self.dataset_name}_catalog.parquet"
         )
 
         # --- Declare Temporal Physics ---

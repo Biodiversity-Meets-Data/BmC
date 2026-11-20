@@ -1,5 +1,7 @@
 import os
 import logging
+import importlib.resources
+from pathlib import Path
 from typing import Dict, Any, Tuple, Optional
 from bmc.utils.logger import log_execution, ResourceProfiler
 
@@ -26,6 +28,17 @@ class dataCube():
             "gdal_warp_block_size": 2048,
             "warp_cache_cleanup_delay_sec": 30
         }
+
+    def _get_meta_dir(self) -> Path:
+        """
+        Resolves the root metadata directory, prioritizing environment variables
+        over internal package data for containerized deployments.
+        """
+        meta_override = os.environ.get("BMC_META_DIR")
+        if meta_override:
+            return Path(meta_override)
+            
+        return importlib.resources.files("bmc") / "meta"
 
     def update_config_from_recipe(self, recipe: Dict[str, Any], logger: logging.Logger):
         """
