@@ -42,6 +42,6 @@ dependencies:
       - xarray>=2025.1.0
       - rioxarray>=0.22.0
       - dask>=2025.1.0
-      - pygbif>=0.6.6
+      - pygbif>=0.7.0
       - netcdf4>=1.7.0 
       - zarr>=2.18.0
